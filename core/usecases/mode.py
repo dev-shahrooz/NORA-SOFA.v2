@@ -1,5 +1,6 @@
 # nora/core/usecases/mode.py
 from typing import Dict, Any
+import time
 
 from core.state_store import DEFAULT_STATE
 
@@ -12,14 +13,21 @@ class ModeUsecase:
     values are restored.
     """
 
-    def __init__(self, state_store, lighting_uc, audio_uc, reading_light_uc, back_light_uc):
+    def __init__(self, state_store, lighting_uc, audio_uc, reading_light_uc, back_light_uc, gpio_driver):
         self.state_store = state_store
         self.lighting = lighting_uc
         self.audio = audio_uc
         self.reading_light = reading_light_uc
         self.back_light = back_light_uc
+        self.gpio = gpio_driver
         self._saved_state: Dict[str, Any] | None = None
         self._saved_back_light_on: bool | None = None
+         # Prepare GPIO pins for party mode indicators
+        for pin in (22, 24, 23):
+            try:
+                self.gpio.setup_output(pin, 0)
+            except Exception:
+                pass
 
     def _merge(self, base: Dict, update: Dict) -> Dict:
         for k, v in update.items():
@@ -34,6 +42,15 @@ class ModeUsecase:
         patch: Dict[str, Any] = {}
 
         if current.get("mode") == "party":
+            # Deactivate party mode GPIO sequence
+            try:
+                self.gpio.write(24, 0)
+                self.gpio.write(23, 1)
+                time.sleep(8)
+                self.gpio.write(23, 0)
+            except Exception:
+                pass
+
             saved = self._saved_state or DEFAULT_STATE
             under = saved.get("lighting", {}).get("under_sofa", {})
             patch = self._merge(
@@ -57,6 +74,15 @@ class ModeUsecase:
             self._saved_state = None
             self._saved_back_light_on = None
         else:
+            # Activate party mode GPIO sequence
+            try:
+                self.gpio.write(22, 1)
+                time.sleep(8)
+                self.gpio.write(22, 0)
+                self.gpio.write(24, 1)
+            except Exception:
+                pass
+            
             self._saved_state = current
             self._saved_back_light_on = bool(
                 current.get("lighting", {}).get("back_light", {}).get("on", False)
