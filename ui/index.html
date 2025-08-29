@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nora v2</title>
+    <link rel="stylesheet" href="/ui/style.css" />
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <section class="controls">
+        <!-- Reading Light -->
+        <h2>چراغ مطالعه</h2>
+        <div class="reading-light">
+          <button id="reading-toggle" class="btn">روشن کردن چراغ</button>
+          <span id="reading-status" class="badge">خاموش</span>
+        </div>
+        <hr />
+
+        <h2>چراغ پشت (Back Light)</h2>
+        <div class="back-light">
+          <button id="back-toggle" class="btn">روشن کردن چراغ پشت</button>
+          <span id="back-status" class="badge">خاموش</span>
+        </div>
+        <hr />
+
+        <h2>نور زیر مبل</h2>
+        <div>
+          <label
+            >زون:
+            <select id="zone">
+              <option value="under_sofa">زیر مبل</option>
+              <option value="box">باکس</option>
+            </select>
+          </label>
+          <label
+            >حالت:
+            <select id="mode">
+              <option value="off">خاموش</option>
+              <option value="rainbow">رینبو</option>
+              <option value="static">رنگ ثابت</option>
+              <option value="eq">اکولایزر</option>
+            </select>
+          </label>
+          <label>رنگ: <input type="color" id="color" value="#ffffff" /></label>
+          <label
+            >روشنایی:
+            <input type="range" id="brightness" min="0" max="255" value="128"
+          /></label>
+          <button id="apply-light">ثبت</button>
+        </div>
+        <hr />
+        <h2>صوت</h2>
+        <div>
+          منبع:
+          <label
+            ><input type="radio" name="source" value="bt" checked />
+            بلوتوث</label
+          >
+          <label
+            ><input type="radio" name="source" value="spotify" />
+            اسپاتیفای</label
+          >
+          <button id="set-source">اعمال منبع</button>
+        </div>
+        <div class="pair">
+          <button id="pair">Pair Bluetooth (120s)</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mini-player">
+      <div id="track">—</div>
+      <div class="controls">
+        <button id="prev">⏮</button>
+        <button id="play">⏯</button>
+        <button id="next">⏭</button>
+        <input type="range" id="volume" min="0" max="100" value="70" />
+      </div>
+    </footer>
+
+    <script src="/ui/app.js"></script>
+  </body>
+</html>

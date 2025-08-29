@@ -1,0 +1,7 @@
+[Unit]
+Description=Nora Bluetooth Pairing Window
+After=bluetooth.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nora-bt-pair.sh 120

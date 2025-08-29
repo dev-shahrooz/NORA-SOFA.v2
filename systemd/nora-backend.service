@@ -1,0 +1,14 @@
+[Unit]
+Description=Nora Backend (Flask-SocketIO)
+After=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/nora
+Environment=NORA_DB=/home/pi/nora.db
+ExecStart=/usr/bin/python3 -m nora.app
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

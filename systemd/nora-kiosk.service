@@ -1,0 +1,18 @@
+[Unit]
+Description=Nora Kiosk UI
+After=graphical.target nora-backend.service
+
+[Service]
+User=pi
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/chromium \
+  --app=http://127.0.0.1:8080 \
+  --kiosk --noerrdialogs --disable-session-crashed-bubble \
+  --autoplay-policy=no-user-gesture-required \
+  --incognito --overscroll-history-navigation=0 \
+  --disable-pinch --disable-translate
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical.target
