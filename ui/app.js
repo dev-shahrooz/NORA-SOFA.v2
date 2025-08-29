@@ -31,9 +31,24 @@ readingBtn.onclick = () => {
 // ---- Back Light: Toggle via set(on:bool) ----
 const backBtn = document.getElementById("back-toggle");
 const backStatus = document.getElementById("back-status");
+// ---- Party Mode Toggle ----
+const partyBtn = document.getElementById("party-toggle");
+
+function renderPartyMode(st) {
+  const active = st.mode === "party";
+  if (active) {
+    partyBtn.classList.add("on");
+  } else {
+    partyBtn.classList.remove("on");
+  }
+}
+
+partyBtn.onclick = () => {
+  send("mode.toggle");
+};
 
 function renderBackLight(st) {
-  const on = !!(st?.lighting?.back_light?.on);
+  const on = !!st?.lighting?.back_light?.on;
   if (on) {
     backBtn.textContent = "خاموش کردن چراغ پشت";
     backBtn.classList.add("on");
@@ -66,7 +81,7 @@ sio.on("sv.update", (st) => {
   document.getElementById("volume").value = a.volume ?? 70;
   renderReadingLight(st);
   renderBackLight(st);
-
+  renderPartyMode(st);
 });
 
 // Lighting apply

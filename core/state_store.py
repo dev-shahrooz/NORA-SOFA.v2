@@ -31,7 +31,8 @@ DEFAULT_STATE = {
         "box": {"mode":"off","color":"#FFFFFF","brightness":128},
         "reading_light": {"on": False}    # ← جدید
     },
-    "audio": {"source":"bt","state":"stopped","title":"","artist":"","position":0,"duration":0,"volume":70}
+    "audio": {"source":"bt","state":"stopped","title":"","artist":"","position":0,"duration":0,"volume":70},
+    "mode": "normal",
 }
 
 class StateStore:
@@ -59,8 +60,9 @@ class StateStore:
             s.setdefault("lighting", {})
             s["lighting"].setdefault("reading_light", {"on": False})
             s["lighting"].setdefault("back_light", {"on": False})
-            s.setdefault("schema", SCHEMA_VERSION)           
-            return self._latest_snapshot(con) or DEFAULT_STATE.copy()
+            s.setdefault("schema", SCHEMA_VERSION)
+            s.setdefault("mode", "normal")
+            return s
 
     def apply_patch(self, patch: Dict[str, Any], source: str, action: str, payload: Dict[str, Any], corr_id: str = "") -> Dict[str, Any]:
         with self._lock, sqlite3.connect(self.db_path) as con:
