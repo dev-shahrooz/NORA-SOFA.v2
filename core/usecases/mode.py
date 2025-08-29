@@ -12,12 +12,14 @@ class ModeUsecase:
     values are restored.
     """
 
-    def __init__(self, state_store, lighting_uc, audio_uc, reading_light_uc):
+    def __init__(self, state_store, lighting_uc, audio_uc, reading_light_uc, back_light_uc):
         self.state_store = state_store
         self.lighting = lighting_uc
         self.audio = audio_uc
         self.reading_light = reading_light_uc
+        self.back_light = back_light_uc
         self._saved_state: Dict[str, Any] | None = None
+        self._saved_back_light_on: bool | None = None
 
     def _merge(self, base: Dict, update: Dict) -> Dict:
         for k, v in update.items():
@@ -45,17 +47,26 @@ class ModeUsecase:
             )
             rl_on = bool(saved.get("lighting", {}).get("reading_light", {}).get("on", False))
             patch = self._merge(patch, self.reading_light.set(rl_on))
+            bl_on = self._saved_back_light_on if self._saved_back_light_on is not None else bool(
+                saved.get("lighting", {}).get("back_light", {}).get("on", False)
+            )
+            patch = self._merge(patch, self.back_light.set(bl_on))
             vol = int(saved.get("audio", {}).get("volume", 70))
             patch = self._merge(patch, self.audio.set_volume(vol))
             patch = self._merge(patch, {"mode": "normal"})
             self._saved_state = None
+            self._saved_back_light_on = None
         else:
             self._saved_state = current
+            self._saved_back_light_on = bool(
+                current.get("lighting", {}).get("back_light", {}).get("on", False)
+            )
             patch = self._merge(
                 patch,
                 self.lighting.set_zone("under_sofa", "rainbow", "#FF00FF", 255),
             )
             patch = self._merge(patch, self.reading_light.set(False))
+            patch = self._merge(patch, self.back_light.set(False))
             patch = self._merge(patch, self.audio.set_volume(90))
             patch = self._merge(patch, {"mode": "party"})
 

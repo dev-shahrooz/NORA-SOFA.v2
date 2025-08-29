@@ -33,7 +33,7 @@ ACTIVE_LOW_BACK_LIGHT = (os.environ.get("BACK_LIGHT_ACTIVE_LOW", "0") == "1")
 gpio = GPIODriver(chip=0)  # /dev/gpiochip0
 reading_light_uc = SingleRelayUsecase(gpio_driver=gpio, name="reading_light", pin=GPIO_PIN_READING_LIGHT, active_low=ACTIVE_LOW_READING_LIGHT)
 back_light_uc = SingleRelayUsecase(gpio, name="back_light", pin=GPIO_PIN_BACK_LIGHT, active_low=ACTIVE_LOW_BACK_LIGHT)
-mode_uc = ModeUsecase(state, lighting, audio_uc, reading_light_uc)
+mode_uc = ModeUsecase(state, lighting, audio_uc, reading_light_uc, back_light_uc)
 router = ActionRouter(state, lighting, audio_uc, reading_light_uc, back_light_uc, mode_uc)
 
 
