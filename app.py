@@ -33,6 +33,9 @@ lighting = LightingService(esp)
 audio_service = AudioService()
 audio_uc = AudioUsecase(audio_service)
 # --- GPIO / Reading Light wiring ---
+GPIO_PIN_OPEN_RELAY = int(os.environ.get("OPEN_RELAY_PIN", open_relay))
+GPIO_PIN_CLOSE_RELAY = int(os.environ.get("CLOSE_RELAY_PIN", close_relay))
+GPIO_PIN_PARTY_MUTE = int(os.environ.get("PARTY_MUTE_PIN", party_mute))
 GPIO_PIN_READING_LIGHT = int(os.environ.get("READING_LIGHT_PIN", reading_light))
 ACTIVE_LOW_READING_LIGHT = (os.environ.get("READING_LIGHT_ACTIVE_LOW", "0") == "1")
 GPIO_PIN_BACK_LIGHT = int(os.environ.get("BACK_LIGHT_PIN", back_light))
@@ -40,7 +43,17 @@ ACTIVE_LOW_BACK_LIGHT = (os.environ.get("BACK_LIGHT_ACTIVE_LOW", "0") == "1")
 gpio = GPIODriver(chip=0)  # /dev/gpiochip0
 reading_light_uc = SingleRelayUsecase(gpio_driver=gpio, name="reading_light", pin=GPIO_PIN_READING_LIGHT, active_low=ACTIVE_LOW_READING_LIGHT)
 back_light_uc = SingleRelayUsecase(gpio, name="back_light", pin=GPIO_PIN_BACK_LIGHT, active_low=ACTIVE_LOW_BACK_LIGHT)
-mode_uc = ModeUsecase(state, lighting, audio_uc, reading_light_uc, back_light_uc, gpio)
+mode_uc = ModeUsecase(
+    state,
+    lighting,
+    audio_uc,
+    reading_light_uc,
+    back_light_uc,
+    gpio,
+    GPIO_PIN_OPEN_RELAY,
+    GPIO_PIN_CLOSE_RELAY,
+    GPIO_PIN_PARTY_MUTE,
+)
 router = ActionRouter(state, lighting, audio_uc, reading_light_uc, back_light_uc, mode_uc)
 
 

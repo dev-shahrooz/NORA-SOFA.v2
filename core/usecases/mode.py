@@ -13,17 +13,31 @@ class ModeUsecase:
     values are restored.
     """
 
-    def __init__(self, state_store, lighting_uc, audio_uc, reading_light_uc, back_light_uc, gpio_driver):
+    def __init__(
+        self,
+        state_store,
+        lighting_uc,
+        audio_uc,
+        reading_light_uc,
+        back_light_uc,
+        gpio_driver,
+        open_pin,
+        close_pin,
+        party_pin,
+    ):
         self.state_store = state_store
         self.lighting = lighting_uc
         self.audio = audio_uc
         self.reading_light = reading_light_uc
         self.back_light = back_light_uc
+        self.open_pin = open_pin
+        self.close_pin = close_pin
+        self.party_pin = party_pin
         self.gpio = gpio_driver
         self._saved_state: Dict[str, Any] | None = None
         self._saved_back_light_on: bool | None = None
          # Prepare GPIO pins for party mode indicators
-        for pin in (22, 24, 23):
+        for pin in (open_pin, party_pin, close_pin):
             try:
                 self.gpio.setup_output(pin, 0)
             except Exception:
@@ -44,10 +58,10 @@ class ModeUsecase:
         if current.get("mode") == "party":
             # Deactivate party mode GPIO sequence
             try:
-                self.gpio.write(24, 0)
-                self.gpio.write(23, 1)
+                self.gpio.write(self.party_pin, 0)
+                self.gpio.write(self.close_pin, 1)
                 time.sleep(8)
-                self.gpio.write(23, 0)
+                self.gpio.write(self.close_pin, 0)
             except Exception:
                 pass
 
@@ -76,10 +90,10 @@ class ModeUsecase:
         else:
             # Activate party mode GPIO sequence
             try:
-                self.gpio.write(22, 1)
+                self.gpio.write(self.open_pin, 1)
                 time.sleep(8)
-                self.gpio.write(22, 0)
-                self.gpio.write(24, 1)
+                self.gpio.write(self.open_pin, 0)
+                self.gpio.write(self.party_pin, 1)
             except Exception:
                 pass
             
