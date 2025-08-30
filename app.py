@@ -19,6 +19,13 @@ DB_PATH = os.environ.get("NORA_DB","C:/Users/Shahrooz/Desktop/nora-sofa-core/nor
 app = Flask(__name__, static_folder="ui", static_url_path="/ui")
 sio = SocketIO(app, cors_allowed_origins="*")
 
+open_relay = 22
+close_relay = 23
+reading_light = 17
+back_light = 18
+party_mute = 24
+
+
 state = StateStore(DB_PATH)
 bus = EventBus()
 esp = ESP32Link(port=os.environ.get("ESP_PORT","/dev/ttyUSB0"))
@@ -26,9 +33,9 @@ lighting = LightingService(esp)
 audio_service = AudioService()
 audio_uc = AudioUsecase(audio_service)
 # --- GPIO / Reading Light wiring ---
-GPIO_PIN_READING_LIGHT = int(os.environ.get("READING_LIGHT_PIN", "17"))
+GPIO_PIN_READING_LIGHT = int(os.environ.get("READING_LIGHT_PIN", reading_light))
 ACTIVE_LOW_READING_LIGHT = (os.environ.get("READING_LIGHT_ACTIVE_LOW", "0") == "1")
-GPIO_PIN_BACK_LIGHT = int(os.environ.get("BACK_LIGHT_PIN", "18"))
+GPIO_PIN_BACK_LIGHT = int(os.environ.get("BACK_LIGHT_PIN", back_light))
 ACTIVE_LOW_BACK_LIGHT = (os.environ.get("BACK_LIGHT_ACTIVE_LOW", "0") == "1")
 gpio = GPIODriver(chip=0)  # /dev/gpiochip0
 reading_light_uc = SingleRelayUsecase(gpio_driver=gpio, name="reading_light", pin=GPIO_PIN_READING_LIGHT, active_low=ACTIVE_LOW_READING_LIGHT)
