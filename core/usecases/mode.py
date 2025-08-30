@@ -21,23 +21,23 @@ class ModeUsecase:
         reading_light_uc,
         back_light_uc,
         gpio_driver,
-        open_pin,
-        close_pin,
-        party_pin,
+        open_box_uc,
+        close_box_uc,
+        party_mode_amp_uc,
     ):
         self.state_store = state_store
         self.lighting = lighting_uc
         self.audio = audio_uc
         self.reading_light = reading_light_uc
         self.back_light = back_light_uc
-        self.open_pin = open_pin
-        self.close_pin = close_pin
-        self.party_pin = party_pin
+        self.open_pin = open_box_uc
+        self.close_pin = close_box_uc
+        self.party_pin = party_mode_amp_uc
         self.gpio = gpio_driver
         self._saved_state: Dict[str, Any] | None = None
         self._saved_back_light_on: bool | None = None
          # Prepare GPIO pins for party mode indicators
-        for pin in (open_pin, party_pin, close_pin):
+        for pin in (open_box_uc, party_mode_amp_uc, close_box_uc):
             try:
                 self.gpio.setup_output(pin, 0)
             except Exception:

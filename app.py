@@ -19,11 +19,11 @@ DB_PATH = os.environ.get("NORA_DB","C:/Users/Shahrooz/Desktop/nora-sofa-core/nor
 app = Flask(__name__, static_folder="ui", static_url_path="/ui")
 sio = SocketIO(app, cors_allowed_origins="*")
 
-open_relay = 22
-close_relay = 23
-reading_light = 17
-back_light = 18
-party_mute = 24
+OPEN_BOX_PIN = 22
+CLOSE_BOX_PIN = 23
+PARTY_MODE_AMP_PIN = 24
+READING_LIGHT_PIN = 17
+BACK_LIGHT_PIN = 18
 
 
 state = StateStore(DB_PATH)
@@ -33,16 +33,17 @@ lighting = LightingService(esp)
 audio_service = AudioService()
 audio_uc = AudioUsecase(audio_service)
 # --- GPIO / Reading Light wiring ---
-GPIO_PIN_OPEN_RELAY = int(os.environ.get("OPEN_RELAY_PIN", open_relay))
-GPIO_PIN_CLOSE_RELAY = int(os.environ.get("CLOSE_RELAY_PIN", close_relay))
-GPIO_PIN_PARTY_MUTE = int(os.environ.get("PARTY_MUTE_PIN", party_mute))
-GPIO_PIN_READING_LIGHT = int(os.environ.get("READING_LIGHT_PIN", reading_light))
+READING_LIGHT = int(os.environ.get("READING_LIGHT_PIN", READING_LIGHT_PIN))
 ACTIVE_LOW_READING_LIGHT = (os.environ.get("READING_LIGHT_ACTIVE_LOW", "0") == "1")
-GPIO_PIN_BACK_LIGHT = int(os.environ.get("BACK_LIGHT_PIN", back_light))
+BACK_LIGHT = int(os.environ.get("BACK_LIGHT_PIN", BACK_LIGHT_PIN))
 ACTIVE_LOW_BACK_LIGHT = (os.environ.get("BACK_LIGHT_ACTIVE_LOW", "0") == "1")
 gpio = GPIODriver(chip=0)  # /dev/gpiochip0
-reading_light_uc = SingleRelayUsecase(gpio_driver=gpio, name="reading_light", pin=GPIO_PIN_READING_LIGHT, active_low=ACTIVE_LOW_READING_LIGHT)
-back_light_uc = SingleRelayUsecase(gpio, name="back_light", pin=GPIO_PIN_BACK_LIGHT, active_low=ACTIVE_LOW_BACK_LIGHT)
+
+open_box_uc = int(os.environ.get("OPEN_BOX_PIN", OPEN_BOX_PIN))
+close_box_uc = int(os.environ.get("CLOSE_RELAY_PIN", CLOSE_BOX_PIN))
+party_mode_amp_uc = int(os.environ.get("PARTY_MUTE_PIN", PARTY_MODE_AMP_PIN))
+reading_light_uc = SingleRelayUsecase(gpio_driver=gpio, name="reading_light", pin=READING_LIGHT, active_low=ACTIVE_LOW_READING_LIGHT)
+back_light_uc = SingleRelayUsecase(gpio, name="back_light", pin=BACK_LIGHT, active_low=ACTIVE_LOW_BACK_LIGHT)
 mode_uc = ModeUsecase(
     state,
     lighting,
@@ -50,9 +51,9 @@ mode_uc = ModeUsecase(
     reading_light_uc,
     back_light_uc,
     gpio,
-    GPIO_PIN_OPEN_RELAY,
-    GPIO_PIN_CLOSE_RELAY,
-    GPIO_PIN_PARTY_MUTE,
+    open_box_uc,
+    close_box_uc,
+    party_mode_amp_uc,
 )
 router = ActionRouter(state, lighting, audio_uc, reading_light_uc, back_light_uc, mode_uc)
 
