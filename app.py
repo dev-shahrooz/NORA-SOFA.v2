@@ -10,7 +10,9 @@ from core.usecases.lighting import LightingService
 from core.usecases.audio import AudioUsecase
 from core.usecases.relay import SingleRelayUsecase
 from core.usecases.mode import ModeUsecase
+from core.usecases.bluetooth import BluetoothUsecase
 from services.audio_service import AudioService
+from services.bluetooth_service import BluetoothService
 from drivers.esp32_link import ESP32Link
 from drivers.gpio_driver import GPIODriver                    
 
@@ -32,6 +34,8 @@ esp = ESP32Link(port=os.environ.get("ESP_PORT","/dev/ttyUSB0"))
 lighting = LightingService(esp)
 audio_service = AudioService()
 audio_uc = AudioUsecase(audio_service)
+bt_service = BluetoothService()
+bluetooth_uc = BluetoothUsecase(bt_service)
 # --- GPIO / Reading Light wiring ---
 READING_LIGHT = int(os.environ.get("READING_LIGHT_PIN", READING_LIGHT_PIN))
 ACTIVE_LOW_READING_LIGHT = (os.environ.get("READING_LIGHT_ACTIVE_LOW", "0") == "1")
@@ -55,7 +59,7 @@ mode_uc = ModeUsecase(
     close_box_uc,
     party_mode_amp_uc,
 )
-router = ActionRouter(state, lighting, audio_uc, reading_light_uc, back_light_uc, mode_uc)
+router = ActionRouter(state, lighting, audio_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc)
 
 
 @app.route("/")

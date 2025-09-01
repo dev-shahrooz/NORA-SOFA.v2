@@ -33,6 +33,9 @@ const backBtn = document.getElementById("back-toggle");
 const backStatus = document.getElementById("back-status");
 // ---- Party Mode Toggle ----
 const partyBtn = document.getElementById("party-toggle");
+// ---- Bluetooth Power Toggle ----
+const btBtn = document.getElementById("bt-toggle");
+const btStatus = document.getElementById("bt-status");
 
 function renderPartyMode(st) {
   const active = st.mode === "party";
@@ -43,9 +46,30 @@ function renderPartyMode(st) {
   }
 }
 
+function renderBluetooth(st) {
+  const on = !!st?.bluetooth?.on;
+  if (on) {
+    btBtn.textContent = "خاموش کردن بلوتوث";
+    btBtn.classList.add("on");
+    btStatus.textContent = "روشن";
+    btStatus.classList.add("on");
+  } else {
+    btBtn.textContent = "روشن کردن بلوتوث";
+    btBtn.classList.remove("on");
+    btStatus.textContent = "خاموش";
+    btStatus.classList.remove("on");
+  }
+}
+
 partyBtn.onclick = () => {
   send("mode.toggle");
 };
+
+btBtn.onclick = () => {
+  const next = !(btStatus.textContent === "روشن");
+  send("bluetooth.set", { on: next });
+};
+
 
 function renderBackLight(st) {
   const on = !!st?.lighting?.back_light?.on;
@@ -82,6 +106,7 @@ sio.on("sv.update", (st) => {
   renderReadingLight(st);
   renderBackLight(st);
   renderPartyMode(st);
+  renderBluetooth(st);
 });
 
 // Lighting apply

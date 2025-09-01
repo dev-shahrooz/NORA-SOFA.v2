@@ -33,6 +33,7 @@ DEFAULT_STATE = {
     },
     "audio": {"source":"bt","state":"stopped","title":"","artist":"","position":0,"duration":0,"volume":70},
     "mode": "normal",
+    "bluetooth": {"on": True},
 }
 
 class StateStore:
@@ -62,6 +63,7 @@ class StateStore:
             s["lighting"].setdefault("back_light", {"on": False})
             s.setdefault("schema", SCHEMA_VERSION)
             s.setdefault("mode", "normal")
+            s.setdefault("bluetooth", {"on": True})
             return s
 
     def apply_patch(self, patch: Dict[str, Any], source: str, action: str, payload: Dict[str, Any], corr_id: str = "") -> Dict[str, Any]:
