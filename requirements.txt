@@ -6,3 +6,4 @@ python-engineio
 pydantic
 msgpack
 pyserial
+lgpio
