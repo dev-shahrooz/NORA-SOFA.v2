@@ -14,7 +14,7 @@ from services.audio_service import AudioService
 from drivers.esp32_link import ESP32Link
 from drivers.gpio_driver import GPIODriver                    
 
-DB_PATH = os.environ.get("NORA_DB","C:/Users/Shahrooz/Desktop/nora-sofa-core/nora/data/nora.db")
+DB_PATH = os.environ.get("NORA_DB","/home/nora/apps/NORA-SOFA.v2/data/nora.db")
 
 app = Flask(__name__, static_folder="ui", static_url_path="/ui")
 sio = SocketIO(app, cors_allowed_origins="*")

@@ -1,0 +1,14 @@
+Created symlink /etc/systemd/system/multi-user.target.wants/wayvnc.service â†’ /lib/systemd/system/wayvnc.service.
+دستور فعال سازی vnc 
+_________________________________
+sudo apt update
+اپدیت کردن رزبری پای
+_________________________________
+از sudo raspi-config 
+گزینه interface option
+gpio 
+serial port
+ssh 
+vnc
+
+_________________________________
