@@ -1,8 +1,4 @@
-# nora/drivers/gpio_driver.py
-class GPIO:
-    @staticmethod
-    def set(pin: int, value: bool):
-        print(f"[GPIO] set {pin} -> {value}")
+
 
 
 
@@ -21,9 +17,9 @@ Behavior:
 - On real Pi, uses lgpio with an opened gpiochip handle.
 """
 import os
-from typing import Optional
+from typing import Optional, Set
 
-__all__ = ["GPIODriver"]
+__all__ = ["GPIODriver", "GPIO"]
 
 MOCK = os.environ.get("NORA_MOCK") == "1"
 
@@ -101,3 +97,40 @@ class GPIODriver:
 
     def __exit__(self, exc_type, exc, tb):
         self.close()
+
+
+
+class GPIO:
+    """Simple static wrapper around :class:`GPIODriver`.
+
+    This preserves the older GPIO.set API while delegating the actual work
+    to :class:`GPIODriver`, which uses the ``lgpio`` library when available.
+    Pins are claimed on first use and subsequently written without
+    reconfiguration.
+    """
+
+    _driver: Optional[GPIODriver] = None
+    _configured: Set[int] = set()
+
+    @classmethod
+    def _ensure_driver(cls) -> GPIODriver:
+        if cls._driver is None:
+            cls._driver = GPIODriver()
+        return cls._driver
+
+    @classmethod
+    def set(cls, pin: int, value: bool):
+        drv = cls._ensure_driver()
+        level = 1 if value else 0
+        if pin not in cls._configured:
+            drv.setup_output(pin, level)
+            cls._configured.add(pin)
+        else:
+            drv.write(pin, level)
+
+    @classmethod
+    def close(cls):
+        if cls._driver is not None:
+            cls._driver.close()
+            cls._driver = None
+            cls._configured.clear()
