@@ -1,7 +1,14 @@
 [Unit]
-Description=Nora Bluetooth Pairing Window
-After=bluetooth.service
+Description=Nora Bluetooth Pairing (GUI)
+Wants=bluetooth.service
+After=graphical.target bluetooth.service
 
 [Service]
 Type=oneshot
+User=pi
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
 ExecStart=/usr/local/bin/nora-bt-pair.sh 120
+
+[Install]
+WantedBy=graphical.target

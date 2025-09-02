@@ -1,14 +1,20 @@
 [Unit]
 Description=Nora Backend (Flask-SocketIO)
+Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=pi
-WorkingDirectory=/home/pi/nora
+User=nora
+WorkingDirectory=/home/nora/apps/NORA-SOFA.v2
+Environment=VIRTUAL_ENV=/home/nora/apps/NORA-SOFA.v2/.venv
+Environment=PATH=/home/nora/apps/NORA-SOFA.v2/.venv/bin:/usr/local/bin:/usr/bin
+Environment=PYTHONUNBUFFERED=1
 Environment=NORA_DB=/home/pi/nora.db
-ExecStart=/usr/bin/python3 -m nora.app
+ExecStart=/home/nora/apps/NORA-SOFA.v2/.venv/bin/python -m nora.app
 Restart=always
 RestartSec=2
+TimeoutStopSec=15
+SyslogIdentifier=nora-backend
 
 [Install]
 WantedBy=multi-user.target

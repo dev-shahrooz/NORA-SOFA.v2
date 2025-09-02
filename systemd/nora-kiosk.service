@@ -1,18 +1,27 @@
 [Unit]
-Description=Nora Kiosk UI
+Description=Nora Kiosk UI (Chromium)
 After=graphical.target nora-backend.service
+Wants=nora-backend.service
 
 [Service]
 User=pi
 Environment=DISPLAY=:0
-ExecStart=/usr/bin/chromium \
-  --app=http://127.0.0.1:8080 \
-  --kiosk --noerrdialogs --disable-session-crashed-bubble \
-  --autoplay-policy=no-user-gesture-required \
-  --incognito --overscroll-history-navigation=0 \
-  --disable-pinch --disable-translate
+Environment=XAUTHORITY=/home/pi/.Xauthority
+ExecStartPre=/usr/bin/unclutter -idle 0 -root
+ExecStart=/usr/bin/chromium-browser \
+  --kiosk \
+  --incognito \
+  --noerrdialogs \
+  --disable-session-crashed-bubble \
+  --disable-infobars \
+  --check-for-update-interval=31536000 \
+  --overscroll-history-navigation=0 \
+  --start-fullscreen \
+  --enable-features=OverlayScrollbar \
+  http://localhost:8080/
 Restart=always
 RestartSec=2
+Environment=CHROME_LOG_FILE=/home/pi/chromium.log
 
 [Install]
 WantedBy=graphical.target
