@@ -9,7 +9,7 @@ WorkingDirectory=/home/nora/apps/NORA-SOFA.v2
 Environment=VIRTUAL_ENV=/home/nora/apps/NORA-SOFA.v2/.venv
 Environment=PATH=/home/nora/apps/NORA-SOFA.v2/.venv/bin:/usr/local/bin:/usr/bin
 Environment=PYTHONUNBUFFERED=1
-Environment=NORA_DB=/home/pi/nora.db
+Environment=NORA_DB=/home/nora/apps/NORA-SOFA.v2/data/nora.db
 ExecStart=/home/nora/apps/NORA-SOFA.v2/.venv/bin/python /home/nora/apps/NORA-SOFA.v2/app.py
 Restart=always
 RestartSec=2
