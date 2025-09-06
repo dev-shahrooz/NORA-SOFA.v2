@@ -57,6 +57,12 @@ class ActionRouter:
             current_on = bool(current.get("bluetooth", {}).get("on", False))
             patch = self.bluetooth.toggle(current_on)
 
+        # --- Bluetooth pair ---
+        elif action == "bluetooth.pair":
+            seconds = int(payload.get("seconds", 120))
+            self.bluetooth.pair(seconds)
+            return self.state_store.apply_patch({}, source=source, action=action, payload=payload, corr_id=corr_id)
+
         # --- Mode Toggle ---
         elif action == "mode.toggle":
             patch = self.mode.toggle()

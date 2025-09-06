@@ -1,5 +1,7 @@
 from typing import Dict
 from services.bluetooth_service import BluetoothService
+from services.bt_pairing import start_pairing_window
+
 
 class BluetoothUsecase:
     def __init__(self, bt_service: BluetoothService):
@@ -11,3 +13,8 @@ class BluetoothUsecase:
 
     def toggle(self, current_on: bool) -> Dict:
         return self.set(not bool(current_on))
+
+    def pair(self, seconds: int = 120) -> Dict:
+        """Start a Bluetooth pairing window."""
+        start_pairing_window(seconds)
+        return {}
