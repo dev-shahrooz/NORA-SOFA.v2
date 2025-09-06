@@ -70,7 +70,6 @@ btBtn.onclick = () => {
   send("bluetooth.set", { on: next });
 };
 
-
 function renderBackLight(st) {
   const on = !!st?.lighting?.back_light?.on;
   if (on) {
@@ -110,9 +109,8 @@ document.getElementById("apply-light").onclick = () => {
   send("lighting.set", { zone, mode, color, brightness });
 };
 
-
 // Pairing
 document.getElementById("pair").onclick = () => {
-  fetch("/api/pair", { method: "POST" }).catch(() => {});
+  send("bluetooth.pair");
   alert("Pairing window opened for 120s");
 };
