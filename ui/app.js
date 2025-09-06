@@ -110,7 +110,15 @@ document.getElementById("apply-light").onclick = () => {
 };
 
 // Pairing
-document.getElementById("pair").onclick = () => {
-  send("bluetooth.pair");
-  alert("Pairing window opened for 120s");
+document.getElementById("pair").onclick = async () => {
+  try {
+    const res = await send("bluetooth.pair", { seconds: 120 });
+    if (res?.ok) {
+      alert(`Pairing mode ON for ${res.bluetooth?.seconds || 120}s`);
+    } else {
+      alert("Failed to start pairing: " + (res?.error || "unknown error"));
+    }
+  } catch (e) {
+    alert("Failed: " + e.message);
+  }
 };

@@ -59,9 +59,14 @@ class ActionRouter:
 
         # --- Bluetooth pair ---
         elif action == "bluetooth.pair":
+            payload = payload or {}
             seconds = int(payload.get("seconds", 120))
-            self.bluetooth.pair(seconds)
-            return self.state_store.apply_patch({}, source=source, action=action, payload=payload, corr_id=corr_id)
+            patch = self.bluetooth.pair(seconds)  # ← حالا از usecase می‌آید
+            self.state_store.apply_patch(
+                patch or {}, source=source, action=action, payload=payload, corr_id=corr_id
+            )
+            return {"ok": True, **(patch or {})}
+
 
         # --- Mode Toggle ---
         elif action == "mode.toggle":

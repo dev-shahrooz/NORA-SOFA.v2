@@ -30,3 +30,14 @@ class BluetoothService:
         except Exception:
             pass
         return False
+
+    def start_pair_mode(self, seconds: int) -> None:
+        """
+        Start pairing window via systemd template unit, non-blocking.
+        """
+        secs = max(10, min(int(seconds), 600))  # محدوده‌ی امن 10..600
+        # --no-block تا systemctl منتظر oneshot نشود و سرور قفل نکند
+        subprocess.run(
+            ["systemctl", "start", "--no-block", f"nora-bt-pair@{secs}.service"],
+            check=False
+        )
