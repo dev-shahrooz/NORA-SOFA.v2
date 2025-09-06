@@ -8,7 +8,7 @@ Type=oneshot
 User=nora
 Environment=DISPLAY=:0
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin
-ExecStart=/bin/bash -lc '/usr/local/bin/bt_pair.sh'
+ExecStart=/bin/bash -lc '/usr/local/bin/nora-bt-pair.sh'
 
 [Install]
 WantedBy=graphical.target
