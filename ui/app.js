@@ -95,14 +95,6 @@ backBtn.onclick = () => {
 sio.emit("ui.query", {});
 
 sio.on("sv.update", (st) => {
-  const t = document.getElementById("track");
-  const a = st.audio || {};
-  t.textContent = a.title
-    ? `${a.title} — ${a.artist}`
-    : a.source === "spotify"
-    ? "Spotify"
-    : "Bluetooth";
-  document.getElementById("volume").value = a.volume ?? 70;
   renderReadingLight(st);
   renderBackLight(st);
   renderPartyMode(st);
@@ -118,29 +110,9 @@ document.getElementById("apply-light").onclick = () => {
   send("lighting.set", { zone, mode, color, brightness });
 };
 
-// Source set
-document.getElementById("set-source").onclick = () => {
-  const src = [...document.querySelectorAll('input[name="source"]')].find(
-    (x) => x.checked
-  ).value;
-  send("audio.set_source", { source: src });
-};
 
 // Pairing
 document.getElementById("pair").onclick = () => {
   fetch("/api/pair", { method: "POST" }).catch(() => {});
   alert("Pairing window opened for 120s");
 };
-
-// Mini-player controls
-document.getElementById("play").onclick = () =>
-  send("audio.command", { op: "play_pause" });
-
-document.getElementById("next").onclick = () =>
-  send("audio.command", { op: "next" });
-
-document.getElementById("prev").onclick = () =>
-  send("audio.command", { op: "prev" });
-
-document.getElementById("volume").oninput = (e) =>
-  send("audio.set_volume", { volume: +e.target.value });

@@ -55,40 +55,16 @@
           <button id="apply-light">ثبت</button>
         </div>
         <hr />
-        <h2>صوت</h2>
-        <div>
-          منبع:
-          <label
-            ><input type="radio" name="source" value="bt" checked />
-            بلوتوث</label
-          >
-          <label
-            ><input type="radio" name="source" value="spotify" />
-            اسپاتیفای</label
-          >
-          <button id="set-source">اعمال منبع</button>
-        </div>
-        <div class="pair">
-          <button id="pair">Pair Bluetooth (120s)</button>
-        </div>
-                <hr />
         <h2>بلوتوث سیستم</h2>
         <div class="bt-power">
           <button id="bt-toggle" class="btn">خاموش کردن بلوتوث</button>
           <span id="bt-status" class="badge">روشن</span>
         </div>
+        <div class="pair">
+          <button id="pair">Pair Bluetooth (120s)</button>
+        </div>
       </section>
     </main>
-
-    <footer class="mini-player">
-      <div id="track">—</div>
-      <div class="controls">
-        <button id="prev">⏮</button>
-        <button id="play">⏯</button>
-        <button id="next">⏭</button>
-        <input type="range" id="volume" min="0" max="100" value="70" />
-      </div>
-    </footer>
 
     <script src="/ui/app.js"></script>
   </body>

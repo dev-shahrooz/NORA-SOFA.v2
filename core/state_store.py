@@ -31,7 +31,6 @@ DEFAULT_STATE = {
         "box": {"mode":"off","color":"#FFFFFF","brightness":128},
         "reading_light": {"on": False}    # ← جدید
     },
-    "audio": {"source":"bt","state":"stopped","title":"","artist":"","position":0,"duration":0,"volume":70},
     "mode": "normal",
     "bluetooth": {"on": True},
 }

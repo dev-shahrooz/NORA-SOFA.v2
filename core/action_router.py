@@ -4,10 +4,9 @@ from typing import Dict
 # from nora.core.usecases.reading_light import ReadingLightUsecase  # تزریق از app.py انجام می‌شود
 
 class ActionRouter:
-    def __init__(self, state_store, lighting_uc, audio_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc):
+    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc):
         self.state_store = state_store
         self.lighting = lighting_uc
-        self.audio = audio_uc
         self.reading_light = reading_light_uc
         self.back_light = back_light_uc
         self.mode = mode_uc
@@ -25,14 +24,6 @@ class ActionRouter:
                 color=payload.get("color","#FFFFFF"),
                 brightness=int(payload.get("brightness",128))
             )
-
-        # --- Audio (قدیمی) ---
-        elif action == "audio.set_source":
-            patch = self.audio.set_source(payload.get("source","bt"))
-        elif action == "audio.command":
-            patch = self.audio.command(payload.get("op","play_pause"))
-        elif action == "audio.set_volume":
-            patch = self.audio.set_volume(int(payload.get("volume",70)))
 
         # --- Reading Light (جدید) ---
         elif action == "reading_light.set":
