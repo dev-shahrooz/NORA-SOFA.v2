@@ -6,6 +6,7 @@ power on
 agent NoInputNoOutput
 default-agent
 system-alias "Nora Sofa"
+disconnect
 discoverable on
 pairable on
 EOF
@@ -13,4 +14,5 @@ sleep "$TIMEOUT"
 bluetoothctl <<EOF
 discoverable off
 pairable off
+scan off
 EOF
