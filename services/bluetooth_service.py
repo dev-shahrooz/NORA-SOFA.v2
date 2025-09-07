@@ -35,8 +35,8 @@ class BluetoothService:
         """Trigger Bluetooth unpair via systemd, non-blocking."""
         if MOCK:
             return
-        subprocess.run(
-            ["sudo", "systemctl", "start", "--no-block", "nora-bt-pair.service"],
+        ucmd = ["sudo", "systemctl", "start", "--no-block", "nora-bt-pair.service"]
+        subprocess.run(ucmd,
             check=False,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
