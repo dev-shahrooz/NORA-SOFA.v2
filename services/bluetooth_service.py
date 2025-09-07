@@ -38,6 +38,6 @@ class BluetoothService:
         secs = max(10, min(int(seconds), 600))  # محدوده‌ی امن 10..600
         # --no-block تا systemctl منتظر oneshot نشود و سرور قفل نکند
         subprocess.run(
-            ["systemctl", "start", "--no-block", f"nora-bt-pair@{secs}.service"],
+            ["sudo", "systemctl", "start", "--no-block", f"nora-bt-pair.service"],
             check=False
         )
