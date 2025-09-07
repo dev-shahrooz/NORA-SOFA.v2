@@ -109,16 +109,7 @@ document.getElementById("apply-light").onclick = () => {
   send("lighting.set", { zone, mode, color, brightness });
 };
 
-// Pairing
-document.getElementById("pair").onclick = async () => {
-  try {
-    const res = await send("bluetooth.pair", { seconds: 120 });
-    if (res?.ok) {
-      alert(`Pairing mode ON for ${res.bluetooth?.seconds || 120}s`);
-    } else {
-      alert("Failed to start pairing: " + (res?.error || "unknown error"));
-    }
-  } catch (e) {
-    alert("Failed: " + e.message);
-  }
+// Unpairing
+document.getElementById("unpair").onclick = () => {
+  send("bluetooth.unpair");
 };

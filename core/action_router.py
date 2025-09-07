@@ -57,11 +57,9 @@ class ActionRouter:
             current_on = bool(current.get("bluetooth", {}).get("on", False))
             patch = self.bluetooth.toggle(current_on)
 
-        # --- Bluetooth pair ---
-        elif action == "bluetooth.pair":
-            payload = payload or {}
-            seconds = int(payload.get("seconds", 120))
-            patch = self.bluetooth.pair(seconds)  # ← حالا از usecase می‌آید
+        # --- Bluetooth unpair ---
+        elif action == "bluetooth.unpair":
+            patch = self.bluetooth.unpair()
             self.state_store.apply_patch(
                 patch or {}, source=source, action=action, payload=payload, corr_id=corr_id
             )

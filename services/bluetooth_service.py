@@ -31,13 +31,13 @@ class BluetoothService:
             pass
         return False
 
-    def start_pair_mode(self, seconds: int) -> None:
-        """
-        Start pairing window via systemd template unit, non-blocking.
-        """
-        secs = max(10, min(int(seconds), 600))  # محدوده‌ی امن 10..600
-        # --no-block تا systemctl منتظر oneshot نشود و سرور قفل نکند
+    def unpair(self) -> None:
+        """Trigger Bluetooth unpair via systemd, non-blocking."""
+        if MOCK:
+            return
         subprocess.run(
-            ["sudo", "systemctl", "start", "--no-block", f"nora-bt-pair.service"],
-            check=False
+            ["sudo", "systemctl", "start", "--no-block", "nora-bt-pair.service"],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
