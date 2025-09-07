@@ -60,10 +60,7 @@ class ActionRouter:
         # --- Bluetooth unpair ---
         elif action == "bluetooth.unpair":
             patch = self.bluetooth.unpair()
-            self.state_store.apply_patch(
-                patch or {}, source=source, action=action, payload=payload, corr_id=corr_id
-            )
-            return {"ok": True, **(patch or {})}
+
 
 
         # --- Mode Toggle ---
