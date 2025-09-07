@@ -15,6 +15,19 @@ class BluetoothService:
         cmd = ["bluetoothctl", "power", "on" if on else "off"]
         try:
             subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if on:
+            # مثال: بلوتوث discoverable و pairable بشه
+                subprocess.run(["bluetoothctl", "discoverable", "on"], check=False)
+                subprocess.run(["bluetoothctl", "pairable", "on"], check=False)
+
+            # اگر بخوای یه سرویس هم استارت بشه
+            # subprocess.run(["systemctl", "start", "nora-bt-helper.service"], check=False)
+
+            else:
+            # وقتی خاموش میشه، برعکسش رو انجام بده
+                subprocess.run(["bluetoothctl", "discoverable", "off"], check=False)
+                subprocess.run(["bluetoothctl", "pairable", "off"], check=False)
+
         except Exception:
             pass
 
