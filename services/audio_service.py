@@ -14,9 +14,10 @@ class AudioService:
         if MOCK:
             self._mock_vol = volume
             return
+        rvolume = ["amixer", "sset", "Master", f"{volume}%"]
         try:
             subprocess.run(
-                ["amixer", "sset", "Master", f"{volume}%"],
+                rvolume,
                 check=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
