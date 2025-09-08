@@ -16,14 +16,16 @@ class AudioService:
             return
         rvolume = ["amixer", "sset", "Master", f"{volume}%"]
         try:
+
+            subprocess.run(rvolume, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             print("audio_service")
             print(rvolume)
-            subprocess.run(
-                rvolume,
-                check=False,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
+            # subprocess.run(
+            #     rvolume,
+            #     check=False,
+            #     stdout=subprocess.DEVNULL,
+            #     stderr=subprocess.DEVNULL,
+            # )
         except Exception:
             pass
 
