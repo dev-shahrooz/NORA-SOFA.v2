@@ -1,5 +1,6 @@
 # nora/app.py
 import os
+from typing import Any, Dict
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO, emit
 
@@ -55,6 +56,50 @@ mode_uc = ModeUsecase(
     party_mode_amp_uc,
 )
 router = ActionRouter(state, lighting, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc)
+
+def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
+    """Apply persisted state to physical hardware without mutating DB."""
+    lighting_state = s.get("lighting", {})
+    for zone in ("under_sofa", "box"):
+        z = lighting_state.get(zone)
+        if not z:
+            continue
+        try:
+            lighting.set_zone(
+                zone,
+                z.get("mode", "off"),
+                z.get("color", "#FFFFFF"),
+                int(z.get("brightness", 128)),
+            )
+        except Exception:
+            pass
+    try:
+        rl = lighting_state.get("reading_light", {})
+        reading_light_uc.set(bool(rl.get("on")))
+    except Exception:
+        pass
+    try:
+        bl = lighting_state.get("back_light", {})
+        back_light_uc.set(bool(bl.get("on")))
+    except Exception:
+        pass
+    try:
+        bluetooth_uc.set(bool(s.get("bluetooth", {}).get("on", True)))
+    except Exception:
+        pass
+
+
+def sync_hardware_from_state() -> None:
+    """Load last state from DB and broadcast it."""
+    current = state.get_state()
+    _apply_state_to_hardware(current)
+    try:
+        sio.emit("sv.update", current)
+    except Exception:
+        pass
+
+
+sync_hardware_from_state()
 
 
 @app.route("/")
