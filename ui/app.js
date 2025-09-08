@@ -125,5 +125,6 @@ document.getElementById("unpair").onclick = () => {
 volumeRange.oninput = () => {
   const vol = +volumeRange.value;
   volumeValue.textContent = vol;
+  console.log("Volume set to:", vol);
   send("audio.set_volume", { volume: vol });
 };
