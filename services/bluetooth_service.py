@@ -14,6 +14,8 @@ class BluetoothService:
             return
         cmd = ["bluetoothctl", "power", "on" if on else "off"]
         try:
+            print("bluetooth_service")
+            print(cmd)
             subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if on:
             # مثال: بلوتوث discoverable و pairable بشه
