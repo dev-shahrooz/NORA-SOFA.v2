@@ -10,5 +10,7 @@ class AudioUsecase:
 
     def set_volume(self, volume: int) -> Dict:
         volume = max(0, min(100, int(volume)))
+        print("audio.py")
+        print(volume)
         self.svc.set_volume(volume)
         return {"audio": {"volume": volume}}

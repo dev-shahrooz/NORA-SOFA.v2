@@ -16,6 +16,8 @@ class AudioService:
             return
         rvolume = ["amixer", "sset", "Master", f"{volume}%"]
         try:
+            print("audio_service")
+            print(rvolume)
             subprocess.run(
                 rvolume,
                 check=False,
