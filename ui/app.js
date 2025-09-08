@@ -36,6 +36,8 @@ const partyBtn = document.getElementById("party-toggle");
 // ---- Bluetooth Power Toggle ----
 const btBtn = document.getElementById("bt-toggle");
 const btStatus = document.getElementById("bt-status");
+const volumeRange = document.getElementById("volume");
+const volumeValue = document.getElementById("volume-value");
 
 function renderPartyMode(st) {
   const active = st.mode === "party";
@@ -59,6 +61,11 @@ function renderBluetooth(st) {
     btStatus.textContent = "خاموش";
     btStatus.classList.remove("on");
   }
+}
+function renderVolume(st) {
+  const vol = st?.audio?.volume ?? 0;
+  volumeRange.value = vol;
+  volumeValue.textContent = vol;
 }
 
 partyBtn.onclick = () => {
@@ -98,6 +105,7 @@ sio.on("sv.update", (st) => {
   renderBackLight(st);
   renderPartyMode(st);
   renderBluetooth(st);
+  renderVolume(st);
 });
 
 // Lighting apply
@@ -112,4 +120,10 @@ document.getElementById("apply-light").onclick = () => {
 // Unpairing
 document.getElementById("unpair").onclick = () => {
   send("bluetooth.unpair");
+};
+
+volumeRange.oninput = () => {
+  const vol = +volumeRange.value;
+  volumeValue.textContent = vol;
+  send("audio.set_volume", { volume: vol });
 };

@@ -4,13 +4,14 @@ from typing import Dict
 # from nora.core.usecases.reading_light import ReadingLightUsecase  # تزریق از app.py انجام می‌شود
 
 class ActionRouter:
-    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc):
+    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc):
         self.state_store = state_store
         self.lighting = lighting_uc
         self.reading_light = reading_light_uc
         self.back_light = back_light_uc
         self.mode = mode_uc
         self.bluetooth = bluetooth_uc
+        self.audio = audio_uc
 
 
     def handle(self, source: str, action: str, payload: Dict, corr_id: str = "") -> Dict:
@@ -61,7 +62,10 @@ class ActionRouter:
         elif action == "bluetooth.unpair":
             patch = self.bluetooth.unpair()
 
-
+        # --- Audio Volume ---
+        elif action == "audio.set_volume":
+            vol = int(payload.get("volume", 0))
+            patch = self.audio.set_volume(vol)
 
         # --- Mode Toggle ---
         elif action == "mode.toggle":
