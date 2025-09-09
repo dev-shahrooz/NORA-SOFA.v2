@@ -4,7 +4,7 @@ from typing import Dict
 # from nora.core.usecases.reading_light import ReadingLightUsecase  # تزریق از app.py انجام می‌شود
 
 class ActionRouter:
-    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc):
+    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc):
         self.state_store = state_store
         self.lighting = lighting_uc
         self.reading_light = reading_light_uc
@@ -12,6 +12,7 @@ class ActionRouter:
         self.mode = mode_uc
         self.bluetooth = bluetooth_uc
         self.audio = audio_uc
+        self.player = player_uc
 
 
     def handle(self, source: str, action: str, payload: Dict, corr_id: str = "") -> Dict:
@@ -66,6 +67,21 @@ class ActionRouter:
         elif action == "audio.set_volume":
             vol = int(payload.get("volume", 0))
             patch = self.audio.set_volume(vol)
+        # --- Media Player Controls ---
+        elif action == "player.play":
+            patch = self.player.play()
+
+        elif action == "player.pause":
+            patch = self.player.pause()
+
+        elif action == "player.next":
+            patch = self.player.next()
+
+        elif action == "player.previous":
+            patch = self.player.previous()
+
+        elif action == "player.info":
+            patch = self.player.info()
 
         # --- Mode Toggle ---
         elif action == "mode.toggle":

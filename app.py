@@ -12,8 +12,10 @@ from core.usecases.relay import SingleRelayUsecase
 from core.usecases.mode import ModeUsecase
 from core.usecases.bluetooth import BluetoothUsecase
 from core.usecases.audio import AudioUsecase
+from core.usecases.player import PlayerUsecase
 from services.bluetooth_service import BluetoothService
 from services.audio_service import AudioService
+from services.player_service import PlayerService
 from drivers.esp32_link import ESP32Link
 from drivers.gpio_driver import GPIODriver                    
 
@@ -37,6 +39,8 @@ bt_service = BluetoothService()
 bluetooth_uc = BluetoothUsecase(bt_service)
 audio_service = AudioService()
 audio_uc = AudioUsecase(audio_service)
+player_service = PlayerService()
+player_uc = PlayerUsecase(player_service)
 # --- GPIO / Reading Light wiring ---
 READING_LIGHT = int(os.environ.get("READING_LIGHT_PIN", READING_LIGHT_PIN))
 ACTIVE_LOW_READING_LIGHT = (os.environ.get("READING_LIGHT_ACTIVE_LOW", "0") == "1")
@@ -59,7 +63,7 @@ mode_uc = ModeUsecase(
     close_box_uc,
     party_mode_amp_uc,
 )
-router = ActionRouter(state, lighting, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc)
+router = ActionRouter(state, lighting, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc)
 
 def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
     """Apply persisted state to physical hardware without mutating DB."""
@@ -102,6 +106,8 @@ def sync_hardware_from_state() -> None:
     current = state.get_state()
     _apply_state_to_hardware(current)
     try:
+        patch = player_uc.info()
+        current = state.apply_patch(patch, source="system", action="player.info", payload={})
         sio.emit("sv.update", current)
     except Exception:
         pass
@@ -116,8 +122,10 @@ def index():
 
 @sio.on("ui.query")
 def on_query(data):
-    emit("sv.update", state.get_state())
-
+    patch = player_uc.info()
+    st = state.apply_patch(patch, source="ui", action="player.info", payload={})
+    emit("sv.update", st)
+    
 @sio.on("ui.intent")
 def on_intent(data):
     action = data.get("type","?")

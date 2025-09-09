@@ -38,6 +38,12 @@ const btBtn = document.getElementById("bt-toggle");
 const btStatus = document.getElementById("bt-status");
 const volumeRange = document.getElementById("volume");
 const volumeValue = document.getElementById("volume-value");
+const playBtn = document.getElementById("player-play");
+const pauseBtn = document.getElementById("player-pause");
+const nextBtn = document.getElementById("player-next");
+const prevBtn = document.getElementById("player-prev");
+const trackTitle = document.getElementById("track-title");
+const trackArtist = document.getElementById("track-artist");
 
 function renderPartyMode(st) {
   const active = st.mode === "party";
@@ -68,6 +74,12 @@ function renderVolume(st) {
   volumeValue.textContent = vol;
 }
 
+function renderPlayer(st) {
+  const p = st?.player || {};
+  trackTitle.textContent = p.title || "";
+  trackArtist.textContent = p.artist || "";
+}
+
 partyBtn.onclick = () => {
   send("mode.toggle");
 };
@@ -76,6 +88,12 @@ btBtn.onclick = () => {
   const next = !(btStatus.textContent === "روشن");
   send("bluetooth.set", { on: next });
 };
+
+playBtn.onclick = () => send("player.play");
+pauseBtn.onclick = () => send("player.pause");
+nextBtn.onclick = () => send("player.next");
+prevBtn.onclick = () => send("player.previous");
+
 
 function renderBackLight(st) {
   const on = !!st?.lighting?.back_light?.on;
@@ -106,6 +124,8 @@ sio.on("sv.update", (st) => {
   renderPartyMode(st);
   renderBluetooth(st);
   renderVolume(st);
+  renderPlayer(st);
+
 });
 
 // Lighting apply

@@ -33,8 +33,9 @@ DEFAULT_STATE = {
     },
     "mode": "normal",
     "bluetooth": {"on": True},
-        "audio": {"volume": 50},
-}
+    "audio": {"volume": 50},
+    "player": {"status": "Unknown", "title": "", "artist": ""},
+    }
 
 class StateStore:
     def __init__(self, db_path: str):
@@ -66,6 +67,10 @@ class StateStore:
             s.setdefault("bluetooth", {"on": True})
             s.setdefault("audio", {})
             s["audio"].setdefault("volume", 50)
+            s.setdefault("player", {})
+            s["player"].setdefault("status", "Unknown")
+            s["player"].setdefault("title", "")
+            s["player"].setdefault("artist", "")
             return s
 
     def apply_patch(self, patch: Dict[str, Any], source: str, action: str, payload: Dict[str, Any], corr_id: str = "") -> Dict[str, Any]:
