@@ -20,7 +20,7 @@ class WiFiService:
             if not on:
                 self._mock_ssid = ""
             return
-        cmd = ["nmcli", "radio", "wifi", "on" if on else "off"]
+        cmd = [ "sudo", "nmcli", "radio", "wifi", "on" if on else "off"]
         try:
             subprocess.run(
                 cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
