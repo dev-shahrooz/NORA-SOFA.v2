@@ -64,6 +64,20 @@
           <button id="unpair">Unpair Bluetooth</button>
         </div>
         <hr />
+
+        <h2>وای‌فای</h2>
+        <div class="wifi-power">
+          <button id="wifi-toggle" class="btn">روشن کردن وای‌فای</button>
+          <span id="wifi-status" class="badge">خاموش</span>
+          <button id="wifi-scan" class="btn">جستجو شبکه‌ها</button>
+        </div>
+        <div class="wifi-connected" style="display: none">
+          <span id="wifi-ssid"></span>
+          <button id="wifi-forget" class="btn">فراموش کردن</button>
+        </div>
+        <ul id="wifi-networks"></ul>
+        <hr />
+
         <h2>حجم صدا</h2>
         <div class="volume">
           <input type="range" id="volume" min="0" max="100" />

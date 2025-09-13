@@ -36,6 +36,16 @@ const partyBtn = document.getElementById("party-toggle");
 // ---- Bluetooth Power Toggle ----
 const btBtn = document.getElementById("bt-toggle");
 const btStatus = document.getElementById("bt-status");
+// ---- Wi-Fi Controls ----
+const wifiBtn = document.getElementById("wifi-toggle");
+const wifiStatus = document.getElementById("wifi-status");
+const wifiScanBtn = document.getElementById("wifi-scan");
+const wifiList = document.getElementById("wifi-networks");
+const wifiSSID = document.getElementById("wifi-ssid");
+const wifiForgetBtn = document.getElementById("wifi-forget");
+const wifiConnected = document.querySelector(".wifi-connected");
+let pendingSSID = null;
+let wifiScanRequested = false;
 const volumeRange = document.getElementById("volume");
 const volumeValue = document.getElementById("volume-value");
 const playBtn = document.getElementById("player-play");
@@ -68,6 +78,69 @@ function renderBluetooth(st) {
     btStatus.classList.remove("on");
   }
 }
+
+function renderWiFi(st) {
+  const wifi = st?.wifi || {};
+  const on = !!wifi.on;
+  if (on) {
+    wifiBtn.textContent = "خاموش کردن وای‌فای";
+    wifiBtn.classList.add("on");
+    wifiStatus.textContent = "روشن";
+    wifiStatus.classList.add("on");
+    wifiScanBtn.disabled = false;
+    if (!wifiScanRequested && !wifi.networks) {
+      wifiScanRequested = true;
+      send("wifi.scan");
+    }
+  } else {
+    wifiBtn.textContent = "روشن کردن وای‌فای";
+    wifiBtn.classList.remove("on");
+    wifiStatus.textContent = "خاموش";
+    wifiStatus.classList.remove("on");
+    wifiScanBtn.disabled = true;
+    wifiScanRequested = false;
+  }
+
+  // Connected network
+  if (wifi.connected) {
+    wifiSSID.textContent = wifi.ssid || "";
+    wifiForgetBtn.style.display = "inline";
+    wifiConnected.style.display = "flex";
+  } else {
+    wifiSSID.textContent = "";
+    wifiForgetBtn.style.display = "none";
+    wifiConnected.style.display = "none";
+  }
+
+  // Render network list
+  wifiList.innerHTML = "";
+  (wifi.networks || []).forEach((net) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.textContent = `${net.ssid} (${net.signal})`;
+    btn.className = "btn";
+    btn.onclick = () => connectSSID(net.ssid);
+    li.appendChild(btn);
+    wifiList.appendChild(li);
+  });
+
+  // handle pending connection result
+  if (pendingSSID) {
+    if (wifi.connected && wifi.ssid === pendingSSID) {
+      pendingSSID = null;
+    } else if (!wifi.connected && wifi.ssid === "") {
+      const pwd = prompt(
+        `اتصال ناموفق بود. رمز را دوباره وارد کنید برای ${pendingSSID}:`
+      );
+      if (pwd !== null) {
+        send("wifi.connect", { ssid: pendingSSID, password: pwd });
+      } else {
+        pendingSSID = null;
+      }
+    }
+  }
+}
+
 function renderVolume(st) {
   const vol = st?.audio?.volume ?? 0;
   volumeRange.value = vol;
@@ -89,11 +162,30 @@ btBtn.onclick = () => {
   send("bluetooth.set", { on: next });
 };
 
+wifiBtn.onclick = () => {
+  const next = !(wifiStatus.textContent === "روشن");
+  send("wifi.set", { on: next });
+};
+
+wifiScanBtn.onclick = () => send("wifi.scan");
+
+wifiForgetBtn.onclick = () => {
+  const ssid = wifiSSID.textContent;
+  if (ssid) send("wifi.forget", { ssid });
+};
+
+function connectSSID(ssid) {
+  const pwd = prompt(`رمز برای ${ssid}:`);
+  if (pwd !== null) {
+    pendingSSID = ssid;
+    send("wifi.connect", { ssid, password: pwd });
+  }
+}
+
 playBtn.onclick = () => send("player.play");
 pauseBtn.onclick = () => send("player.pause");
 nextBtn.onclick = () => send("player.next");
 prevBtn.onclick = () => send("player.previous");
-
 
 function renderBackLight(st) {
   const on = !!st?.lighting?.back_light?.on;
@@ -123,9 +215,9 @@ sio.on("sv.update", (st) => {
   renderBackLight(st);
   renderPartyMode(st);
   renderBluetooth(st);
+  renderWiFi(st);
   renderVolume(st);
   renderPlayer(st);
-
 });
 
 // Lighting apply

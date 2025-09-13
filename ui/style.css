@@ -8,3 +8,6 @@ input[type="range"]{width:160px}
 .btn.on { background:#224a1f; border-color:#2e6a29; }
 .badge { padding:4px 8px; border-radius:8px; background:#242a36; color:#cfd6e3; font-size:0.9rem; }
 .badge.on { background:#2a5a24; color:#e9ffe5; }
+#wifi-networks{list-style:none;padding:0;margin:8px 0}
+#wifi-networks li{margin:4px 0}
+.wifi-connected{display:flex;align-items:center;gap:10px;margin:8px 0}

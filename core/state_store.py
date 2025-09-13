@@ -32,6 +32,7 @@ DEFAULT_STATE = {
         "reading_light": {"on": False}    # ← جدید
     },
     "mode": "normal",
+    "wifi": {"on": True, "connected": False, "ssid": ""},
     "bluetooth": {"on": True},
     "audio": {"volume": 50},
     "player": {"status": "Unknown", "title": "", "artist": ""},
@@ -65,6 +66,10 @@ class StateStore:
             s.setdefault("schema", SCHEMA_VERSION)
             s.setdefault("mode", "normal")
             s.setdefault("bluetooth", {"on": True})
+            s.setdefault("wifi", {})
+            s["wifi"].setdefault("on", True)
+            s["wifi"].setdefault("connected", False)
+            s["wifi"].setdefault("ssid", "")
             s.setdefault("audio", {})
             s["audio"].setdefault("volume", 50)
             s.setdefault("player", {})

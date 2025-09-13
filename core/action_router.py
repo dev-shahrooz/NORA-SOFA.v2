@@ -4,7 +4,7 @@ from typing import Dict
 # from nora.core.usecases.reading_light import ReadingLightUsecase  # تزریق از app.py انجام می‌شود
 
 class ActionRouter:
-    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc):
+    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc):
         self.state_store = state_store
         self.lighting = lighting_uc
         self.reading_light = reading_light_uc
@@ -13,6 +13,7 @@ class ActionRouter:
         self.bluetooth = bluetooth_uc
         self.audio = audio_uc
         self.player = player_uc
+        self.wifi = wifi_uc
 
 
     def handle(self, source: str, action: str, payload: Dict, corr_id: str = "") -> Dict:
@@ -62,6 +63,32 @@ class ActionRouter:
         # --- Bluetooth unpair ---
         elif action == "bluetooth.unpair":
             patch = self.bluetooth.unpair()
+
+         # --- Wi-Fi Power ---
+        elif action == "wifi.set":
+            want_on = bool(payload.get("on"))
+            patch = self.wifi.set(want_on)
+
+        elif action == "wifi.toggle":
+            current = self.state_store.get_state()
+            current_on = bool(current.get("wifi", {}).get("on", False))
+            patch = self.wifi.toggle(current_on)
+
+        # --- Wi-Fi Scan ---
+        elif action == "wifi.scan":
+            patch = self.wifi.scan()
+
+        # --- Wi-Fi Connect ---
+        elif action == "wifi.connect":
+            ssid = payload.get("ssid", "")
+            password = payload.get("password", "")
+            patch = self.wifi.connect(ssid, password)
+
+        # --- Wi-Fi Forget ---
+        elif action == "wifi.forget":
+            ssid = payload.get("ssid", "")
+            patch = self.wifi.forget(ssid)
+
 
         # --- Audio Volume ---
         elif action == "audio.set_volume":
