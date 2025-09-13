@@ -34,7 +34,7 @@ class WiFiService:
             return {"on": self._mock_on, "ssid": self._mock_ssid}
         try:
             out = (
-                subprocess.check_output(["nmcli", "radio", "wifi"], text=True)
+                subprocess.check_output([ "sudo","nmcli", "radio", "wifi"], text=True)
                 .strip()
                 .lower()
             )
@@ -42,7 +42,7 @@ class WiFiService:
             ssid = ""
             if on:
                 out2 = subprocess.check_output(
-                    ["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"], text=True
+                    [ "sudo","nmcli", "-t", "-f", "active,ssid", "dev", "wifi"], text=True
                 )
                 for line in out2.splitlines():
                     active, name = line.split(":", 1)
@@ -60,7 +60,7 @@ class WiFiService:
             return [{"ssid": "MockAP", "signal": "70"}]
         try:
             out = subprocess.check_output(
-                ["nmcli", "-t", "-f", "ssid,signal", "dev", "wifi"], text=True
+                [ "sudo","nmcli", "-t", "-f", "ssid,signal", "dev", "wifi"], text=True
             )
             nets: List[Dict[str, str]] = []
             for line in out.splitlines():
@@ -84,7 +84,7 @@ class WiFiService:
             return False
         try:
             subprocess.check_call(
-                ["nmcli", "device", "wifi", "connect", ssid, "password", password],
+                [ "sudo","nmcli", "device", "wifi", "connect", ssid, "password", password],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
@@ -102,7 +102,7 @@ class WiFiService:
             return
         try:
             subprocess.run(
-                ["nmcli", "connection", "delete", ssid],
+                [ "sudo","nmcli", "connection", "delete", ssid],
                 check=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
