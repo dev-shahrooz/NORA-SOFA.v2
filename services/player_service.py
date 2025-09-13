@@ -21,11 +21,13 @@ class PlayerService:
 
     def play(self):
         # self._run("play")
+        print(play)
         subprocess.run(play, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
     def pause(self):
         # self._run("pause")
+        print(pause)
         subprocess.run(pause, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
