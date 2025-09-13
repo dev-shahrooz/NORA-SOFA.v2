@@ -3,8 +3,6 @@ import subprocess
 
 MOCK = os.environ.get("NORA_MOCK") == "1"
     
-play = ["playerctl", "play"]
-pause = ["playerctl", "pause"]
 
 class PlayerService:
     """Control media playback via playerctl."""
@@ -20,16 +18,10 @@ class PlayerService:
             pass
 
     def play(self):
-        # self._run("play")
-        print(play)
-        subprocess.run(play, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
+        self._run("play")
 
     def pause(self):
-        # self._run("pause")
-        print(pause)
-        subprocess.run(pause, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
+        self._run("pause")
 
     def next(self):
         self._run("next")
