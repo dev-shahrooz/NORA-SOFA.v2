@@ -107,5 +107,6 @@ class WiFiService:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
+            
         except Exception:
             pass
