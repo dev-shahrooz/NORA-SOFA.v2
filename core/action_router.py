@@ -114,6 +114,9 @@ class ActionRouter:
         elif action == "mode.toggle":
             patch = self.mode.toggle()
 
+        elif action == "ui.set_lang":
+            lang = payload.get("lang", "en")
+            patch = {"lang": lang}
         
         # --- Default ---
         else:

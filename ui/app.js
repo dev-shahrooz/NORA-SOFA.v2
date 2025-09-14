@@ -4,39 +4,213 @@ function send(type, payload = {}) {
   sio.emit("ui.intent", { type, payload, corr_id: String(Date.now()) });
 }
 
-// ---- Reading Light: Toggle ----
-const readingBtn = document.getElementById("reading-toggle");
-const readingStatus = document.getElementById("reading-status");
-
-function renderReadingLight(st) {
-  const on = !!st?.lighting?.reading_light?.on;
-  if (on) {
-    readingBtn.textContent = "خاموش کردن چراغ";
-    readingBtn.classList.add("on");
-    readingStatus.textContent = "روشن";
-    readingStatus.classList.add("on");
-  } else {
-    readingBtn.textContent = "روشن کردن چراغ";
-    readingBtn.classList.remove("on");
-    readingStatus.textContent = "خاموش";
-    readingStatus.classList.remove("on");
-  }
-}
-
-readingBtn.onclick = () => {
-  const next = !(readingStatus.textContent === "روشن");
-  send("reading_light.set", { on: next });
+const translations = {
+  fa: {
+    reading_light_title: "چراغ مطالعه",
+    reading_light_turn_on: "روشن کردن چراغ",
+    reading_light_turn_off: "خاموش کردن چراغ",
+    status_on: "روشن",
+    status_off: "خاموش",
+    back_light_title: "چراغ پشت (Back Light)",
+    back_light_turn_on: "روشن کردن چراغ پشت",
+    back_light_turn_off: "خاموش کردن چراغ پشت",
+    party_mode: "Party Mode",
+    under_sofa_title: "نور زیر مبل",
+    zone_label: "زون:",
+    zone_under_sofa: "زیر مبل",
+    zone_box: "باکس",
+    mode_label: "حالت:",
+    mode_off: "خاموش",
+    mode_rainbow: "رینبو",
+    mode_static: "رنگ ثابت",
+    mode_eq: "اکولایزر",
+    color_label: "رنگ:",
+    brightness_label: "روشنایی:",
+    apply_light: "ثبت",
+    bluetooth_title: "بلوتوث سیستم",
+    bluetooth_turn_on: "روشن کردن بلوتوث",
+    bluetooth_turn_off: "خاموش کردن بلوتوث",
+    bluetooth_unpair: "Unpair Bluetooth",
+    wifi_title: "وای‌فای",
+    wifi_turn_on: "روشن کردن وای‌فای",
+    wifi_turn_off: "خاموش کردن وای‌فای",
+    wifi_scan: "جستجو شبکه‌ها",
+    wifi_forget: "فراموش کردن",
+    wifi_password_prompt: "رمز برای {ssid}:",
+    wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
+    volume_title: "حجم صدا",
+    media_player_title: "مدیا پلیر",
+    player_prev: "قبلی",
+    player_play: "پلی",
+    player_pause: "پاز",
+    player_next: "بعدی",
+  },
+  en: {
+    reading_light_title: "Reading Light",
+    reading_light_turn_on: "Turn on light",
+    reading_light_turn_off: "Turn off light",
+    status_on: "On",
+    status_off: "Off",
+    back_light_title: "Back Light",
+    back_light_turn_on: "Turn on back light",
+    back_light_turn_off: "Turn off back light",
+    party_mode: "Party Mode",
+    under_sofa_title: "Under-sofa Lights",
+    zone_label: "Zone:",
+    zone_under_sofa: "Under sofa",
+    zone_box: "Box",
+    mode_label: "Mode:",
+    mode_off: "Off",
+    mode_rainbow: "Rainbow",
+    mode_static: "Static color",
+    mode_eq: "Equalizer",
+    color_label: "Color:",
+    brightness_label: "Brightness:",
+    apply_light: "Apply",
+    bluetooth_title: "System Bluetooth",
+    bluetooth_turn_on: "Turn on Bluetooth",
+    bluetooth_turn_off: "Turn off Bluetooth",
+    bluetooth_unpair: "Unpair Bluetooth",
+    wifi_title: "Wi-Fi",
+    wifi_turn_on: "Turn on Wi-Fi",
+    wifi_turn_off: "Turn off Wi-Fi",
+    wifi_scan: "Scan Networks",
+    wifi_forget: "Forget",
+    wifi_password_prompt: "Password for {ssid}:",
+    wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
+    volume_title: "Volume",
+    media_player_title: "Media Player",
+    player_prev: "Previous",
+    player_play: "Play",
+    player_pause: "Pause",
+    player_next: "Next",
+  },
+  tr: {
+    reading_light_title: "Okuma Lambası",
+    reading_light_turn_on: "Lambayı aç",
+    reading_light_turn_off: "Lambayı kapat",
+    status_on: "Açık",
+    status_off: "Kapalı",
+    back_light_title: "Arka Işık",
+    back_light_turn_on: "Arka ışığı aç",
+    back_light_turn_off: "Arka ışığı kapat",
+    party_mode: "Parti Modu",
+    under_sofa_title: "Koltuk Altı Işıkları",
+    zone_label: "Bölge:",
+    zone_under_sofa: "Koltuk altı",
+    zone_box: "Kutu",
+    mode_label: "Mod:",
+    mode_off: "Kapalı",
+    mode_rainbow: "Gökkuşağı",
+    mode_static: "Sabit renk",
+    mode_eq: "Ekolayzır",
+    color_label: "Renk:",
+    brightness_label: "Parlaklık:",
+    apply_light: "Uygula",
+    bluetooth_title: "Sistem Bluetooth'u",
+    bluetooth_turn_on: "Bluetooth'u aç",
+    bluetooth_turn_off: "Bluetooth'u kapat",
+    bluetooth_unpair: "Bluetooth eşlemesini kaldır",
+    wifi_title: "Wi-Fi",
+    wifi_turn_on: "Wi-Fi'yi aç",
+    wifi_turn_off: "Wi-Fi'yi kapat",
+    wifi_scan: "Ağları Tara",
+    wifi_forget: "Unut",
+    wifi_password_prompt: "{ssid} için parola:",
+    wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
+    volume_title: "Ses",
+    media_player_title: "Medya Oynatıcı",
+    player_prev: "Önceki",
+    player_play: "Oynat",
+    player_pause: "Duraklat",
+    player_next: "Sonraki",
+  },
+  ar: {
+    reading_light_title: "مصباح القراءة",
+    reading_light_turn_on: "تشغيل المصباح",
+    reading_light_turn_off: "إيقاف المصباح",
+    status_on: "تشغيل",
+    status_off: "إيقاف",
+    back_light_title: "الإضاءة الخلفية",
+    back_light_turn_on: "تشغيل الإضاءة الخلفية",
+    back_light_turn_off: "إيقاف الإضاءة الخلفية",
+    party_mode: "وضع الحفلة",
+    under_sofa_title: "إضاءة تحت الأريكة",
+    zone_label: "منطقة:",
+    zone_under_sofa: "تحت الأريكة",
+    zone_box: "الصندوق",
+    mode_label: "وضع:",
+    mode_off: "إيقاف",
+    mode_rainbow: "قوس قزح",
+    mode_static: "لون ثابت",
+    mode_eq: "موازن",
+    color_label: "لون:",
+    brightness_label: "السطوع:",
+    apply_light: "تطبيق",
+    bluetooth_title: "بلوتوث النظام",
+    bluetooth_turn_on: "تشغيل البلوتوث",
+    bluetooth_turn_off: "إيقاف البلوتوث",
+    bluetooth_unpair: "إلغاء اقتران البلوتوث",
+    wifi_title: "واي فاي",
+    wifi_turn_on: "تشغيل الواي فاي",
+    wifi_turn_off: "إيقاف الواي فاي",
+    wifi_scan: "مسح الشبكات",
+    wifi_forget: "نسيان",
+    wifi_password_prompt: "كلمة المرور لـ {ssid}:",
+    wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
+    volume_title: "مستوى الصوت",
+    media_player_title: "مشغل الوسائط",
+    player_prev: "السابق",
+    player_play: "تشغيل",
+    player_pause: "إيقاف مؤقت",
+    player_next: "التالي",
+  },
 };
 
-// ---- Back Light: Toggle via set(on:bool) ----
+let currentLang = "fa";
+let lastState = {};
+
+function t(key, vars = {}) {
+  let str = translations[currentLang][key] || key;
+  Object.keys(vars).forEach((k) => {
+    str = str.replace(`{${k}}`, vars[k]);
+  });
+  return str;
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = ["fa", "ar"].includes(currentLang)
+    ? "rtl"
+    : "ltr";
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+  renderReadingLight(lastState);
+  renderBackLight(lastState);
+  renderPartyMode(lastState);
+  renderBluetooth(lastState);
+  renderWiFi(lastState);
+  renderVolume(lastState);
+  renderPlayer(lastState);
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  applyTranslations();
+  send("ui.set_lang", { lang });
+}
+
+// ---- UI Elements ----
+const langSelect = document.getElementById("lang-select");
+const readingBtn = document.getElementById("reading-toggle");
+const readingStatus = document.getElementById("reading-status");
 const backBtn = document.getElementById("back-toggle");
 const backStatus = document.getElementById("back-status");
-// ---- Party Mode Toggle ----
 const partyBtn = document.getElementById("party-toggle");
-// ---- Bluetooth Power Toggle ----
 const btBtn = document.getElementById("bt-toggle");
 const btStatus = document.getElementById("bt-status");
-// ---- Wi-Fi Controls ----
 const wifiBtn = document.getElementById("wifi-toggle");
 const wifiStatus = document.getElementById("wifi-status");
 const wifiScanBtn = document.getElementById("wifi-scan");
@@ -55,6 +229,22 @@ const prevBtn = document.getElementById("player-prev");
 const trackTitle = document.getElementById("track-title");
 const trackArtist = document.getElementById("track-artist");
 
+// ---- Rendering Functions ----
+function renderReadingLight(st) {
+  const on = !!st?.lighting?.reading_light?.on;
+  if (on) {
+    readingBtn.textContent = t("reading_light_turn_off");
+    readingBtn.classList.add("on");
+    readingStatus.textContent = t("status_on");
+    readingStatus.classList.add("on");
+  } else {
+    readingBtn.textContent = t("reading_light_turn_on");
+    readingBtn.classList.remove("on");
+    readingStatus.textContent = t("status_off");
+    readingStatus.classList.remove("on");
+  }
+}
+
 function renderPartyMode(st) {
   const active = st.mode === "party";
   if (active) {
@@ -67,14 +257,14 @@ function renderPartyMode(st) {
 function renderBluetooth(st) {
   const on = !!st?.bluetooth?.on;
   if (on) {
-    btBtn.textContent = "خاموش کردن بلوتوث";
+    btBtn.textContent = t("bluetooth_turn_off");
     btBtn.classList.add("on");
-    btStatus.textContent = "روشن";
+    btStatus.textContent = t("status_on");
     btStatus.classList.add("on");
   } else {
-    btBtn.textContent = "روشن کردن بلوتوث";
+    btBtn.textContent = t("bluetooth_turn_on");
     btBtn.classList.remove("on");
-    btStatus.textContent = "خاموش";
+    btStatus.textContent = t("status_off");
     btStatus.classList.remove("on");
   }
 }
@@ -83,9 +273,9 @@ function renderWiFi(st) {
   const wifi = st?.wifi || {};
   const on = !!wifi.on;
   if (on) {
-    wifiBtn.textContent = "خاموش کردن وای‌فای";
+    wifiBtn.textContent = t("wifi_turn_off");
     wifiBtn.classList.add("on");
-    wifiStatus.textContent = "روشن";
+    wifiStatus.textContent = t("status_on");
     wifiStatus.classList.add("on");
     wifiScanBtn.disabled = false;
     if (!wifiScanRequested && !wifi.networks) {
@@ -93,9 +283,9 @@ function renderWiFi(st) {
       send("wifi.scan");
     }
   } else {
-    wifiBtn.textContent = "روشن کردن وای‌فای";
+    wifiBtn.textContent = t("wifi_turn_on");
     wifiBtn.classList.remove("on");
-    wifiStatus.textContent = "خاموش";
+    wifiStatus.textContent = t("status_off");
     wifiStatus.classList.remove("on");
     wifiScanBtn.disabled = true;
     wifiScanRequested = false;
@@ -129,9 +319,7 @@ function renderWiFi(st) {
     if (wifi.connected && wifi.ssid === pendingSSID) {
       pendingSSID = null;
     } else if (!wifi.connected && wifi.ssid === "") {
-      const pwd = prompt(
-        `اتصال ناموفق بود. رمز را دوباره وارد کنید برای ${pendingSSID}:`
-      );
+      const pwd = prompt(t("wifi_fail_prompt", { ssid: pendingSSID }));
       if (pwd !== null) {
         send("wifi.connect", { ssid: pendingSSID, password: pwd });
       } else {
@@ -153,17 +341,38 @@ function renderPlayer(st) {
   trackArtist.textContent = p.artist || "";
 }
 
+function renderBackLight(st) {
+  const on = !!st?.lighting?.back_light?.on;
+  if (on) {
+    backBtn.textContent = t("back_light_turn_off");
+    backBtn.classList.add("on");
+    backStatus.textContent = t("status_on");
+    backStatus.classList.add("on");
+  } else {
+    backBtn.textContent = t("back_light_turn_on");
+    backBtn.classList.remove("on");
+    backStatus.textContent = t("status_off");
+    backStatus.classList.remove("on");
+  }
+}
+
+// ---- Event Handlers ----
+readingBtn.onclick = () => {
+  const next = !readingStatus.classList.contains("on");
+  send("reading_light.set", { on: next });
+};
+
 partyBtn.onclick = () => {
   send("mode.toggle");
 };
 
 btBtn.onclick = () => {
-  const next = !(btStatus.textContent === "روشن");
+  const next = !btStatus.classList.contains("on");
   send("bluetooth.set", { on: next });
 };
 
 wifiBtn.onclick = () => {
-  const next = !(wifiStatus.textContent === "روشن");
+  const next = !wifiStatus.classList.contains("on");
   send("wifi.set", { on: next });
 };
 
@@ -175,7 +384,7 @@ wifiForgetBtn.onclick = () => {
 };
 
 function connectSSID(ssid) {
-  const pwd = prompt(`رمز برای ${ssid}:`);
+  const pwd = prompt(t("wifi_password_prompt", { ssid }));
   if (pwd !== null) {
     pendingSSID = ssid;
     send("wifi.connect", { ssid, password: pwd });
@@ -187,23 +396,8 @@ pauseBtn.onclick = () => send("player.pause");
 nextBtn.onclick = () => send("player.next");
 prevBtn.onclick = () => send("player.previous");
 
-function renderBackLight(st) {
-  const on = !!st?.lighting?.back_light?.on;
-  if (on) {
-    backBtn.textContent = "خاموش کردن چراغ پشت";
-    backBtn.classList.add("on");
-    backStatus.textContent = "روشن";
-    backStatus.classList.add("on");
-  } else {
-    backBtn.textContent = "روشن کردن چراغ پشت";
-    backBtn.classList.remove("on");
-    backStatus.textContent = "خاموش";
-    backStatus.classList.remove("on");
-  }
-}
-
 backBtn.onclick = () => {
-  const next = !(backStatus.textContent === "روشن");
+  const next = !backStatus.classList.contains("on");
   send("back_light.set", { on: next });
 };
 
@@ -211,6 +405,14 @@ backBtn.onclick = () => {
 sio.emit("ui.query", {});
 
 sio.on("sv.update", (st) => {
+  lastState = st;
+  if (st.lang && st.lang !== currentLang) {
+    currentLang = st.lang;
+    if (langSelect) {
+      langSelect.value = currentLang;
+    }
+    applyTranslations();
+  }
   renderReadingLight(st);
   renderBackLight(st);
   renderPartyMode(st);
@@ -240,3 +442,10 @@ volumeRange.oninput = () => {
   console.log("Volume set to:", vol);
   send("audio.set_volume", { volume: vol });
 };
+
+// Initialize language selector and translations
+if (langSelect) {
+  langSelect.value = currentLang;
+  langSelect.onchange = (e) => setLang(e.target.value);
+}
+applyTranslations();

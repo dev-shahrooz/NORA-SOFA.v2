@@ -36,6 +36,7 @@ DEFAULT_STATE = {
     "bluetooth": {"on": True},
     "audio": {"volume": 50},
     "player": {"status": "Unknown", "title": "", "artist": ""},
+    "lang": "en",
     }
 
 class StateStore:
@@ -76,6 +77,8 @@ class StateStore:
             s["player"].setdefault("status", "Unknown")
             s["player"].setdefault("title", "")
             s["player"].setdefault("artist", "")
+            s.setdefault("lang", "en")
+
             return s
 
     def apply_patch(self, patch: Dict[str, Any], source: str, action: str, payload: Dict[str, Any], corr_id: str = "") -> Dict[str, Any]:

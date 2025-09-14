@@ -10,92 +10,139 @@
   <body>
     <main>
       <section class="controls">
+        <div class="lang-select">
+          <select id="lang-select">
+            <option value="fa">فارسی</option>
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+            <option value="ar">العربية</option>
+          </select>
+        </div>
         <!-- Reading Light -->
-        <h2>چراغ مطالعه</h2>
+        <h2 data-i18n="reading_light_title">چراغ مطالعه</h2>
         <div class="reading-light">
-          <button id="reading-toggle" class="btn">روشن کردن چراغ</button>
-          <span id="reading-status" class="badge">خاموش</span>
+          <button
+            id="reading-toggle"
+            class="btn"
+            data-i18n="reading_light_turn_on"
+          >
+            روشن کردن چراغ
+          </button>
+          <span id="reading-status" class="badge" data-i18n="status_off"
+            >خاموش</span
+          >
         </div>
         <hr />
 
-        <h2>چراغ پشت (Back Light)</h2>
+        <h2 data-i18n="back_light_title">چراغ پشت (Back Light)</h2>
         <div class="back-light">
-          <button id="back-toggle" class="btn">روشن کردن چراغ پشت</button>
-          <span id="back-status" class="badge">خاموش</span>
+          <button id="back-toggle" class="btn" data-i18n="back_light_turn_on">
+            روشن کردن چراغ پشت
+          </button>
+          <span id="back-status" class="badge" data-i18n="status_off"
+            >خاموش</span
+          >
         </div>
         <hr />
         <div class="party-mode">
-          <button id="party-toggle" class="btn">Party Mode</button>
+          <button id="party-toggle" class="btn" data-i18n="party_mode">
+            Party Mode
+          </button>
         </div>
         <hr />
 
-        <h2>نور زیر مبل</h2>
+        <h2 data-i18n="under_sofa_title">نور زیر مبل</h2>
         <div>
-          <label
-            >زون:
+          <label>
+            <span data-i18n="zone_label">زون:</span>
             <select id="zone">
-              <option value="under_sofa">زیر مبل</option>
-              <option value="box">باکس</option>
+              <option value="under_sofa" data-i18n="zone_under_sofa">
+                زیر مبل
+              </option>
+              <option value="box" data-i18n="zone_box">باکس</option>
             </select>
           </label>
-          <label
-            >حالت:
+          <label>
+            <span data-i18n="mode_label">حالت:</span>
             <select id="mode">
-              <option value="off">خاموش</option>
-              <option value="rainbow">رینبو</option>
-              <option value="static">رنگ ثابت</option>
-              <option value="eq">اکولایزر</option>
+              <option value="off" data-i18n="mode_off">خاموش</option>
+              <option value="rainbow" data-i18n="mode_rainbow">رینبو</option>
+              <option value="static" data-i18n="mode_static">رنگ ثابت</option>
+              <option value="eq" data-i18n="mode_eq">اکولایزر</option>
             </select>
           </label>
-          <label>رنگ: <input type="color" id="color" value="#ffffff" /></label>
           <label
-            >روشنایی:
-            <input type="range" id="brightness" min="0" max="255" value="128"
+            ><span data-i18n="color_label">رنگ:</span>
+            <input type="color" id="color" value="#ffffff"
           /></label>
-          <button id="apply-light">ثبت</button>
+          <label
+            ><span data-i18n="brightness_label">روشنایی:</span>
+            <input type="range" id="brightness" min="0" max="255" value="128" />
+          </label>
+          <button id="apply-light" data-i18n="apply_light">ثبت</button>
         </div>
         <hr />
-        <h2>بلوتوث سیستم</h2>
+        <h2 data-i18n="bluetooth_title">بلوتوث سیستم</h2>
         <div class="bt-power">
-          <button id="bt-toggle" class="btn">خاموش کردن بلوتوث</button>
-          <span id="bt-status" class="badge">روشن</span>
+          <button id="bt-toggle" class="btn" data-i18n="bluetooth_turn_off">
+            خاموش کردن بلوتوث
+          </button>
+          <span id="bt-status" class="badge" data-i18n="status_on">روشن</span>
         </div>
         <div class="unpair">
-          <button id="unpair">Unpair Bluetooth</button>
+          <button id="unpair" data-i18n="bluetooth_unpair">
+            Unpair Bluetooth
+          </button>
         </div>
         <hr />
 
-        <h2>وای‌فای</h2>
+        <h2 data-i18n="wifi_title">وای‌فای</h2>
         <div class="wifi-power">
-          <button id="wifi-toggle" class="btn">روشن کردن وای‌فای</button>
-          <span id="wifi-status" class="badge">خاموش</span>
-          <button id="wifi-scan" class="btn">جستجو شبکه‌ها</button>
+          <button id="wifi-toggle" class="btn" data-i18n="wifi_turn_on">
+            روشن کردن وای‌فای
+          </button>
+          <span id="wifi-status" class="badge" data-i18n="status_off"
+            >خاموش</span
+          >
+          <button id="wifi-scan" class="btn" data-i18n="wifi_scan">
+            جستجو شبکه‌ها
+          </button>
         </div>
         <div class="wifi-connected" style="display: none">
           <span id="wifi-ssid"></span>
-          <button id="wifi-forget" class="btn">فراموش کردن</button>
+          <button id="wifi-forget" class="btn" data-i18n="wifi_forget">
+            فراموش کردن
+          </button>
         </div>
         <ul id="wifi-networks"></ul>
         <hr />
 
-        <h2>حجم صدا</h2>
+        <h2 data-i18n="volume_title">حجم صدا</h2>
         <div class="volume">
           <input type="range" id="volume" min="0" max="100" />
           <span id="volume-value">0</span>
         </div>
 
         <hr />
-        <h2>مدیا پلیر</h2>
+        <h2 data-i18n="media_player_title">مدیا پلیر</h2>
         <div class="player">
           <div class="info">
             <span id="track-title"></span>
             <span id="track-artist"></span>
           </div>
           <div class="controls">
-            <button id="player-prev" class="btn">قبلی</button>
-            <button id="player-play" class="btn">پلی</button>
-            <button id="player-pause" class="btn">پاز</button>
-            <button id="player-next" class="btn">بعدی</button>
+            <button id="player-prev" class="btn" data-i18n="player_prev">
+              قبلی
+            </button>
+            <button id="player-play" class="btn" data-i18n="player_play">
+              پلی
+            </button>
+            <button id="player-pause" class="btn" data-i18n="player_pause">
+              پاز
+            </button>
+            <button id="player-next" class="btn" data-i18n="player_next">
+              بعدی
+            </button>
           </div>
         </div>
       </section>
