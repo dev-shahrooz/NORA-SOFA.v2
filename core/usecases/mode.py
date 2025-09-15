@@ -1,46 +1,23 @@
 # nora/core/usecases/mode.py
 from typing import Dict, Any
-import time
 
 from core.state_store import DEFAULT_STATE
 
 
 class ModeUsecase:
-    """Toggle between normal and party modes.
+    """Toggle between normal and party modes using ESP32 for hardware control."""
 
-    When entering party mode, current state is saved and various usecases are
-    adjusted (lighting, reading light, ...). When toggling back, saved
-    values are restored.
-    """
 
-    def __init__(
-        self,
-        state_store,
-        lighting_uc,
-        reading_light_uc,
-        back_light_uc,
-        gpio_driver,
-        open_box_uc,
-        close_box_uc,
-        party_mode_amp_uc,
-    ):
+    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, esp_link):
+
         self.state_store = state_store
         self.lighting = lighting_uc
         self.reading_light = reading_light_uc
         self.back_light = back_light_uc
-        self.open_pin = open_box_uc
-        self.close_pin = close_box_uc
-        self.party_pin = party_mode_amp_uc
-        self.gpio = gpio_driver
+        self.esp = esp_link
         self._saved_state: Dict[str, Any] | None = None
         self._saved_back_light_on: bool | None = None
-         # Prepare GPIO pins for party mode indicators
-        for pin in (open_box_uc, party_mode_amp_uc, close_box_uc):
-            try:
-                self.gpio.setup_output(pin, 0)
-            except Exception:
-                pass
-
+        
     def _merge(self, base: Dict, update: Dict) -> Dict:
         for k, v in update.items():
             if isinstance(v, dict) and isinstance(base.get(k), dict):
@@ -54,15 +31,9 @@ class ModeUsecase:
         patch: Dict[str, Any] = {}
 
         if current.get("mode") == "party":
-            # Deactivate party mode GPIO sequence
-            try:
-                self.gpio.write(self.party_pin, 0)
-                self.gpio.write(self.close_pin, 1)
-                time.sleep(8)
-                self.gpio.write(self.close_pin, 0)
-            except Exception:
-                pass
-
+            # Return to normal mode
+            self.esp.send_command("NORA_box_CLOSE")
+            self.esp.send_command("NORA_sound_ON")
             saved = self._saved_state or DEFAULT_STATE
             under = saved.get("lighting", {}).get("under_sofa", {})
             patch = self._merge(
@@ -84,15 +55,9 @@ class ModeUsecase:
             self._saved_state = None
             self._saved_back_light_on = None
         else:
-            # Activate party mode GPIO sequence
-            try:
-                self.gpio.write(self.open_pin, 1)
-                time.sleep(8)
-                self.gpio.write(self.open_pin, 0)
-                self.gpio.write(self.party_pin, 1)
-            except Exception:
-                pass
-            
+            # Activate party mode
+            self.esp.send_command("NORA_box_OPEN")
+            self.esp.send_command("NORA_sound_BOOST")
             self._saved_state = current
             self._saved_back_light_on = bool(
                 current.get("lighting", {}).get("back_light", {}).get("on", False)
