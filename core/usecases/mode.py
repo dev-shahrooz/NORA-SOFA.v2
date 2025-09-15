@@ -32,7 +32,7 @@ class ModeUsecase:
 
         if current.get("mode") == "party":
             # Return to normal mode
-            self.esp.send_command("NORA_box_CLOSE")
+            # self.esp.send_command("NORA_box_CLOSE")
             self.esp.send_command("NORA_sound_ON")
             saved = self._saved_state or DEFAULT_STATE
             under = saved.get("lighting", {}).get("under_sofa", {})
@@ -56,7 +56,7 @@ class ModeUsecase:
             self._saved_back_light_on = None
         else:
             # Activate party mode
-            self.esp.send_command("NORA_box_OPEN")
+            # self.esp.send_command("NORA_box_OPEN")
             self.esp.send_command("NORA_sound_BOOST")
             self._saved_state = current
             self._saved_back_light_on = bool(
