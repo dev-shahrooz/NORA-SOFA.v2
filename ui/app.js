@@ -39,6 +39,8 @@ const translations = {
     wifi_password_prompt: "رمز برای {ssid}:",
     wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
     volume_title: "حجم صدا",
+    sound_turn_off: "قطع صدا",
+    sound_turn_on: "وصل صدا",
     media_player_title: "مدیا پلیر",
     player_prev: "قبلی",
     player_play: "پلی",
@@ -79,6 +81,8 @@ const translations = {
     wifi_password_prompt: "Password for {ssid}:",
     wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
     volume_title: "Volume",
+    sound_turn_off: "Mute sound",
+    sound_turn_on: "Unmute sound",
     media_player_title: "Media Player",
     player_prev: "Previous",
     player_play: "Play",
@@ -119,6 +123,8 @@ const translations = {
     wifi_password_prompt: "{ssid} için parola:",
     wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
     volume_title: "Ses",
+    sound_turn_off: "Sesi kapat",
+    sound_turn_on: "Sesi aç",
     media_player_title: "Medya Oynatıcı",
     player_prev: "Önceki",
     player_play: "Oynat",
@@ -159,6 +165,8 @@ const translations = {
     wifi_password_prompt: "كلمة المرور لـ {ssid}:",
     wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
     volume_title: "مستوى الصوت",
+    sound_turn_off: "إيقاف الصوت",
+    sound_turn_on: "تشغيل الصوت",
     media_player_title: "مشغل الوسائط",
     player_prev: "السابق",
     player_play: "تشغيل",
@@ -222,6 +230,7 @@ let pendingSSID = null;
 let wifiScanRequested = false;
 const volumeRange = document.getElementById("volume");
 const volumeValue = document.getElementById("volume-value");
+const muteBtn = document.getElementById("mute-toggle");
 const playBtn = document.getElementById("player-play");
 const pauseBtn = document.getElementById("player-pause");
 const nextBtn = document.getElementById("player-next");
@@ -333,6 +342,14 @@ function renderVolume(st) {
   const vol = st?.audio?.volume ?? 0;
   volumeRange.value = vol;
   volumeValue.textContent = vol;
+  const muted = !!st?.audio?.muted;
+  if (muted) {
+    muteBtn.textContent = t("sound_turn_on");
+    muteBtn.classList.add("on");
+  } else {
+    muteBtn.textContent = t("sound_turn_off");
+    muteBtn.classList.remove("on");
+  }
 }
 
 function renderPlayer(st) {
@@ -399,6 +416,11 @@ prevBtn.onclick = () => send("player.previous");
 backBtn.onclick = () => {
   const next = !backStatus.classList.contains("on");
   send("back_light.set", { on: next });
+};
+
+muteBtn.onclick = () => {
+  const next = !muteBtn.classList.contains("on");
+  send("audio.set_mute", { mute: next });
 };
 
 // Query initial state

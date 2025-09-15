@@ -34,7 +34,7 @@ DEFAULT_STATE = {
     "mode": "normal",
     "wifi": {"on": True, "connected": False, "ssid": ""},
     "bluetooth": {"on": True},
-    "audio": {"volume": 50},
+    "audio": {"volume": 50, "muted": False},
     "player": {"status": "Unknown", "title": "", "artist": ""},
     "lang": "en",
     }
@@ -73,6 +73,7 @@ class StateStore:
             s["wifi"].setdefault("ssid", "")
             s.setdefault("audio", {})
             s["audio"].setdefault("volume", 50)
+            s["audio"].setdefault("muted", False)
             s.setdefault("player", {})
             s["player"].setdefault("status", "Unknown")
             s["player"].setdefault("title", "")

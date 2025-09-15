@@ -34,7 +34,7 @@ lighting = LightingService(esp)
 bt_service = BluetoothService()
 bluetooth_uc = BluetoothUsecase(bt_service)
 audio_service = AudioService()
-audio_uc = AudioUsecase(audio_service)
+audio_uc = AudioUsecase(audio_service, esp, state)
 player_service = PlayerService()
 player_uc = PlayerUsecase(player_service)
 wifi_service = WiFiService()
@@ -87,6 +87,8 @@ def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
     try:
         vol = int(s.get("audio", {}).get("volume", 50))
         audio_uc.set_volume(vol)
+        muted = bool(s.get("audio", {}).get("muted", False))
+        audio_uc.set_mute(muted)
     except Exception:
         pass
 

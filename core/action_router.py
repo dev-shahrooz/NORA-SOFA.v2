@@ -94,6 +94,9 @@ class ActionRouter:
         elif action == "audio.set_volume":
             vol = int(payload.get("volume", 0))
             patch = self.audio.set_volume(vol)
+        elif action == "audio.set_mute":
+            mute = bool(payload.get("mute", False))
+            patch = self.audio.set_mute(mute)
         # --- Media Player Controls ---
         elif action == "player.play":
             patch = self.player.play()
