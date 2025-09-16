@@ -198,6 +198,7 @@ function applyTranslations() {
   renderReadingLight(lastState);
   renderBackLight(lastState);
   renderPartyMode(lastState);
+  renderLightingInputs(lastState);
   renderBluetooth(lastState);
   renderWiFi(lastState);
   renderVolume(lastState);
@@ -217,6 +218,10 @@ const readingStatus = document.getElementById("reading-status");
 const backBtn = document.getElementById("back-toggle");
 const backStatus = document.getElementById("back-status");
 const partyBtn = document.getElementById("party-toggle");
+const zoneSelect = document.getElementById("zone");
+const modeSelect = document.getElementById("mode");
+const colorInput = document.getElementById("color");
+const brightnessInput = document.getElementById("brightness");
 const btBtn = document.getElementById("bt-toggle");
 const btStatus = document.getElementById("bt-status");
 const wifiBtn = document.getElementById("wifi-toggle");
@@ -373,6 +378,53 @@ function renderBackLight(st) {
   }
 }
 
+function sanitizeMode(mode) {
+  const allowed = new Set(["off", "rainbow", "static", "eq"]);
+  return allowed.has(mode) ? mode : "off";
+}
+
+function sanitizeColor(color) {
+  if (typeof color !== "string") {
+    return "#ffffff";
+  }
+  const trimmed = color.trim();
+  if (/^#[0-9A-Fa-f]{6}$/.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+  const hex = trimmed.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6);
+  return hex.length === 6 ? `#${hex.toLowerCase()}` : "#ffffff";
+}
+
+function sanitizeBrightness(brightness) {
+  const value = Number(brightness);
+  if (!Number.isFinite(value)) {
+    return 128;
+  }
+  return Math.min(255, Math.max(0, Math.round(value)));
+}
+
+function renderLightingInputs(st) {
+  if (!zoneSelect || !modeSelect || !colorInput || !brightnessInput) {
+    return;
+  }
+  const zone = zoneSelect.value || "under_sofa";
+  const lighting = st?.lighting || {};
+  const zoneState = lighting[zone] || {};
+  const mode = sanitizeMode(zoneState.mode);
+  if (modeSelect.value !== mode) {
+    modeSelect.value = mode;
+  }
+  const color = sanitizeColor(zoneState.color);
+  if (colorInput.value.toLowerCase() !== color) {
+    colorInput.value = color;
+  }
+  const brightness = sanitizeBrightness(zoneState.brightness);
+  if (sanitizeBrightness(brightnessInput.value) !== brightness) {
+    brightnessInput.value = String(brightness);
+  }
+  colorInput.disabled = mode !== "static";
+}
+
 // ---- Event Handlers ----
 readingBtn.onclick = () => {
   const next = !readingStatus.classList.contains("on");
@@ -399,6 +451,18 @@ wifiForgetBtn.onclick = () => {
   const ssid = wifiSSID.textContent;
   if (ssid) send("wifi.forget", { ssid });
 };
+
+if (zoneSelect) {
+  zoneSelect.onchange = () => {
+    renderLightingInputs(lastState);
+  };
+}
+
+if (modeSelect && colorInput) {
+  modeSelect.onchange = () => {
+    colorInput.disabled = modeSelect.value !== "static";
+  };
+}
 
 function connectSSID(ssid) {
   const pwd = prompt(t("wifi_password_prompt", { ssid }));
@@ -438,6 +502,7 @@ sio.on("sv.update", (st) => {
   renderReadingLight(st);
   renderBackLight(st);
   renderPartyMode(st);
+  renderLightingInputs(st);
   renderBluetooth(st);
   renderWiFi(st);
   renderVolume(st);
@@ -446,10 +511,16 @@ sio.on("sv.update", (st) => {
 
 // Lighting apply
 document.getElementById("apply-light").onclick = () => {
-  const zone = document.getElementById("zone").value;
-  const mode = document.getElementById("mode").value;
-  const color = document.getElementById("color").value;
-  const brightness = +document.getElementById("brightness").value;
+  const zone = zoneSelect?.value || "under_sofa";
+  const mode = sanitizeMode(modeSelect?.value);
+  const color = sanitizeColor(colorInput?.value);
+  const brightness = sanitizeBrightness(brightnessInput?.value);
+  if (colorInput) {
+    colorInput.value = color;
+  }
+  if (brightnessInput) {
+    brightnessInput.value = String(brightness);
+  }
   send("lighting.set", { zone, mode, color, brightness });
 };
 
