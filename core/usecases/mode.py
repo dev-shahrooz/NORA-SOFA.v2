@@ -68,7 +68,6 @@ class ModeUsecase:
             self._saved_back_light_on = None
         else:
             # Activate party mode
-            self.esp.send_command("NORA_box_OPEN")
             time.sleep(0.05)
             self.esp.send_command("NORA_sound_BOOST")
             time.sleep(0.05)

@@ -1,151 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Smart Sofa Control</title>
-
-  <!-- Swiper CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/swiper@9/swiper-bundle.min.css">
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-  <!-- Swiper JS (loaded early in head) -->
-  <script src="https://unpkg.com/swiper@9/swiper-bundle.min.js"></script>
-  <!-- Fallback for Swiper if CDN fails -->
-  <script>
-    if (typeof Swiper === 'undefined') {
-      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/swiper/9.4.1/swiper-bundle.min.js" integrity="sha512-3LS9LaXAE2DGr2qG4q47zFvCoSKbOgF+nwRhM0PW/0i+0J+hrD+0VBR7q0+9dWq3fIu+KnzRhVysy4z3nZ7v1g==" crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>');
-    }
-  </script>
-  <!-- Socket.IO -->
-  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
-  <!-- GSAP for animations -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-  <style>
-    :root {
-      --accent: #4f46e5;
-      --bg: #0f172a;
-      --card: #0b1220;
-      --muted: #9ca3af;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Inter, system-ui, Vazirmatn, sans-serif; background: linear-gradient(180deg, #07101a 0%, #071428 100%); color: #e6eef8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .app { width: 100%; max-width: 1100px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius: 14px; padding: 18px; box-shadow: 0 10px 30px rgba(2,6,23,0.6); }
-    .top { display: flex; gap: 18px; }
-    .viewer { flex: 1; min-height: 420px; background: linear-gradient(180deg, #071226 0%, #061427 100%); border-radius: 12px; padding: 12px; position: relative; overflow: hidden; }
-    .swiper { height: 100%; border-radius: 8px; }
-    .swiper-slide { display: flex; align-items: center; justify-content: center; height: 100%; }
-    .sofa-wrap { position: relative; width: 90%; max-width: 760px; height: 360px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-    .sofa-img { width: 100%; height: 100%; background-size: cover; background-position: center; border-radius: 8px; position: relative; overflow: visible; }
-    .feature-btn { position: absolute; background: rgba(8,12,20,0.6); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.04); padding: 10px; border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .18s, background .18s; }
-    .feature-btn:hover { transform: scale(1.05); }
-    .feature-btn.active { background: linear-gradient(90deg, var(--accent), #06b6d4); box-shadow: 0 6px 18px rgba(79,70,229,0.25); }
-    .f-reading { left: 18%; top: 18%; }
-    .f-headlight { right: 18%; top: 14%; }
-    .f-backlight { right: 10%; bottom: 22%; }
-    .f-sound { left: 52%; bottom: 16%; }
-    .f-wifi { right: 6%; top: 6%; }
-    .f-bluetooth { left: 6%; top: 6%; }
-    .f-voice { left: 50%; top: 6%; }
-    .f-wcharger { left: 24%; bottom: 26%; }
-    .f-massage { left: 40%; bottom: 10%; }
-    .f-climate { right: 40%; bottom: 10%; }
-    .backlight-glow { position: absolute; inset: auto; pointer-events: none; border-radius: 10px; opacity: 0; transition: opacity .3s; }
-    .backlight-glow.on { opacity: 1; }
-    .music-panel { position: absolute; left: 18px; bottom: 18px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04); min-width: 220px; }
-    .controls { display: flex; gap: 8px; align-items: center; }
-    .control-btn { background: transparent; border: 1px solid rgba(255,255,255,0.06); padding: 8px; border-radius: 8px; cursor: pointer; }
-    .eq { display: flex; gap: 4px; align-items: flex-end; height: 28px; margin-left: 8px; }
-    .bar { width: 6px; height: 6px; background: rgba(255,255,255,0.16); border-radius: 3px; animation: idle 1s infinite; }
-    .playing .bar { animation: beat 0.9s infinite both; }
-    .bar:nth-child(1) { animation-delay: -0.1s; }
-    .bar:nth-child(2) { animation-delay: -0.25s; }
-    .bar:nth-child(3) { animation-delay: -0.35s; }
-    .bar:nth-child(4) { animation-delay: -0.5s; }
-    .bar:nth-child(5) { animation-delay: -0.6s; }
-    @keyframes idle { 0% { height: 6px; } 50% { height: 6px; } 100% { height: 6px; } }
-    @keyframes beat { 0% { height: 6px; } 25% { height: 18px; } 50% { height: 8px; } 75% { height: 20px; } 100% { height: 6px; } }
-    .panel { width: 340px; padding: 12px; }
-    .panel h3 { margin: 0 0 8px 0; }
-    .feature-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .list-item { display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.02); cursor: pointer; border: 1px solid rgba(255,255,255,0.03); }
-    .list-item .label { font-size: 13px; color: var(--muted); }
-    .status { margin-left: auto; font-size: 12px; padding: 4px 8px; border-radius: 999px; background: rgba(255,255,255,0.02); }
-    .hint { font-size: 13px; color: var(--muted); margin-top: 10px; }
-    .lang-select { margin-bottom: 16px; }
-    .wifi-controls { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .wifi-networks { list-style: none; padding: 0; margin: 8px 0; }
-    .wifi-networks li { margin: 4px 0; }
-    .wifi-connected { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-    .btn { padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); background: rgba(255,255,255,0.02); color: #e6eef8; cursor: pointer; }
-    .btn:hover { background: rgba(255,255,255,0.05); }
-    @media (max-width: 900px) { .top { flex-direction: column; } .panel { width: 100%; } }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <div class="top">
-      <div class="viewer">
-        <div class="swiper mySwiper">
-          <div class="swiper-wrapper">
-            <div class="swiper-slide">
-              <div class="sofa-wrap">
-                <div class="sofa-img" id="sofa-front" style="background-image: url('https://images.unsplash.com/photo-1586023492123-0a51f10b9f84?w=1200&q=80')">
-                  <div class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></div>
-                  <div class="feature-btn f-headlight" data-feature="headlight" title="Headlight"><i class="fa-solid fa-helmet-safety"></i></div>
-                  <div class="feature-btn f-wcharger" data-feature="wcharger" title="Wireless charger"><i class="fa-solid fa-battery-half"></i></div>
-                  <div class="feature-btn f-massage" data-feature="massage" title="Massage mode"><i class="fa-solid fa-vibrate"></i></div>
-                  <div class="feature-btn f-climate" data-feature="climate" title="Climate control"><i class="fa-solid fa-thermometer"></i></div>
-                </div>
-              </div>
-            </div>
-            <div class="swiper-slide">
-              <div class="sofa-wrap">
-                <div class="sofa-img" id="sofa-back" style="background-image: url('https://images.unsplash.com/photo-1598300055995-81b0b8d6f8c7?w=1200&q=80')">
-                  <div class="backlight-glow" id="backlightGlow" style="left: 10%; top: 10%; width: 80%; height: 80%; background: radial-gradient(circle at 50% 25%, rgba(79,70,229,0.35) 0%, rgba(79,70,229,0.12) 20%, rgba(79,70,229,0.02) 60%);"></div>
-                  <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb-on"></i></div>
-                  <div class="feature-btn f-sound" data-feature="sound" title="Sound system"><i class="fa-solid fa-speaker"></i></div>
-                  <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
-                  <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
-                  <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="swiper-button-next"></div>
-          <div class="swiper-button-prev"></div>
-          <div class="swiper-pagination"></div>
-        </div>
-        <div class="music-panel" id="musicPanel">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <strong data-i18n="media_player_title">Media Player</strong>
-            <small class="hint" data-i18n="player_hint">Play / Pause / Next / Previous</small>
-          </div>
-          <div class="controls">
-            <button class="control-btn" id="player-prev" title="Previous"><i class="fa-solid fa-backward"></i></button>
-            <button class="control-btn" id="player-play" title="Play"><i class="fa-solid fa-play"></i></button>
-            <button class="control-btn" id="player-pause" title="Pause"><i class="fa-solid fa-pause"></i></button>
-            <button class="control-btn" id="player-next" title="Next"><i class="fa-solid fa-forward"></i></button>
-            <div class="eq" id="eqVis">
-              <div class="bar"></div>
-              <div class="bar"></div>
-              <div class="bar"></div>
-              <div class="bar"></div>
-              <div class="bar"></div>
-            </div>
-          </div>
-          <div style="margin-top: 8px;">
-            <span id="track-title"></span> - <span id="track-artist"></span>
-          </div>
-          <div style="margin-top: 8px;">
-            <label><span data-i18n="volume_title">Volume:</span> <input type="range" id="volume" min="0" max="100"></label>
-            <span id="volume-value">0</span>
-          </div>
-        </div>
-      </div>
-      <div class="panel">
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nora v2</title>
+    <link rel="stylesheet" href="/ui/style.css" />
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <section class="controls">
         <div class="lang-select">
           <select id="lang-select">
             <option value="fa">فارسی</option>
@@ -154,386 +18,139 @@
             <option value="ar">العربية</option>
           </select>
         </div>
-        <h3 data-i18n="panel_title">Smart Sofa Features</h3>
-        <div class="feature-list" id="featureList">
-          <div class="list-item" data-feature="reading"><i class="fa-solid fa-lightbulb"></i><div class="label" data-i18n="reading_light_title">Reading Light</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="sound"><i class="fa-solid fa-speaker"></i><div class="label" data-i18n="media_player_title">Sound System</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="backlight"><i class="fa-solid fa-lightbulb-on"></i><div class="label" data-i18n="back_light_title">Backlight</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="voice"><i class="fa-solid fa-microphone"></i><div class="label" data-i18n="voice_title">Voice Assistant</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="headlight"><i class="fa-solid fa-helmet-safety"></i><div class="label" data-i18n="headlight_title">Headlight</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="wcharger"><i class="fa-solid fa-battery-half"></i><div class="label" data-i18n="wcharger_title">Wireless Charger</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="bluetooth"><i class="fa-brands fa-bluetooth"></i><div class="label" data-i18n="bluetooth_title">Bluetooth</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="wifi"><i class="fa-solid fa-wifi"></i><div class="label" data-i18n="wifi_title">WiFi</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="massage"><i class="fa-solid fa-vibrate"></i><div class="label" data-i18n="massage_title">Massage Mode</div><div class="status" data-i18n="status_off">off</div></div>
-          <div class="list-item" data-feature="climate"><i class="fa-solid fa-thermometer"></i><div class="label" data-i18n="climate_title">Climate Control</div><div class="status" data-i18n="status_off">off</div></div>
+        <!-- Reading Light -->
+        <h2 data-i18n="reading_light_title">چراغ مطالعه</h2>
+        <div class="reading-light">
+          <button
+            id="reading-toggle"
+            class="btn"
+            data-i18n="reading_light_turn_on"
+          >
+            روشن کردن چراغ
+          </button>
+          <span id="reading-status" class="badge" data-i18n="status_off"
+            >خاموش</span
+          >
         </div>
-        <div class="wifi-controls">
-          <div class="wifi-connected" style="display: none;">
-            <span id="wifi-ssid"></span>
-            <button id="wifi-forget" class="btn" data-i18n="wifi_forget">Forget</button>
+        <hr />
+
+        <h2 data-i18n="back_light_title">چراغ پشت (Back Light)</h2>
+        <div class="back-light">
+          <button id="back-toggle" class="btn" data-i18n="back_light_turn_on">
+            روشن کردن چراغ پشت
+          </button>
+          <span id="back-status" class="badge" data-i18n="status_off"
+            >خاموش</span
+          >
+        </div>
+        <hr />
+        <div class="party-mode">
+          <button id="party-toggle" class="btn" data-i18n="party_mode">
+            Party Mode
+          </button>
+        </div>
+        <hr />
+
+        <h2 data-i18n="under_sofa_title">نور زیر مبل</h2>
+        <div>
+          <label>
+            <span data-i18n="zone_label">زون:</span>
+            <select id="zone">
+              <option value="under_sofa" data-i18n="zone_under_sofa">
+                زیر مبل
+              </option>
+              <option value="box" data-i18n="zone_box">باکس</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="mode_label">حالت:</span>
+            <select id="mode">
+              <option value="off" data-i18n="mode_off">خاموش</option>
+              <option value="rainbow" data-i18n="mode_rainbow">رینبو</option>
+              <option value="static" data-i18n="mode_static">رنگ ثابت</option>
+              <option value="eq" data-i18n="mode_eq">اکولایزر</option>
+            </select>
+          </label>
+          <label
+            ><span data-i18n="color_label">رنگ:</span>
+            <input type="color" id="color" value="#ffffff"
+          /></label>
+          <label
+            ><span data-i18n="brightness_label">روشنایی:</span>
+            <input type="range" id="brightness" min="0" max="255" value="128" />
+          </label>
+          <button id="apply-light" data-i18n="apply_light">ثبت</button>
+        </div>
+        <hr />
+        <h2 data-i18n="bluetooth_title">بلوتوث سیستم</h2>
+        <div class="bt-power">
+          <button id="bt-toggle" class="btn" data-i18n="bluetooth_turn_off">
+            خاموش کردن بلوتوث
+          </button>
+          <span id="bt-status" class="badge" data-i18n="status_on">روشن</span>
+        </div>
+        <div class="unpair">
+          <button id="unpair" data-i18n="bluetooth_unpair">
+            Unpair Bluetooth
+          </button>
+        </div>
+        <hr />
+
+        <h2 data-i18n="wifi_title">وای‌فای</h2>
+        <div class="wifi-power">
+          <button id="wifi-toggle" class="btn" data-i18n="wifi_turn_on">
+            روشن کردن وای‌فای
+          </button>
+          <span id="wifi-status" class="badge" data-i18n="status_off"
+            >خاموش</span
+          >
+          <button id="wifi-scan" class="btn" data-i18n="wifi_scan">
+            جستجو شبکه‌ها
+          </button>
+        </div>
+        <div class="wifi-connected" style="display: none">
+          <span id="wifi-ssid"></span>
+          <button id="wifi-forget" class="btn" data-i18n="wifi_forget">
+            فراموش کردن
+          </button>
+        </div>
+        <ul id="wifi-networks"></ul>
+        <hr />
+
+        <h2 data-i18n="volume_title">حجم صدا</h2>
+        <div class="volume">
+          <input type="range" id="volume" min="0" max="100" />
+          <span id="volume-value">0</span>
+          <button id="mute-toggle" class="btn" data-i18n="sound_turn_off">
+            Mute
+          </button>
+        </div>
+
+        <hr />
+        <h2 data-i18n="media_player_title">مدیا پلیر</h2>
+        <div class="player">
+          <div class="info">
+            <span id="track-title"></span>
+            <span id="track-artist"></span>
           </div>
-          <button id="wifi-scan" class="btn" data-i18n="wifi_scan">Scan Networks</button>
-          <ul id="wifi-networks" class="wifi-networks"></ul>
+          <div class="controls">
+            <button id="player-prev" class="btn" data-i18n="player_prev">
+              قبلی
+            </button>
+            <button id="player-play" class="btn" data-i18n="player_play">
+              پلی
+            </button>
+            <button id="player-pause" class="btn" data-i18n="player_pause">
+              پاز
+            </button>
+            <button id="player-next" class="btn" data-i18n="player_next">
+              بعدی
+            </button>
+          </div>
         </div>
-        <div class="hint" data-i18n="panel_hint">Click on icons on the sofa or the list to toggle features.</div>
-      </div>
-    </div>
-  </div>
+      </section>
+    </main>
 
-  <script>
-    // Wait for DOM and Swiper to load
-    document.addEventListener('DOMContentLoaded', () => {
-      // Initialize Swiper
-      if (typeof Swiper !== 'undefined') {
-        const swiper = new Swiper('.mySwiper', {
-          loop: false,
-          navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-          pagination: { el: '.swiper-pagination', clickable: true },
-          spaceBetween: 16
-        });
-      } else {
-        console.error('Swiper library failed to load.');
-      }
-
-      const sio = io();
-
-      function send(type, payload = {}) {
-        sio.emit("ui.intent", { type, payload, corr_id: String(Date.now()) });
-      }
-
-      const translations = {
-        fa: {
-          panel_title: "ویژگی‌های مبل هوشمند",
-          panel_hint: "برای روشن/خاموش کردن ویژگی‌ها، روی آیکون‌ها در تصویر مبل یا لیست کلیک کنید.",
-          reading_light_title: "چراغ مطالعه",
-          back_light_title: "چراغ پشت",
-          voice_title: "دستیار صوتی",
-          headlight_title: "چراغ سر",
-          wcharger_title: "شارژر بی‌سیم",
-          bluetooth_title: "بلوتوث",
-          wifi_title: "وای‌فای",
-          massage_title: "حالت ماساژ",
-          climate_title: "کنترل دما",
-          media_player_title: "مدیا پلیر",
-          player_hint: "پخش / توقف / بعدی / قبلی",
-          status_on: "روشن",
-          status_off: "خاموش",
-          wifi_scan: "جستجو شبکه‌ها",
-          wifi_forget: "فراموش کردن",
-          wifi_password_prompt: "رمز برای {ssid}:",
-          wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
-          volume_title: "حجم صدا",
-          player_prev: "قبلی",
-          player_play: "پلی",
-          player_pause: "پاز",
-          player_next: "بعدی"
-        },
-        en: {
-          panel_title: "Smart Sofa Features",
-          panel_hint: "Click on icons on the sofa or the list to toggle features.",
-          reading_light_title: "Reading Light",
-          back_light_title: "Backlight",
-          voice_title: "Voice Assistant",
-          headlight_title: "Headlight",
-          wcharger_title: "Wireless Charger",
-          bluetooth_title: "Bluetooth",
-          wifi_title: "WiFi",
-          massage_title: "Massage Mode",
-          climate_title: "Climate Control",
-          media_player_title: "Media Player",
-          player_hint: "Play / Pause / Next / Previous",
-          status_on: "On",
-          status_off: "Off",
-          wifi_scan: "Scan Networks",
-          wifi_forget: "Forget",
-          wifi_password_prompt: "Password for {ssid}:",
-          wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
-          volume_title: "Volume",
-          player_prev: "Previous",
-          player_play: "Play",
-          player_pause: "Pause",
-          player_next: "Next"
-        },
-        tr: {
-          panel_title: "Akıllı Koltuk Özellikleri",
-          panel_hint: "Özellikleri açıp kapatmak için koltuk üzerindeki veya listedeki simgelere tıklayın.",
-          reading_light_title: "Okuma Lambası",
-          back_light_title: "Arka Işık",
-          voice_title: "Ses Asistanı",
-          headlight_title: "Baş Işığı",
-          wcharger_title: "Kablosuz Şarj Cihazı",
-          bluetooth_title: "Bluetooth",
-          wifi_title: "WiFi",
-          massage_title: "Masaj Modu",
-          climate_title: "İklim Kontrolü",
-          media_player_title: "Medya Oynatıcı",
-          player_hint: "Oynat / Duraklat / Sonraki / Önceki",
-          status_on: "Açık",
-          status_off: "Kapalı",
-          wifi_scan: "Ağları Tara",
-          wifi_forget: "Unut",
-          wifi_password_prompt: "{ssid} için parola:",
-          wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
-          volume_title: "Ses",
-          player_prev: "Önceki",
-          player_play: "Oynat",
-          player_pause: "Duraklat",
-          player_next: "Sonraki"
-        },
-        ar: {
-          panel_title: "ميزات الأريكة الذكية",
-          panel_hint: "انقر على الأيقونات على الأريكة أو القائمة لتبديل الميزات.",
-          reading_light_title: "مصباح القراءة",
-          back_light_title: "الإضاءة الخلفية",
-          voice_title: "المساعد الصوتي",
-          headlight_title: "مصباح الرأس",
-          wcharger_title: "شاحن لاسلكي",
-          bluetooth_title: "بلوتوث",
-          wifi_title: "واي فاي",
-          massage_title: "وضع التدليك",
-          climate_title: "التحكم بالمناخ",
-          media_player_title: "مشغل الوسائط",
-          player_hint: "تشغيل / إيقاف مؤقت / التالي / السابق",
-          status_on: "تشغيل",
-          status_off: "إيقاف",
-          wifi_scan: "مسح الشبكات",
-          wifi_forget: "نسيان",
-          wifi_password_prompt: "كلمة المرور لـ {ssid}:",
-          wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
-          volume_title: "مستوى الصوت",
-          player_prev: "السابق",
-          player_play: "تشغيل",
-          player_pause: "إيقاف مؤقت",
-          player_next: "التالي"
-        }
-      };
-
-      let currentLang = "en";
-      let lastState = {};
-      let pendingSSID = null;
-      let wifiScanRequested = false;
-
-      function t(key, vars = {}) {
-        let str = translations[currentLang][key] || key;
-        Object.keys(vars).forEach(k => str = str.replace(`{${k}}`, vars[k]));
-        return str;
-      }
-
-      function applyTranslations() {
-        document.documentElement.lang = currentLang;
-        document.documentElement.dir = ["fa", "ar"].includes(currentLang) ? "rtl" : "ltr";
-        document.querySelectorAll("[data-i18n]").forEach(el => {
-          const key = el.getAttribute("data-i18n");
-          if (el.classList.contains("status")) {
-            el.textContent = t(lastState[el.parentElement.dataset.feature] ? "status_on" : "status_off");
-          } else {
-            el.textContent = t(key);
-          }
-        });
-      }
-
-      function setLang(lang) {
-        currentLang = lang;
-        applyTranslations();
-        send("ui.set_lang", { lang });
-      }
-
-      // UI Elements
-      const langSelect = document.getElementById("lang-select");
-      const featureButtons = document.querySelectorAll('.feature-btn');
-      const listItems = document.querySelectorAll('.list-item');
-      const wifiScanBtn = document.getElementById("wifi-scan");
-      const wifiList = document.getElementById("wifi-networks");
-      const wifiSSID = document.getElementById("wifi-ssid");
-      const wifiForgetBtn = document.getElementById("wifi-forget");
-      const wifiConnected = document.querySelector(".wifi-connected");
-      const volumeRange = document.getElementById("volume");
-      const volumeValue = document.getElementById("volume-value");
-      const playBtn = document.getElementById("player-play");
-      const pauseBtn = document.getElementById("player-pause");
-      const nextBtn = document.getElementById("player-next");
-      const prevBtn = document.getElementById("player-prev");
-      const trackTitle = document.getElementById("track-title");
-      const trackArtist = document.getElementById("track-artist");
-
-      function setFeatureUI(feature, enabled) {
-        document.querySelectorAll(`[data-feature="${feature}"]`).forEach(el => {
-          if (enabled) el.classList.add('active'); else el.classList.remove('active');
-        });
-        document.querySelectorAll(`.list-item[data-feature="${feature}"]`).forEach(el => {
-          el.querySelector('.status').textContent = t(enabled ? "status_on" : "status_off");
-        });
-
-        if (feature === 'backlight') {
-          const glow = document.getElementById('backlightGlow');
-          if (enabled) {
-            glow.classList.add('on');
-            gsap.killTweensOf(glow);
-            gsap.to(glow, { opacity: 1, scale: 1.02, duration: 1.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-          } else {
-            gsap.killTweensOf(glow);
-            glow.style.opacity = 0;
-          }
-        }
-
-        if (feature === 'sound') {
-          const musicPanel = document.getElementById('musicPanel');
-          musicPanel.style.display = enabled ? 'block' : 'none';
-        }
-      }
-
-      function renderWiFi(st) {
-        const wifi = st?.wifi || {};
-        const on = !!wifi.on;
-        setFeatureUI('wifi', on);
-        if (on && !wifiScanRequested && !wifi.networks) {
-          wifiScanRequested = true;
-          send("wifi.scan");
-        }
-        wifiScanBtn.disabled = !on;
-        wifiList.innerHTML = "";
-        (wifi.networks || []).forEach(net => {
-          const li = document.createElement("li");
-          const btn = document.createElement("button");
-          btn.textContent = `${net.ssid} (${net.signal})`;
-          btn.className = "btn";
-          btn.onclick = () => connectSSID(net.ssid);
-          li.appendChild(btn);
-          wifiList.appendChild(li);
-        });
-        if (wifi.connected) {
-          wifiSSID.textContent = wifi.ssid || "";
-          wifiForgetBtn.style.display = "inline";
-          wifiConnected.style.display = "flex";
-        } else {
-          wifiSSID.textContent = "";
-          wifiForgetBtn.style.display = "none";
-          wifiConnected.style.display = "none";
-        }
-        if (pendingSSID) {
-          if (wifi.connected && wifi.ssid === pendingSSID) {
-            pendingSSID = null;
-          } else if (!wifi.connected && wifi.ssid === "") {
-            const pwd = prompt(t("wifi_fail_prompt", { ssid: pendingSSID }));
-            if (pwd !== null) {
-              send("wifi.connect", { ssid: pendingSSID, password: pwd });
-            } else {
-              pendingSSID = null;
-            }
-          }
-        }
-      }
-
-      function renderPlayer(st) {
-        const p = st?.player || {};
-        trackTitle.textContent = p.title || "";
-        trackArtist.textContent = p.artist || "";
-        const musicPanel = document.getElementById('musicPanel');
-        musicPanel.style.display = lastState.sound ? 'block' : 'none';
-        if (p.playing) {
-          musicPanel.classList.add('playing');
-        } else {
-          musicPanel.classList.remove('playing');
-        }
-      }
-
-      function renderVolume(st) {
-        const vol = st?.audio?.volume ?? 0;
-        volumeRange.value = vol;
-        volumeValue.textContent = vol;
-      }
-
-      featureButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const f = btn.dataset.feature;
-          lastState[f] = !lastState[f];
-          setFeatureUI(f, lastState[f]);
-          if (f === 'reading') send("reading_light.set", { on: lastState[f] });
-          if (f === 'backlight') send("back_light.set", { on: lastState[f] });
-          if (f === 'bluetooth') send("bluetooth.set", { on: lastState[f] });
-          if (f === 'wifi') send("wifi.set", { on: lastState[f] });
-          if (f === 'sound') send("player." + (lastState[f] ? "play" : "pause"));
-          if (['voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
-            send(`${f}.set`, { on: lastState[f] });
-          }
-        });
-      });
-
-      listItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const f = item.dataset.feature;
-          lastState[f] = !lastState[f];
-          setFeatureUI(f, lastState[f]);
-          if (f === 'reading') send("reading_light.set", { on: lastState[f] });
-          if (f === 'backlight') send("back_light.set", { on: lastState[f] });
-          if (f === 'bluetooth') send("bluetooth.set", { on: lastState[f] });
-          if (f === 'wifi') send("wifi.set", { on: lastState[f] });
-          if (f === 'sound') send("player." + (lastState[f] ? "play" : "pause"));
-          if (['voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
-            send(`${f}.set`, { on: lastState[f] });
-          }
-        });
-      });
-
-      wifiScanBtn.onclick = () => send("wifi.scan");
-      wifiForgetBtn.onclick = () => {
-        const ssid = wifiSSID.textContent;
-        if (ssid) send("wifi.forget", { ssid });
-      };
-
-      function connectSSID(ssid) {
-        const pwd = prompt(t("wifi_password_prompt", { ssid }));
-        if (pwd !== null) {
-          pendingSSID = ssid;
-          send("wifi.connect", { ssid, password: pwd });
-        }
-      }
-
-      playBtn.onclick = () => {
-        lastState['sound'] = true;
-        setFeatureUI('sound', true);
-        send("player.play");
-      };
-      pauseBtn.onclick = () => send("player.pause");
-      nextBtn.onclick = () => send("player.next");
-      prevBtn.onclick = () => send("player.previous");
-
-      volumeRange.oninput = () => {
-        const vol = +volumeRange.value;
-        volumeValue.textContent = vol;
-        send("audio.set_volume", { volume: vol });
-      };
-
-      sio.on("sv.update", (st) => {
-        lastState = {
-          reading: !!st?.lighting?.reading_light?.on,
-          backlight: !!st?.lighting?.back_light?.on,
-          sound: !!st?.player?.playing,
-          bluetooth: !!st?.bluetooth?.on,
-          wifi: !!st?.wifi?.on,
-          voice: !!st?.voice?.on || false,
-          headlight: !!st?.headlight?.on || false,
-          wcharger: !!st?.wcharger?.on || false,
-          massage: !!st?.massage?.on || false,
-          climate: !!st?.climate?.on || false
-        };
-        if (st.lang && st.lang !== currentLang) {
-          currentLang = st.lang;
-          langSelect.value = currentLang;
-          applyTranslations();
-        }
-        Object.keys(lastState).forEach(f => setFeatureUI(f, lastState[f]));
-        renderWiFi(st);
-        renderPlayer(st);
-        renderVolume(st);
-      });
-
-      // Initialize
-      langSelect.value = currentLang;
-      langSelect.onchange = (e) => setLang(e.target.value);
-      applyTranslations();
-      sio.emit("ui.query", {});
-    });
-  </script>
-</body>
+    <script src="/ui/app.js"></script>
+  </body>
 </html>
