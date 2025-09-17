@@ -51,8 +51,8 @@ class ModeUsecase:
                 self.lighting.set_zone(
                     "under_sofa",
                     under.get("mode", "off"),
-                    under.get("color", "#FFFFFF"),
-                    int(under.get("brightness", 128)),
+                    under.get("color", "#ffffff"),
+                    under.get("brightness", "mid"),
                 ),
             )
             # Reading/back lights intentionally remain untouched so they keep their
@@ -71,7 +71,7 @@ class ModeUsecase:
             time.sleep(0.05)
             patch = self._merge(
                 patch,
-                self.lighting.set_zone("under_sofa", "rainbow", "#FF00FF", 255),
+                self.lighting.set_zone("under_sofa", "rainbow", "#ff00ff", "high"),
             )
             # Leave reading/back lights as-is during party mode activation as well.
             time.sleep(0.05)

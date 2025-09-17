@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS event_log (
 DEFAULT_STATE = {
     "schema": SCHEMA_VERSION,
     "lighting": {
-        "under_sofa": {"mode":"off","color":"#FFFFFF","brightness":128},
-        "box": {"mode":"off","color":"#FFFFFF","brightness":128},
+        "under_sofa": {"mode": "off", "color": "#FFFFFF", "brightness": "mid"},
+        "box": {"mode": "off", "color": "#FFFFFF", "brightness": "mid"},
         "reading_light": {"on": False}    # ← جدید
     },
     "mode": "normal",

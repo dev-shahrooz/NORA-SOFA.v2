@@ -59,8 +59,8 @@ def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
             lighting.set_zone(
                 zone,
                 z.get("mode", "off"),
-                z.get("color", "#FFFFFF"),
-                int(z.get("brightness", 128)),
+                z.get("color", "#ffffff"),
+                z.get("brightness", "mid"),
             )
         except Exception:
             pass

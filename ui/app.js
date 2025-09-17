@@ -23,9 +23,13 @@ const translations = {
     mode_off: "خاموش",
     mode_rainbow: "رینبو",
     mode_static: "رنگ ثابت",
-    mode_eq: "اکولایزر",
+    mode_equaalize: "اکولایزر",
+    mode_wakeup: "شنیدار دستیار صوتی",
     color_label: "رنگ:",
     brightness_label: "روشنایی:",
+    brightness_low: "نور کم",
+    brightness_mid: "نور متوسط",
+    brightness_high: "نور زیاد",
     apply_light: "ثبت",
     bluetooth_title: "بلوتوث سیستم",
     bluetooth_turn_on: "روشن کردن بلوتوث",
@@ -68,9 +72,13 @@ const translations = {
     mode_off: "Off",
     mode_rainbow: "Rainbow",
     mode_static: "Static color",
-    mode_eq: "Equalizer",
+    mode_equaalize: "Equalizer",
+    mode_wakeup: "Voice assistant listening",
     color_label: "Color:",
     brightness_label: "Brightness:",
+    brightness_low: "Low",
+    brightness_mid: "Medium",
+    brightness_high: "High",
     apply_light: "Apply",
     bluetooth_title: "System Bluetooth",
     bluetooth_turn_on: "Turn on Bluetooth",
@@ -113,9 +121,13 @@ const translations = {
     mode_off: "Kapalı",
     mode_rainbow: "Gökkuşağı",
     mode_static: "Sabit renk",
-    mode_eq: "Ekolayzır",
+    mode_equaalize: "Ekolayzır",
+    mode_wakeup: "Sesli asistan dinleme",
     color_label: "Renk:",
     brightness_label: "Parlaklık:",
+    brightness_low: "Düşük",
+    brightness_mid: "Orta",
+    brightness_high: "Yüksek",
     apply_light: "Uygula",
     bluetooth_title: "Sistem Bluetooth'u",
     bluetooth_turn_on: "Bluetooth'u aç",
@@ -158,9 +170,13 @@ const translations = {
     mode_off: "إيقاف",
     mode_rainbow: "قوس قزح",
     mode_static: "لون ثابت",
-    mode_eq: "موازن",
+    mode_equaalize: "موازن",
+    mode_wakeup: "وضع الاستماع للمساعد الصوتي",
     color_label: "لون:",
     brightness_label: "السطوع:",
+    brightness_low: "منخفض",
+    brightness_mid: "متوسط",
+    brightness_high: "عالٍ",
     apply_light: "تطبيق",
     bluetooth_title: "بلوتوث النظام",
     bluetooth_turn_on: "تشغيل البلوتوث",
@@ -451,8 +467,24 @@ function renderBackLight(st) {
 }
 
 function sanitizeMode(mode) {
-  const allowed = new Set(["off", "rainbow", "static", "eq"]);
-  return allowed.has(mode) ? mode : "off";
+  if (typeof mode !== "string") {
+    return "off";
+  }
+  const value = mode.trim().toLowerCase();
+  if (["off", "rainbow", "static"].includes(value)) {
+    return value;
+  }
+  if (["eq", "equalize", "equalizer", "equaalize"].includes(value)) {
+    return "equaalize";
+  }
+  if (
+    ["wakeup", "wake", "voice", "voiceassistant", "voice_assistant"].includes(
+      value
+    )
+  ) {
+    return "wakeup";
+  }
+  return "off";
 }
 
 function sanitizeColor(color) {
@@ -468,11 +500,26 @@ function sanitizeColor(color) {
 }
 
 function sanitizeBrightness(brightness) {
+  if (typeof brightness === "string") {
+    const value = brightness.trim().toLowerCase();
+    if (["low", "mid", "high"].includes(value)) {
+      return value;
+    }
+    if (["medium", "med"].includes(value)) {
+      return "mid";
+    }
+  }
   const value = Number(brightness);
   if (!Number.isFinite(value)) {
-    return 128;
+    return "mid";
   }
-  return Math.min(255, Math.max(0, Math.round(value)));
+  if (value <= 85) {
+    return "low";
+  }
+  if (value <= 170) {
+    return "mid";
+  }
+  return "high";
 }
 
 function renderLightingInputs(st) {
@@ -544,7 +591,6 @@ if (wifiSavedForgetBtn) {
     }
   };
 }
-
 
 if (zoneSelect) {
   zoneSelect.onchange = () => {

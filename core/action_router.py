@@ -22,10 +22,10 @@ class ActionRouter:
         # --- Lighting (قدیمی) ---
         if action == "lighting.set":
             patch = self.lighting.set_zone(
-                zone=payload.get("zone","under_sofa"),
-                mode=payload.get("mode","off"),
-                color=payload.get("color","#FFFFFF"),
-                brightness=int(payload.get("brightness",128))
+                zone=payload.get("zone", "under_sofa"),
+                mode=payload.get("mode", "off"),
+                color=payload.get("color", "#FFFFFF"),
+                brightness=payload.get("brightness", "mid"),
             )
 
         # --- Reading Light (جدید) ---
