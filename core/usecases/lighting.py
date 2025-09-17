@@ -55,20 +55,21 @@ class LightingService:
         return f"BRIGHTNESS_{brightness}"
 
     def set_zone(self, zone: str, mode: Any, color: Any, brightness: Any) -> Dict:
-        zone_key = self._normalize_zone(zone)
+        zone_key = zone
         prefix = "NORA_magicbl_" if zone_key == "box" else "NORA_magicl_"
-        mode_value = self._normalize_mode(mode)
-        color_value = self._normalize_color(color)
-        brightness_value = self._normalize_brightness(brightness)
+        mode_value = mode
+        color_value = color
+        brightness_value = brightness
 
         if mode_value == "static":
             commands = [f"{prefix}MODE_static_{color_value}"]
         else:
           commands = [f"{prefix}MODE_{mode_value}"]
+          cmd = commands[0]
         commands.append(f"{prefix}{self._brightness_cmd(brightness_value)}")
 
-        self.esp.send_command(commands)
-        print(commands)
+        self.esp.send_command(cmd)
+        print(cmd)
         return {
             "lighting": {
                 zone_key: {
