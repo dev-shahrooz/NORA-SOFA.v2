@@ -44,8 +44,6 @@ back_light_uc = BackLightUsecase(esp)
 mode_uc = ModeUsecase(
     state,
     lighting,
-    reading_light_uc,
-    back_light_uc,
     esp,
 )
 router = ActionRouter(state, lighting, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc)
