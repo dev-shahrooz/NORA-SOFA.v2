@@ -15,6 +15,8 @@ class ModeUsecase:
         self.lighting = lighting_uc
         self.esp = esp_link
         self._saved_state: Dict[str, Any] | None = None
+        self._motor_busy_until: float = 0.0
+        self._motor_block_duration: float = 8.5
         
     def _merge(self, base: Dict, update: Dict) -> Dict:
         for k, v in update.items():
@@ -25,6 +27,12 @@ class ModeUsecase:
         return base
 
     def toggle(self) -> Dict:
+        now = time.monotonic()
+        if now < self._motor_busy_until:
+            return {}
+
+        self._motor_busy_until = now + self._motor_block_duration
+
         current = self.state_store.get_state()
         patch: Dict[str, Any] = {}
 
