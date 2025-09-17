@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import Dict, List
+from typing import Any, Dict, List, Set
 
 MOCK = os.environ.get("NORA_MOCK") == "1"
 
@@ -11,6 +11,8 @@ class WiFiService:
     def __init__(self) -> None:
         self._mock_on = True
         self._mock_ssid = ""
+        self._mock_saved: Set[str] = set()
+
 
     # Power control -----------------------------------------------------
     def set_power(self, on: bool) -> None:
@@ -28,13 +30,21 @@ class WiFiService:
         except Exception:
             pass
 
-    def status(self) -> Dict[str, str]:
-        """Return current Wi-Fi state and connected SSID (if any)."""
+    def status(self) -> Dict[str, Any]:
+        """Return current Wi-Fi state, connected SSID and saved networks."""
         if MOCK:
-            return {"on": self._mock_on, "ssid": self._mock_ssid}
+            connected = bool(self._mock_ssid)
+            if connected:
+                self._mock_saved.add(self._mock_ssid)
+            return {
+                "on": self._mock_on,
+                "ssid": self._mock_ssid,
+                "connected": connected,
+                "saved_networks": self.saved_networks(self._mock_ssid),
+            }
         try:
             out = (
-                subprocess.check_output([ "sudo","nmcli", "radio", "wifi"], text=True)
+                subprocess.check_output(["sudo", "nmcli", "radio", "wifi"], text=True)
                 .strip()
                 .lower()
             )
@@ -42,16 +52,76 @@ class WiFiService:
             ssid = ""
             if on:
                 out2 = subprocess.check_output(
-                    [ "sudo","nmcli", "-t", "-f", "active,ssid", "dev", "wifi"], text=True
+                    ["sudo", "nmcli", "-t", "-f", "active,ssid", "dev", "wifi"],
+                    text=True,
                 )
                 for line in out2.splitlines():
-                    active, name = line.split(":", 1)
+                    try:
+                        active, name = line.split(":", 1)
+                    except ValueError:
+                        continue 
                     if active == "yes":
                         ssid = name
                         break
-            return {"on": on, "ssid": ssid}
+            connected = bool(ssid)
+            return {
+                "on": on,
+                "ssid": ssid,
+                "connected": connected,
+                "saved_networks": self.saved_networks(ssid),
+            }
         except Exception:
-            return {"on": False, "ssid": ""}
+            return {"on": False, "ssid": "", "connected": False, "saved_networks": []}
+        
+    def saved_networks(self, current_ssid: str = "") -> List[Dict[str, Any]]:
+        """Return saved Wi-Fi connections with indicator for the active one."""
+        if MOCK:
+            nets: List[Dict[str, Any]] = []
+            for name in sorted(self._mock_saved):
+                nets.append({"ssid": name, "active": bool(current_ssid) and name == current_ssid})
+            return nets
+        try:
+            out = subprocess.check_output(
+                ["sudo", "nmcli", "-t", "-f", "NAME,TYPE,DEVICE", "connection", "show"],
+                text=True,
+            )
+            nets: List[Dict[str, Any]] = []
+            for line in out.splitlines():
+                parts = line.split(":")
+                if len(parts) < 2:
+                    continue
+                name = parts[0].strip()
+                conn_type = parts[1].strip()
+                if conn_type != "802-11-wireless" or not name:
+                    continue
+                device = parts[2].strip() if len(parts) > 2 else ""
+                nets.append(
+                    {
+                        "ssid": name,
+                        "active": bool(device and device != "--")
+                        or (bool(current_ssid) and name == current_ssid),
+                    }
+                )
+            deduped: List[Dict[str, Any]] = []
+            seen: Set[str] = set()
+            for net in nets:
+                ssid = net.get("ssid", "")
+                if not ssid:
+                    continue
+                if ssid in seen:
+                    if net.get("active"):
+                        for existing in deduped:
+                            if existing.get("ssid") == ssid:
+                                existing["active"] = existing.get("active", False) or bool(
+                                    net.get("active")
+                                )
+                                break
+                    continue
+                seen.add(ssid)
+                deduped.append(net)
+            return deduped
+        except Exception:
+            return []
 
     # Network scanning --------------------------------------------------
     def scan(self) -> List[Dict[str, str]]:
@@ -80,6 +150,7 @@ class WiFiService:
         if MOCK:
             if password:
                 self._mock_ssid = ssid
+                self._mock_saved.add(ssid)
                 return True
             return False
         try:
@@ -97,6 +168,7 @@ class WiFiService:
     def forget(self, ssid: str) -> None:
         """Forget a previously connected network."""
         if MOCK:
+            self._mock_saved.discard(ssid)
             if self._mock_ssid == ssid:
                 self._mock_ssid = ""
             return

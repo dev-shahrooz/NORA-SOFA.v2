@@ -109,8 +109,20 @@
           </button>
         </div>
         <div class="wifi-connected" style="display: none">
+          <span class="wifi-connected-label" data-i18n="wifi_connected_label">
+            اتصال فعلی:
+          </span>
           <span id="wifi-ssid"></span>
-          <button id="wifi-forget" class="btn" data-i18n="wifi_forget">
+          <button id="wifi-forget-current" class="btn" data-i18n="wifi_forget">
+            فراموش کردن
+          </button>
+        </div>
+        <div class="wifi-saved" style="display: none">
+          <label for="wifi-saved-select" data-i18n="wifi_saved_label">
+            شبکه‌های ذخیره‌شده
+          </label>
+          <select id="wifi-saved-select"></select>
+          <button id="wifi-saved-forget" class="btn" data-i18n="wifi_forget">
             فراموش کردن
           </button>
         </div>

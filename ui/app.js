@@ -36,6 +36,9 @@ const translations = {
     wifi_turn_off: "خاموش کردن وای‌فای",
     wifi_scan: "جستجو شبکه‌ها",
     wifi_forget: "فراموش کردن",
+    wifi_connected_label: "اتصال فعلی:",
+    wifi_saved_label: "شبکه‌های ذخیره‌شده",
+    wifi_saved_current: "متصل",
     wifi_password_prompt: "رمز برای {ssid}:",
     wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
     volume_title: "حجم صدا",
@@ -78,6 +81,9 @@ const translations = {
     wifi_turn_off: "Turn off Wi-Fi",
     wifi_scan: "Scan Networks",
     wifi_forget: "Forget",
+    wifi_connected_label: "Currently connected:",
+    wifi_saved_label: "Saved networks",
+    wifi_saved_current: "Currently connected",
     wifi_password_prompt: "Password for {ssid}:",
     wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
     volume_title: "Volume",
@@ -120,6 +126,9 @@ const translations = {
     wifi_turn_off: "Wi-Fi'yi kapat",
     wifi_scan: "Ağları Tara",
     wifi_forget: "Unut",
+    wifi_connected_label: "Bağlı ağ:",
+    wifi_saved_label: "Kaydedilmiş ağlar",
+    wifi_saved_current: "Şu an bağlı",
     wifi_password_prompt: "{ssid} için parola:",
     wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
     volume_title: "Ses",
@@ -162,6 +171,9 @@ const translations = {
     wifi_turn_off: "إيقاف الواي فاي",
     wifi_scan: "مسح الشبكات",
     wifi_forget: "نسيان",
+    wifi_connected_label: "الشبكة المتصلة:",
+    wifi_saved_label: "الشبكات المحفوظة",
+    wifi_saved_current: "متصل الآن",
     wifi_password_prompt: "كلمة المرور لـ {ssid}:",
     wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
     volume_title: "مستوى الصوت",
@@ -229,8 +241,11 @@ const wifiStatus = document.getElementById("wifi-status");
 const wifiScanBtn = document.getElementById("wifi-scan");
 const wifiList = document.getElementById("wifi-networks");
 const wifiSSID = document.getElementById("wifi-ssid");
-const wifiForgetBtn = document.getElementById("wifi-forget");
+const wifiForgetCurrentBtn = document.getElementById("wifi-forget-current");
 const wifiConnected = document.querySelector(".wifi-connected");
+const wifiSavedContainer = document.querySelector(".wifi-saved");
+const wifiSavedSelect = document.getElementById("wifi-saved-select");
+const wifiSavedForgetBtn = document.getElementById("wifi-saved-forget");
 let pendingSSID = null;
 let wifiScanRequested = false;
 const volumeRange = document.getElementById("volume");
@@ -306,14 +321,67 @@ function renderWiFi(st) {
   }
 
   // Connected network
-  if (wifi.connected) {
-    wifiSSID.textContent = wifi.ssid || "";
-    wifiForgetBtn.style.display = "inline";
-    wifiConnected.style.display = "flex";
-  } else {
-    wifiSSID.textContent = "";
-    wifiForgetBtn.style.display = "none";
-    wifiConnected.style.display = "none";
+  const isConnected = !!wifi.connected && !!wifi.ssid;
+  if (wifiConnected) {
+    if (isConnected) {
+      wifiSSID.textContent = wifi.ssid || "";
+      if (wifiForgetCurrentBtn) {
+        wifiForgetCurrentBtn.style.display = "inline";
+        wifiForgetCurrentBtn.disabled = false;
+      }
+      wifiConnected.style.display = "flex";
+    } else {
+      wifiSSID.textContent = "";
+      if (wifiForgetCurrentBtn) {
+        wifiForgetCurrentBtn.style.display = "none";
+      }
+      wifiConnected.style.display = "none";
+    }
+  }
+
+  if (wifiSavedContainer && wifiSavedSelect) {
+    const savedRaw = Array.isArray(wifi.saved_networks)
+      ? wifi.saved_networks
+      : [];
+    const saved = savedRaw
+      .filter(
+        (net) => net && typeof net.ssid === "string" && net.ssid.trim() !== ""
+      )
+      .map((net) => ({ ssid: net.ssid.trim(), active: !!net.active }));
+    const previousSelection = wifiSavedSelect.value;
+    wifiSavedSelect.innerHTML = "";
+    saved.forEach((net) => {
+      const option = document.createElement("option");
+      option.value = net.ssid;
+      let label = net.ssid;
+      if (net.active) {
+        label += ` (${t("wifi_saved_current")})`;
+      }
+      option.textContent = label;
+      wifiSavedSelect.appendChild(option);
+    });
+
+    if (saved.length > 0) {
+      let nextValue =
+        previousSelection && saved.some((net) => net.ssid === previousSelection)
+          ? previousSelection
+          : "";
+      if (!nextValue) {
+        const activeNet = saved.find((net) => net.active && net.ssid);
+        nextValue = activeNet?.ssid || saved[0].ssid;
+      }
+      wifiSavedSelect.value = nextValue;
+      wifiSavedContainer.style.display = "flex";
+      if (wifiSavedForgetBtn) {
+        wifiSavedForgetBtn.disabled = !nextValue;
+      }
+    } else {
+      wifiSavedContainer.style.display = "none";
+      wifiSavedSelect.value = "";
+      if (wifiSavedForgetBtn) {
+        wifiSavedForgetBtn.disabled = true;
+      }
+    }
   }
 
   // Render network list
@@ -321,7 +389,10 @@ function renderWiFi(st) {
   (wifi.networks || []).forEach((net) => {
     const li = document.createElement("li");
     const btn = document.createElement("button");
-    btn.textContent = `${net.ssid} (${net.signal})`;
+    const isActive = wifi.ssid && net.ssid === wifi.ssid;
+    btn.textContent = isActive
+      ? `${net.ssid} (${net.signal}) • ${t("wifi_saved_current")}`
+      : `${net.ssid} (${net.signal})`;
     btn.className = "btn";
     btn.onclick = () => connectSSID(net.ssid);
     li.appendChild(btn);
@@ -329,10 +400,11 @@ function renderWiFi(st) {
   });
 
   // handle pending connection result
-  if (pendingSSID) {
-    if (wifi.connected && wifi.ssid === pendingSSID) {
+  const attempt = wifi.last_connection_attempt;
+  if (pendingSSID && attempt && attempt.ssid === pendingSSID) {
+    if (attempt.success) {
       pendingSSID = null;
-    } else if (!wifi.connected && wifi.ssid === "") {
+    } else {
       const pwd = prompt(t("wifi_fail_prompt", { ssid: pendingSSID }));
       if (pwd !== null) {
         send("wifi.connect", { ssid: pendingSSID, password: pwd });
@@ -447,10 +519,32 @@ wifiBtn.onclick = () => {
 
 wifiScanBtn.onclick = () => send("wifi.scan");
 
-wifiForgetBtn.onclick = () => {
-  const ssid = wifiSSID.textContent;
-  if (ssid) send("wifi.forget", { ssid });
-};
+if (wifiForgetCurrentBtn) {
+  wifiForgetCurrentBtn.onclick = () => {
+    const ssid = wifiSSID.textContent;
+    if (ssid) {
+      send("wifi.forget", { ssid });
+    }
+  };
+}
+
+if (wifiSavedSelect) {
+  wifiSavedSelect.onchange = () => {
+    if (wifiSavedForgetBtn) {
+      wifiSavedForgetBtn.disabled = !wifiSavedSelect.value;
+    }
+  };
+}
+
+if (wifiSavedForgetBtn) {
+  wifiSavedForgetBtn.onclick = () => {
+    const ssid = wifiSavedSelect?.value || "";
+    if (ssid) {
+      send("wifi.forget", { ssid });
+    }
+  };
+}
+
 
 if (zoneSelect) {
   zoneSelect.onchange = () => {

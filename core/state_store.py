@@ -32,7 +32,7 @@ DEFAULT_STATE = {
         "reading_light": {"on": False}    # ← جدید
     },
     "mode": "normal",
-    "wifi": {"on": True, "connected": False, "ssid": ""},
+    "wifi": {"on": True, "connected": False, "ssid": "", "saved_networks": []},
     "bluetooth": {"on": True},
     "audio": {"volume": 50, "muted": False},
     "player": {"status": "Unknown", "title": "", "artist": ""},
@@ -71,6 +71,8 @@ class StateStore:
             s["wifi"].setdefault("on", True)
             s["wifi"].setdefault("connected", False)
             s["wifi"].setdefault("ssid", "")
+            s["wifi"].setdefault("saved_networks", [])
+            s["wifi"].setdefault("last_connection_attempt", None)
             s.setdefault("audio", {})
             s["audio"].setdefault("volume", 50)
             s["audio"].setdefault("muted", False)

@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Any, Dict
 from services.wifi_service import WiFiService
 
 
@@ -8,23 +8,38 @@ class WiFiUsecase:
     def __init__(self, svc: WiFiService):
         self.svc = svc
 
-    def set(self, on: bool) -> Dict:
-        self.svc.set_power(on)
-        st = self.svc.status()
-        return {"wifi": {"on": st.get("on", False), "ssid": st.get("ssid", "")}}
 
-    def toggle(self, current_on: bool) -> Dict:
+    def _status_patch(self) -> Dict[str, Dict[str, Any]]:
+        st = self.svc.status()
+        wifi_state: Dict[str, Any] = {
+            "on": st.get("on", False),
+            "ssid": st.get("ssid", ""),
+            "connected": st.get("connected", bool(st.get("ssid"))),
+            "saved_networks": st.get("saved_networks", []),
+        }
+        return {"wifi": wifi_state}
+
+    def set(self, on: bool) -> Dict[str, Dict[str, Any]]:
+        self.svc.set_power(on)
+        return self._status_patch()
+    
+    def toggle(self, current_on: bool) -> Dict[str, Dict[str, Any]]:
         return self.set(not bool(current_on))
 
-    def scan(self) -> Dict:
+    def scan(self) -> Dict[str, Dict[str, Any]]:
         nets = self.svc.scan()
-        return {"wifi": {"networks": nets}}
+        patch = self._status_patch()
+        patch["wifi"]["networks"] = nets
+        return patch
 
-    def connect(self, ssid: str, password: str) -> Dict:
+    def connect(self, ssid: str, password: str) -> Dict[str, Dict[str, Any]]:
         ok = self.svc.connect(ssid, password)
-        return {"wifi": {"connected": ok, "ssid": ssid if ok else ""}}
+        patch = self._status_patch()
+        patch["wifi"]["last_connection_attempt"] = {"ssid": ssid, "success": ok}
+        return patch
 
-    def forget(self, ssid: str) -> Dict:
+    def forget(self, ssid: str) -> Dict[str, Dict[str, Any]]:
         self.svc.forget(ssid)
-        # After forgetting a network we are no longer connected to it
-        return {"wifi": {"forgot": ssid, "connected": False, "ssid": ""}}
+        patch = self._status_patch()
+        patch["wifi"]["forgot"] = ssid
+        return patch
