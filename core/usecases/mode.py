@@ -34,9 +34,13 @@ class ModeUsecase:
         if current.get("mode") == "party":
             # Return to normal mode
             self.esp.send_command("NORA_box_CLOSE")
+            time.sleep(0.05)
             self.esp.send_command("NORA_sound_ON")
+            time.sleep(0.05)
             saved = self._saved_state or DEFAULT_STATE
+            time.sleep(0.05)
             under = saved.get("lighting", {}).get("under_sofa", {})
+            time.sleep(0.05)
             patch = self._merge(
                 patch,
                 self.lighting.set_zone(
@@ -46,29 +50,43 @@ class ModeUsecase:
                     int(under.get("brightness", 128)),
                 ),
             )
+            time.sleep(0.05)
             rl_on = bool(saved.get("lighting", {}).get("reading_light", {}).get("on", False))
+            time.sleep(0.05)
             patch = self._merge(patch, self.reading_light.set(rl_on))
+            time.sleep(0.05)
             bl_on = self._saved_back_light_on if self._saved_back_light_on is not None else bool(
                 saved.get("lighting", {}).get("back_light", {}).get("on", False)
             )
+            time.sleep(0.05)
             patch = self._merge(patch, self.back_light.set(bl_on))
+            time.sleep(0.05)
             patch = self._merge(patch, {"mode": "normal"})
+            time.sleep(0.05)
             self._saved_state = None
+            time.sleep(0.05)
             self._saved_back_light_on = None
         else:
             # Activate party mode
             self.esp.send_command("NORA_box_OPEN")
+            time.sleep(0.05)
             self.esp.send_command("NORA_sound_BOOST")
+            time.sleep(0.05)
             self._saved_state = current
+            time.sleep(0.05)
             self._saved_back_light_on = bool(
                 current.get("lighting", {}).get("back_light", {}).get("on", False)
             )
+            time.sleep(0.05)
             patch = self._merge(
                 patch,
                 self.lighting.set_zone("under_sofa", "rainbow", "#FF00FF", 255),
             )
+            time.sleep(0.05)
             patch = self._merge(patch, self.reading_light.set(False))
+            time.sleep(0.05)
             patch = self._merge(patch, self.back_light.set(False))
+            time.sleep(0.05)
             patch = self._merge(patch, {"mode": "party"})
 
         return patch
