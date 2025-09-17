@@ -67,9 +67,8 @@ class LightingService:
           commands = [f"{prefix}MODE_{mode_value}"]
         commands.append(f"{prefix}{self._brightness_cmd(brightness_value)}")
 
-        for command in commands:
-            self.esp.send_command(command)
-
+        self.esp.send_command(commands)
+        print(commands)
         return {
             "lighting": {
                 zone_key: {
