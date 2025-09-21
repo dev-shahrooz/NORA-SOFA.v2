@@ -48,7 +48,7 @@ sio = SocketIO(app, cors_allowed_origins="*")
 try:
     port = find_esp32_port()
     print(f"Connecting to ESP32 on {port}")
-    esp = ESP32Link(port=port, baud=115200, timeout=0.2, command_delay=0.005)
+    esp = ESP32Link(port=port, baud=115200, timeout=0.2)
     print(f"Successfully connected to ESP32 on {port}")
 except Exception as e:
     print(f"Error connecting to ESP32: {e}")
