@@ -661,6 +661,7 @@ document.getElementById("apply-light").onclick = () => {
   if (brightnessInput) {
     brightnessInput.value = String(brightness);
   }
+  console.log(brightness)
   send("lighting.set", { zone, mode, color, brightness });
 };
 
