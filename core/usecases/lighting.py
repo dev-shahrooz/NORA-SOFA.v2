@@ -63,6 +63,7 @@ class LightingService:
 
         if mode_value == "static":
             commands = [f"{prefix}MODE_static_{color_value}"]
+            cmd = commands[0]
         else:
           commands = [f"{prefix}MODE_{mode_value}"]
           cmd = commands[0]
