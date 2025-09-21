@@ -10,49 +10,49 @@ class LightingService:
     def __init__(self, esp_link):
         self.esp = esp_link
     
-    def _normalize_zone(self, zone: str) -> str:
-        return "box" if zone == "box" else "under_sofa"
+    # def _normalize_zone(self, zone: str) -> str:
+    #     return "box" if zone == "box" else "under_sofa"
 
-    def _normalize_mode(self, mode: Any) -> str:
-        if not isinstance(mode, str):
-            return "off"
-        value = mode.strip().lower()
-        if value in {"off", "rainbow", "static", "wakeup"}:
-            return value
-        if value in {"eq", "equalizer", "equalize", "equaalize"}:
-            return "equaalize"
-        return "off"
+    # def _normalize_mode(self, mode: Any) -> str:
+    #     if not isinstance(mode, str):
+    #         return "off"
+    #     value = mode.strip().lower()
+    #     if value in {"off", "rainbow", "static", "wakeup"}:
+    #         return value
+    #     if value in {"eq", "equalizer", "equalize", "equaalize"}:
+    #         return "equaalize"
+    #     return "off"
 
-    def _normalize_color(self, color: Any) -> str:
-        if not isinstance(color, str):
-            return "#ffffff"
-        candidate = color.strip().lower()
-        if re.fullmatch(r"#[0-9a-f]{6}", candidate):
-            return candidate
-        cleaned = re.sub(r"[^0-9a-f]", "", candidate)[:6]
-        return f"#{cleaned}" if len(cleaned) == 6 else "#ffffff"
+    # def _normalize_color(self, color: Any) -> str:
+    #     if not isinstance(color, str):
+    #         return "#ffffff"
+    #     candidate = color.strip().lower()
+    #     if re.fullmatch(r"#[0-9a-f]{6}", candidate):
+    #         return candidate
+    #     cleaned = re.sub(r"[^0-9a-f]", "", candidate)[:6]
+    #     return f"#{cleaned}" if len(cleaned) == 6 else "#ffffff"
 
-    def _normalize_brightness(self, brightness: Any) -> str:
-        if isinstance(brightness, str):
-            value = brightness.strip().lower()
-            if value in self._BRIGHTNESS_VALUES:
-                return value
-            if value in {"medium", "med"}:
-                return "mid"
-        try:
-            numeric = float(brightness)
-        except (TypeError, ValueError):
-            return "mid"
-        if numeric <= 85:
-            return "low"
-        if numeric <= 170:
-            return "mid"
-        return "high"
+    # def _normalize_brightness(self, brightness: Any) -> str:
+    #     if isinstance(brightness, str):
+    #         value = brightness.strip().lower()
+    #         if value in self._BRIGHTNESS_VALUES:
+    #             return value
+    #         if value in {"medium", "med"}:
+    #             return "mid"
+    #     try:
+    #         numeric = float(brightness)
+    #     except (TypeError, ValueError):
+    #         return "mid"
+    #     if numeric <= 85:
+    #         return "low"
+    #     if numeric <= 170:
+    #         return "mid"
+    #     return "high"
 
-    def _brightness_cmd(self, brightness: str) -> str:
-        if brightness not in self._BRIGHTNESS_VALUES:
-            brightness = "mid"
-        return f"BRIGHTNESS_{brightness}"
+    # def _brightness_cmd(self, brightness: str) -> str:
+    #     if brightness not in self._BRIGHTNESS_VALUES:
+    #         brightness = "mid"
+    #     return f"BRIGHTNESS_{brightness}"
 
     def set_zone(self, zone: str, mode: Any, color: Any, brightness: Any) -> Dict:
         zone_key = zone
@@ -68,7 +68,7 @@ class LightingService:
           cmd = commands[0]
         commands.append(f"{prefix}{self._brightness_cmd(brightness_value)}")
 
-        self.esp.send_command(cmd)
+        self.esp.send_command("NORA_magicL_mode_rainbow")
         print(cmd)
         return {
             "lighting": {
