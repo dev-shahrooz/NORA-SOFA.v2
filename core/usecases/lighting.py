@@ -68,7 +68,7 @@ class LightingService:
           cmd = commands[0]
         # commands.append(f"{prefix}{self._brightness_cmd(brightness_value)}")
 
-        self.esp.send_command("NORA_magicL_mode_rainbow")
+        self.esp.send_command(cmd)
         print(cmd)
         return {
             "lighting": {
