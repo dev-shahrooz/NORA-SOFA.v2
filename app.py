@@ -4,6 +4,9 @@ from typing import Any, Dict
 import serial.tools.list_ports
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO, emit
+import serial
+import time
+import threading
 
 from core.state_store import StateStore
 from core.event_bus import EventBus
@@ -23,20 +26,41 @@ from services.wifi_service import WiFiService
 from drivers.esp32_link import ESP32Link
 
 def find_esp32_port():
-    """Automatically detect the serial port for ESP32."""
     ports = serial.tools.list_ports.comports()
     for port in ports:
-        # Check based on device description
         if any(keyword in port.description.lower() for keyword in ["ch340", "ch341", "cp2102", "ft232", "esp32", "silicon labs"]):
             return port.device
-        # Check based on VID/PID for common USB-to-Serial chips
         if port.vid is not None and port.pid is not None:
             if (port.vid == 0x10C4 and port.pid == 0xEA60) or \
                (port.vid == 0x1A86 and port.pid == 0x7523) or \
                (port.vid == 0x0403 and port.pid == 0x6001): 
                 return port.device
-    # Fallback to environment variable or default
     return os.environ.get("ESP_PORT", "/dev/ttyUSB0")
+
+# نخ برای خالی کردن بافر سریال
+def serial_reader(esp):
+    while True:
+        try:
+            if esp.ser.in_waiting > 0:
+                data = esp.ser.read(esp.ser.in_waiting)
+                print(f"ESP32 data: {data.decode('utf-8', errors='ignore')}")
+            time.sleep(0.1)
+        except serial.SerialException as e:
+            print(f"Serial read error: {e}")
+            time.sleep(1)
+
+# مقداردهی اولیه ESP32Link
+try:
+    port = find_esp32_port()
+    print(f"Connecting to ESP32 on {port}")
+    esp = ESP32Link(port=port, baud=115200, timeout=0.5)
+    print(f"Successfully connected to ESP32 on {port}")
+    # شروع نخ خواندن
+    reader_thread = threading.Thread(target=serial_reader, args=(esp,), daemon=True)
+    reader_thread.start()
+except Exception as e:
+    print(f"Error connecting to ESP32: {e}")
+    esp = None
 
 
 DB_PATH = os.environ.get("NORA_DB","/home/nora/apps/NORA-SOFA.v2/data/nora.db")
@@ -44,15 +68,6 @@ DB_PATH = os.environ.get("NORA_DB","/home/nora/apps/NORA-SOFA.v2/data/nora.db")
 app = Flask(__name__, static_folder="ui", static_url_path="/ui")
 sio = SocketIO(app, cors_allowed_origins="*")
 
-# Initialize ESP32Link with auto-detected port
-try:
-    port = find_esp32_port()
-    print(f"Connecting to ESP32 on {port}")
-    esp = ESP32Link(port=port, baud=115200, timeout=0.2)
-    print(f"Successfully connected to ESP32 on {port}")
-except Exception as e:
-    print(f"Error connecting to ESP32: {e}")
-    esp = None  # Fallback to None to prevent crashes, handle as needed
 
 
 state = StateStore(DB_PATH)
