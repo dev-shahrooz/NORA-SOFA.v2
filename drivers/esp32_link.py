@@ -3,6 +3,7 @@
 import os
 import threading
 import time
+import serial
 
 MOCK = os.environ.get("NORA_MOCK") == "1"
 
