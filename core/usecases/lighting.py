@@ -1,5 +1,6 @@
 # nora/core/usecases/lighting.py
 import re
+import time
 from typing import Any, Dict
 
 class LightingService:
@@ -63,15 +64,22 @@ class LightingService:
 
         if mode_value == "static":
             commands = [f"{prefix}MODE_static_{color_value}"]
+            brightness_com = [f"{prefix}brightness_{brightness_value}"]
             cmd = commands[0]
+            brt = brightness_com[0]
         else:
           commands = [f"{prefix}MODE_{mode_value}"]
+          brightness_com = [f"{prefix}brightness_{brightness_value}"]
           cmd = commands[0]
+          brt = brightness_com[0]
+
         # commands.append(f"{prefix}{self._brightness_cmd(brightness_value)}")
 
         self.esp.send_command(cmd)
+        time.sleep(0.05)
+        self.esp.send_command(brt)
         print(cmd)
-        print(brightness_value)
+        print(brt)
         return {
             "lighting": {
                 zone_key: {
