@@ -29,7 +29,7 @@ sio = SocketIO(app, cors_allowed_origins="*")
 
 state = StateStore(DB_PATH)
 bus = EventBus()
-esp = ESP32Link(port=os.environ.get("ESP_PORT","/dev/ttyUSB1"))
+esp = ESP32Link(port=os.environ.get("ESP_PORT","/dev/ttyUSB0"))
 lighting = LightingService(esp)
 bt_service = BluetoothService()
 bluetooth_uc = BluetoothUsecase(bt_service)
