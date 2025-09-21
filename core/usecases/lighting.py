@@ -71,6 +71,7 @@ class LightingService:
 
         self.esp.send_command(cmd)
         print(cmd)
+        print(brightness_value)
         return {
             "lighting": {
                 zone_key: {
