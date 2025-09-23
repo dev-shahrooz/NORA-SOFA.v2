@@ -10,15 +10,8 @@
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="/ui/src/font/fontawesome-free-7.0.1-web/css/all.min.css"/>
 
-
   <!-- Swiper JS -->
   <script src="/ui/src/js/swiper-bundle.min.js"></script>
-  <!-- Fallback for Swiper -->
-  <!-- <script>
-    if (typeof Swiper === 'undefined') {
-      document.write('<script src="/ui/src/js/swiper-bundle.min.js" integrity="sha512-3LS9LaXAE2DGr2qG4q47zFvCoSKbOgF+nwRhM0PW/0i+0J+hrD+0VBR7q0+9dWq3fIu+KnzRhVysy4z3nZ7v1g==" crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>');
-    }
-  </script> -->
   <!-- Socket.IO -->
   <script src="/ui/src/js/socket.io.min.js"></script>
   <!-- GSAP for animations -->
@@ -58,7 +51,7 @@
             <div class="top">
               <div class="viewer">
                 <div class="sofa-wrap">
-                  <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/LCD\ 1.jpg')">
+                  <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/LCD 1.jpg')">
                     <div class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></div>
                     <div class="feature-btn f-headlight" data-feature="headlight" title="Headlight"><i class="fa-solid fa-helmet-safety"></i></div>
                     <div class="feature-btn f-wcharger" data-feature="wcharger" title="Wireless charger"><i class="fa-solid fa-battery-half"></i></div>
@@ -77,7 +70,7 @@
             <div class="top">
               <div class="viewer">
                 <div class="sofa-wrap">
-                  <div class="sofa-img" id="sofa-back" style="background-image: url('/ui/src/img/LCD\ 3.jpg')">
+                  <div class="sofa-img" id="sofa-back" style="background-image: url('/ui/src/img/LCD 3.jpg')">
                     <div class="backlight-glow" id="backlightGlow" style="left: 10%; top: 10%; width: 80%; height: 80%; background: radial-gradient(circle at 50% 25%, rgba(79,70,229,0.35) 0%, rgba(79,70,229,0.12) 20%, rgba(79,70,229,0.02) 60%);;"></div>
                     <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb-on"></i></div>
                     <div class="feature-btn f-sound" data-feature="sound" title="Sound system"><i class="fa-solid fa-speaker"></i></div>
@@ -103,7 +96,6 @@
       <button class="panel-btn" data-section="voice-assistant" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></button>
     </div>
   </div>
-  <button class="sidebar-toggle" style="display: none;" id="sidebarToggle" title="Features"><i class="fa-solid fa-bars"></i></button>
   <div class="sidebar" id="sidebar">
     <button class="close-btn" id="closeSidebar"><i class="fa-solid fa-times"></i></button>
     <h3 data-i18n="panel_title">Smart Sofa Features</h3>
@@ -115,9 +107,17 @@
           <input type="checkbox" class="feature-toggle" data-feature="reading">
           <span class="slider"></span>
         </label>
-      </div>      
-      <div class="list-item" data-feature="sound"><i class="fa-solid fa-speaker"></i><div class="label" data-i18n="media_player_title">Sound System</div><div class="status" data-i18n="status_off">Off</div></div>
-      <div class="list-item" data-feature="soundbar"><i class="fa-solid fa-volume-up"></i><div class="label" data-i18n="soundbar_title">Party Mode</div><div class="status" data-i18n="status_off">Off</div></div>
+      </div>
+      <div class="list-item" data-feature="sound">
+        <i class="fa-solid fa-speaker"></i>
+        <div class="label" data-i18n="media_player_title">Sound System</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
+      <div class="list-item" data-feature="soundbar">
+        <i class="fa-solid fa-volume-up"></i>
+        <div class="label" data-i18n="soundbar_title">Party Mode</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
       <div class="list-item" data-feature="backlight">
         <i class="fa-solid fa-lightbulb-on"></i>
         <div class="label" data-i18n="back_light_title">Backlight</div>
@@ -125,14 +125,42 @@
           <input type="checkbox" class="feature-toggle" data-feature="backlight">
           <span class="slider"></span>
         </label>
-      </div>      
-      <div class="list-item" data-feature="voice"><i class="fa-solid fa-microphone"></i><div class="label" data-i18n="voice_title">Voice Assistant</div><div class="status" data-i18n="status_off">Off</div></div>
-      <div class="list-item" data-feature="headlight"><i class="fa-solid fa-helmet-safety"></i><div class="label" data-i18n="headlight_title">Headlight</div><div class="status" data-i18n="status_off">Off</div></div>
-      <div class="list-item" data-feature="wcharger"><i class="fa-solid fa-battery-half"></i><div class="label" data-i18n="wcharger_title">Wireless Charger</div><div class="status" data-i18n="status_off">Off</div></div>
-      <div class="list-item" data-feature="bluetooth"><i class="fa-brands fa-bluetooth"></i><div class="label" data-i18n="bluetooth_title">Bluetooth</div><div class="status" data-i18n="status_off">Off</div></div>
-      <div class="list-item" data-feature="wifi"><i class="fa-solid fa-wifi"></i><div class="label" data-i18n="wifi_title">WiFi</div><div class="status" data-i18n="status_off">Off</div></div>
-      <div class="list-item" data-feature="massage"><i class="fa-solid fa-vibrate"></i><div class="label" data-i18n="massage_title">Massage Mode</div><div class="status" data-i18n="status_off">Off</div></div>
-      <div class="list-item" data-feature="climate"><i class="fa-solid fa-thermometer"></i><div class="label" data-i18n="climate_title">Climate Control</div><div class="status" data-i18n="status_off">Off</div></div>
+      </div>
+      <div class="list-item" data-feature="voice">
+        <i class="fa-solid fa-microphone"></i>
+        <div class="label" data-i18n="voice_title">Voice Assistant</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
+      <div class="list-item" data-feature="headlight">
+        <i class="fa-solid fa-helmet-safety"></i>
+        <div class="label" data-i18n="headlight_title">Headlight</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
+      <div class="list-item" data-feature="wcharger">
+        <i class="fa-solid fa-battery-half"></i>
+        <div class="label" data-i18n="wcharger_title">Wireless Charger</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
+      <div class="list-item" data-feature="bluetooth">
+        <i class="fa-brands fa-bluetooth"></i>
+        <div class="label" data-i18n="bluetooth_title">Bluetooth</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
+      <div class="list-item" data-feature="wifi">
+        <i class="fa-solid fa-wifi"></i>
+        <div class="label" data-i18n="wifi_title">WiFi</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
+      <div class="list-item" data-feature="massage">
+        <i class="fa-solid fa-vibrate"></i>
+        <div class="label" data-i18n="massage_title">Massage Mode</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
+      <div class="list-item" data-feature="climate">
+        <i class="fa-solid fa-thermometer"></i>
+        <div class="label" data-i18n="climate_title">Climate Control</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
     </div>
     <div class="wifi-controls">
       <div class="wifi-connected" style="display: none;">
@@ -162,7 +190,7 @@
         <h3 data-i18n="under_sofa_light_title">Under Sofa Lighting</h3>
         <div class="lighting-controls">
           <label>Mode:
-            <select class="lighting-mode" data-zone="under_sofa">
+            <select class="lighting-mode" data-zone="under_sofa" id="mode">
               <option value="off">Off</option>
               <option value="rainbow">Rainbow</option>
               <option value="static">Static</option>
@@ -170,14 +198,15 @@
               <option value="wakeup">Wakeup</option>
             </select>
           </label>
-          <label>Color: <input type="color" class="lighting-color" data-zone="under_sofa" value="#4f46e5"></label>
+          <label>Color: <input type="color" class="lighting-color" data-zone="under_sofa" id="color" value="#4f46e5"></label>
           <label>Brightness:
-            <select class="lighting-brightness" data-zone="under_sofa">
+            <select class="lighting-brightness" data-zone="under_sofa" id="brightness">
               <option value="low">Low</option>
               <option value="mid" selected>Mid</option>
               <option value="high">High</option>
             </select>
           </label>
+          <button id="apply-light" class="btn" data-i18n="apply_light">Apply</button>
         </div>
       </div>
       <div class="section">
@@ -200,6 +229,7 @@
               <option value="high">High</option>
             </select>
           </label>
+          <button id="apply-light-box" class="btn" data-i18n="apply_light">Apply</button>
         </div>
       </div>
       <div class="section">
@@ -219,6 +249,7 @@
           <div class="bluetooth-connected" style="display: none;">
             <span id="bluetooth-device"></span>
             <button id="bluetooth-disconnect" class="btn" data-i18n="bluetooth_disconnect">Disconnect</button>
+            <button id="unpair" class="btn" data-i18n="bluetooth_unpair">Unpair</button>
           </div>
           <button id="bluetooth-scan" class="btn" data-i18n="bluetooth_scan">Scan Devices</button>
           <ul id="bluetooth-devices" class="bluetooth-devices"></ul>
@@ -286,10 +317,10 @@
           reading_light_turn_off: "خاموش کردن چراغ",
           status_on: "روشن",
           status_off: "خاموش",
-          back_light_title: "چراغ پشت (Back Light)",
+          back_light_title: "چراغ پشت",
           back_light_turn_on: "روشن کردن چراغ پشت",
           back_light_turn_off: "خاموش کردن چراغ پشت",
-          party_mode: "Party Mode",
+          party_mode: "حالت مهمانی",
           under_sofa_title: "نور زیر مبل",
           zone_label: "زون:",
           zone_under_sofa: "زیر مبل",
@@ -309,7 +340,7 @@
           bluetooth_title: "بلوتوث سیستم",
           bluetooth_turn_on: "روشن کردن بلوتوث",
           bluetooth_turn_off: "خاموش کردن بلوتوث",
-          bluetooth_unpair: "Unpair Bluetooth",
+          bluetooth_unpair: "لغو جفت‌سازی بلوتوث",
           wifi_title: "وای‌فای",
           wifi_turn_on: "روشن کردن وای‌فای",
           wifi_turn_off: "خاموش کردن وای‌فای",
@@ -635,8 +666,6 @@
       const prevButtons = document.querySelectorAll("#player-prev");
       const trackTitles = document.querySelectorAll("#track-title");
       const trackArtists = document.querySelectorAll("#track-artist");
-      const sidebarToggle = document.getElementById("sidebarToggle");
-      const sidebarToggleBtn = document.querySelectorAll("#sidebarToggleBtn");
       const sidebar = document.getElementById("sidebar");
       const closeSidebar = document.getElementById("closeSidebar");
       const panelButtons = document.querySelectorAll(".panel-btn");
@@ -653,6 +682,7 @@
       const bluetoothList = document.getElementById("bluetooth-devices");
       const bluetoothDevice = document.getElementById("bluetooth-device");
       const bluetoothDisconnectBtn = document.getElementById("bluetooth-disconnect");
+      const bluetoothUnpairBtn = document.getElementById("unpair");
       const bluetoothConnected = document.querySelector(".bluetooth-connected");
       const lightColorPicker = document.getElementById("light-color");
       const colorValue = document.getElementById("color-value");
@@ -661,33 +691,23 @@
       const lightingColors = document.querySelectorAll('.lighting-color');
       const lightingBrightnesses = document.querySelectorAll('.lighting-brightness');
       const digitalCrowns = document.querySelectorAll("#digitalCrown");
+      const applyLightBtn = document.getElementById("apply-light");
+      const applyLightBoxBtn = document.getElementById("apply-light-box");
 
       // Sanitization Functions
       function sanitizeMode(mode) {
-        if (typeof mode !== "string") {
-          return "off";
-        }
+        if (typeof mode !== "string") return "off";
         const value = mode.trim().toLowerCase();
-        if (["off", "rainbow", "static"].includes(value)) {
-          return value;
-        }
-        if (["eq", "equalize", "equalizer", "equaalize"].includes(value)) {
-          return "equaalize";
-        }
-        if (["wakeup", "wake", "voice", "voiceassistant", "voice_assistant"].includes(value)) {
-          return "wakeup";
-        }
+        if (["off", "rainbow", "static"].includes(value)) return value;
+        if (["eq", "equalize", "equalizer", "equaalize"].includes(value)) return "equaalize";
+        if (["wakeup", "wake", "voice", "voiceassistant", "voice_assistant"].includes(value)) return "wakeup";
         return "off";
       }
 
       function sanitizeColor(color) {
-        if (typeof color !== "string") {
-          return "#ffffff";
-        }
+        if (typeof color !== "string") return "#ffffff";
         const trimmed = color.trim();
-        if (/^#[0-9A-Fa-f]{6}$/.test(trimmed)) {
-          return trimmed.toLowerCase();
-        }
+        if (/^#[0-9A-Fa-f]{6}$/.test(trimmed)) return trimmed.toLowerCase();
         const hex = trimmed.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6);
         return hex.length === 6 ? `#${hex.toLowerCase()}` : "#ffffff";
       }
@@ -695,23 +715,13 @@
       function sanitizeBrightness(brightness) {
         if (typeof brightness === "string") {
           const value = brightness.trim().toLowerCase();
-          if (["low", "mid", "high"].includes(value)) {
-            return value;
-          }
-          if (["medium", "med"].includes(value)) {
-            return "mid";
-          }
+          if (["low", "mid", "high"].includes(value)) return value;
+          if (["medium", "med"].includes(value)) return "mid";
         }
         const value = Number(brightness);
-        if (!Number.isFinite(value)) {
-          return "mid";
-        }
-        if (value <= 85) {
-          return "low";
-        }
-        if (value <= 170) {
-          return "mid";
-        }
+        if (!Number.isFinite(value)) return "mid";
+        if (value <= 85) return "low";
+        if (value <= 170) return "mid";
         return "high";
       }
 
@@ -753,10 +763,12 @@
         if (bluetooth.connected) {
           bluetoothDevice.textContent = bluetooth.deviceName || "";
           bluetoothDisconnectBtn.style.display = "inline";
+          bluetoothUnpairBtn.style.display = "inline";
           bluetoothConnected.style.display = "flex";
         } else {
           bluetoothDevice.textContent = "";
           bluetoothDisconnectBtn.style.display = "none";
+          bluetoothUnpairBtn.style.display = "none";
           bluetoothConnected.style.display = "none";
         }
         if (pendingBTDevice && bluetooth.connected && bluetooth.deviceId === pendingBTDevice) {
@@ -851,39 +863,40 @@
           const lighting = st?.lighting || {};
           const zoneState = lighting[zone] || {};
           const mode = sanitizeMode(zoneState.mode);
-          if (select.value !== mode) {
-            select.value = mode;
-          }
+          if (select.value !== mode) select.value = mode;
         });
         lightingColors.forEach(input => {
           const zone = input.dataset.zone;
           const lighting = st?.lighting || {};
           const zoneState = lighting[zone] || {};
           const color = sanitizeColor(zoneState.color);
-          if (input.value.toLowerCase() !== color) {
-            input.value = color;
-          }
-          input.disabled = lightingModes.forEach(select => select.dataset.zone === zone && select.value !== "static");
+          if (input.value.toLowerCase() !== color) input.value = color;
+          input.disabled = Array.from(lightingModes).some(select => select.dataset.zone === zone && select.value !== "static");
         });
         lightingBrightnesses.forEach(select => {
           const zone = select.dataset.zone;
           const lighting = st?.lighting || {};
           const zoneState = lighting[zone] || {};
           const brightness = sanitizeBrightness(zoneState.brightness);
-          if (sanitizeBrightness(select.value) !== brightness) {
-            select.value = brightness;
-          }
+          if (sanitizeBrightness(select.value) !== brightness) select.value = brightness;
         });
       }
 
       function setFeatureUI(feature, enabled) {
         document.querySelectorAll(`[data-feature="${feature}"]`).forEach(el => {
-          if (enabled) el.classList.add('active'); else el.classList.remove('active');
+          if (enabled) {
+            el.classList.add('active');
+            el.title = t(`${feature}_turn_off`);
+          } else {
+            el.classList.remove('active');
+            el.title = t(`${feature}_turn_on`);
+          }
         });
         document.querySelectorAll(`.list-item[data-feature="${feature}"]`).forEach(el => {
           const statusEl = el.querySelector('.status');
           if (statusEl) {
             statusEl.textContent = t(enabled ? "status_on" : "status_off");
+            statusEl.classList.toggle('on', enabled);
           }
           const toggleEl = el.querySelector('.feature-toggle');
           if (toggleEl) {
@@ -913,23 +926,25 @@
           });
         }
 
-        if (feature === 'soundbar') {
-          const soundbarButtons = document.querySelectorAll('.f-soundbar');
-          soundbarButtons.forEach(btn => {
-            if (enabled) {
-              btn.classList.add('active');
-            } else {
-              btn.classList.remove('active');
-              gsap.killTweensOf(btn);
-            }
-          });
-        }
-
         if (feature === 'sound') {
           toggleButtons.forEach(btn => {
             const icon = btn.querySelector('i');
             icon.className = enabled ? 'fa-solid fa-pause' : 'fa-solid fa-play';
             btn.title = t(enabled ? 'player_pause' : 'player_play');
+          });
+        }
+
+        if (feature === 'soundbar') {
+          const soundbarButtons = document.querySelectorAll('.f-soundbar');
+          soundbarButtons.forEach(btn => {
+            if (enabled) {
+              btn.classList.add('active');
+              btn.title = t('soundbar_turn_off');
+            } else {
+              btn.classList.remove('active');
+              btn.title = t('soundbar_turn_on');
+              gsap.killTweensOf(btn);
+            }
           });
         }
       }
@@ -938,17 +953,13 @@
       featureButtons.forEach(btn => {
         btn.addEventListener('click', () => {
           const f = btn.dataset.feature;
+          lastState[f] = !lastState[f];
+          setFeatureUI(f, lastState[f]);
           if (['reading', 'backlight'].includes(f)) {
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
             send("lighting.set", { zone: f === 'reading' ? 'reading_light' : 'back_light', on: lastState[f] });
           } else if (f === 'sound') {
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
             send("player." + (lastState[f] ? "play" : "pause"));
           } else if (['bluetooth', 'wifi', 'voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
             send(`${f}.set`, { on: lastState[f] });
           }
         });
@@ -988,23 +999,26 @@
         btn.addEventListener('click', (e) => {
           if (e.target.classList.contains('feature-toggle') || e.target.classList.contains('slider')) return;
           const f = btn.dataset.feature;
+          lastState[f] = !lastState[f];
+          setFeatureUI(f, lastState[f]);
           if (['reading', 'backlight'].includes(f)) {
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
             send("lighting.set", { zone: f === 'reading' ? 'reading_light' : 'back_light', on: lastState[f] });
           } else if (f === 'sound') {
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
             send("player." + (lastState[f] ? "play" : "pause"));
           } else if (f === 'soundbar') {
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
             send("mode.toggle");
           } else if (['bluetooth', 'wifi', 'voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
             send(`${f}.set`, { on: lastState[f] });
           }
+        });
+      });
+
+      featureToggles.forEach(toggle => {
+        toggle.addEventListener('change', () => {
+          const f = toggle.dataset.feature;
+          lastState[f] = toggle.checked;
+          setFeatureUI(f, lastState[f]);
+          send("lighting.set", { zone: f === 'reading' ? 'reading_light' : 'back_light', on: lastState[f] });
         });
       });
 
@@ -1036,17 +1050,23 @@
         bluetoothScanRequested = true;
         send("bluetooth.scan");
       };
+
       bluetoothDisconnectBtn.onclick = () => {
+        send("bluetooth.disconnect");
+      };
+
+      bluetoothUnpairBtn.onclick = () => {
         send("bluetooth.unpair");
       };
 
       toggleButtons.forEach(btn => {
         btn.onclick = () => {
-          lastState['sound'] = !lastState['sound'];
-          setFeatureUI('sound', lastState['sound']);
-          send("player." + (lastState['sound'] ? "play" : "pause"));
+          lastState.sound = !lastState.sound;
+          setFeatureUI('sound', lastState.sound);
+          send("player." + (lastState.sound ? "play" : "pause"));
         };
       });
+
       nextButtons.forEach(btn => btn.onclick = () => send("player.next"));
       prevButtons.forEach(btn => btn.onclick = () => send("player.previous"));
 
@@ -1068,20 +1088,27 @@
         };
       });
 
+      applyLightBtn.onclick = () => {
+        const zone = "under_sofa";
+        const mode = document.getElementById("mode").value;
+        const color = document.getElementById("color").value;
+        const brightness = document.getElementById("brightness").value;
+        send("lighting.set", { zone, mode, color, brightness });
+      };
+
+      applyLightBoxBtn.onclick = () => {
+        const zone = "box";
+        const mode = document.querySelector('.lighting-mode[data-zone="box"]').value;
+        const color = document.querySelector('.lighting-color[data-zone="box"]').value;
+        const brightness = document.querySelector('.lighting-brightness[data-zone="box"]').value;
+        send("lighting.set", { zone, mode, color, brightness });
+      };
+
       lightColorPicker.oninput = () => {
         const color = lightColorPicker.value;
         colorValue.textContent = color;
         send("lighting.set_color", { color });
       };
-
-      featureToggles.forEach(toggle => {
-        toggle.addEventListener('change', () => {
-          const feature = toggle.dataset.feature;
-          lastState[feature] = toggle.checked;
-          setFeatureUI(feature, lastState[feature]);
-          send("lighting.set", { zone: feature === 'reading' ? 'reading_light' : 'back_light', on: lastState[feature] });
-        });
-      });
 
       lightingModes.forEach(select => {
         select.addEventListener('change', () => {
@@ -1119,39 +1146,6 @@
         });
       });
 
-      sidebarToggle.onclick = () => {
-        if (sidebar.classList.contains('open')) {
-          gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
-        } else {
-          sidebar.classList.add('open');
-          gsap.fromTo(sidebar, { x: '100%' }, { x: 0, duration: 0.3, ease: 'power2.out' });
-        }
-      };
-
-      sidebarToggleBtn.forEach(btn => {
-        btn.onclick = () => {
-          if (sidebar.classList.contains('open')) {
-            gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
-          } else {
-            sidebar.classList.add('open');
-            gsap.fromTo(sidebar, { x: '100%' }, { x: 0, duration: 0.3, ease: 'power2.out' });
-          }
-        };
-      });
-
-      closeSidebar.onclick = () => {
-        gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
-      };
-
-      document.addEventListener('click', (e) => {
-        if (sidebar.classList.contains('open') && 
-            !sidebar.contains(e.target) && 
-            !sidebarToggle.contains(e.target) && 
-            !Array.from(sidebarToggleBtn).some(btn => btn.contains(e.target))) {
-          gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
-        }
-      });
-
       panelButtons.forEach(btn => {
         btn.onclick = () => {
           const section = btn.dataset.section;
@@ -1166,6 +1160,29 @@
           const wrapper = btn.parentElement;
           gsap.to(wrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => wrapper.classList.remove('open') });
         };
+      });
+
+      closeSidebar.onclick = () => {
+        gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
+      };
+
+      document.querySelectorAll("#sidebarToggleBtn").forEach(btn => {
+        btn.onclick = () => {
+          if (sidebar.classList.contains('open')) {
+            gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
+          } else {
+            sidebar.classList.add('open');
+            gsap.fromTo(sidebar, { x: '100%' }, { x: 0, duration: 0.3, ease: 'power2.out' });
+          }
+        };
+      });
+
+      document.addEventListener('click', (e) => {
+        if (sidebar.classList.contains('open') && 
+            !sidebar.contains(e.target) && 
+            !Array.from(document.querySelectorAll("#sidebarToggleBtn")).some(btn => btn.contains(e.target))) {
+          gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
+        }
       });
 
       langSelectSettings.onchange = (e) => setLang(e.target.value);
