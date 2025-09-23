@@ -955,10 +955,12 @@
           const f = btn.dataset.feature;
           lastState[f] = !lastState[f];
           setFeatureUI(f, lastState[f]);
-          if (['reading', 'backlight'].includes(f)) {
-            send("lighting.set", { zone: f === 'reading' ? 'reading_light' : 'back_light', on: lastState[f] });
+          if (f === 'reading') {
+            send(lastState[f] ? "reading_light.set" : "reading_light.set", { on: lastState[f] });
+          } else if (f === 'backlight') {
+            send(lastState[f] ? "back_light.set" : "back_light.set", { on: lastState[f] });
           } else if (f === 'sound') {
-            send("player." + (lastState[f] ? "play" : "pause"));
+            send(lastState[f] ? "player.play" : "player.pause");
           } else if (['bluetooth', 'wifi', 'voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
             send(`${f}.set`, { on: lastState[f] });
           }
@@ -1001,13 +1003,19 @@
           const f = btn.dataset.feature;
           lastState[f] = !lastState[f];
           setFeatureUI(f, lastState[f]);
-          if (['reading', 'backlight'].includes(f)) {
-            send("lighting.set", { zone: f === 'reading' ? 'reading_light' : 'back_light', on: lastState[f] });
+          if (f === 'reading') {
+            send("reading_light.toggle");
+          } else if (f === 'backlight') {
+            send("back_light.toggle");
           } else if (f === 'sound') {
-            send("player." + (lastState[f] ? "play" : "pause"));
+            send(lastState[f] ? "player.play" : "player.pause");
           } else if (f === 'soundbar') {
             send("mode.toggle");
-          } else if (['bluetooth', 'wifi', 'voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
+          } else if (f === 'bluetooth') {
+            send("bluetooth.toggle");
+          } else if (f === 'wifi') {
+            send("wifi.toggle");
+          } else if (['voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
             send(`${f}.set`, { on: lastState[f] });
           }
         });
@@ -1018,7 +1026,11 @@
           const f = toggle.dataset.feature;
           lastState[f] = toggle.checked;
           setFeatureUI(f, lastState[f]);
-          send("lighting.set", { zone: f === 'reading' ? 'reading_light' : 'back_light', on: lastState[f] });
+          if (f === 'reading') {
+            send("reading_light.set", { on: lastState[f] });
+          } else if (f === 'backlight') {
+            send("back_light.set", { on: lastState[f] });
+          }
         });
       });
 
@@ -1063,7 +1075,7 @@
         btn.onclick = () => {
           lastState.sound = !lastState.sound;
           setFeatureUI('sound', lastState.sound);
-          send("player." + (lastState.sound ? "play" : "pause"));
+          send(lastState.sound ? "player.play" : "player.pause");
         };
       });
 
@@ -1217,8 +1229,9 @@
         renderLightingInputs(st);
       });
 
-      // Query initial state
+      // Query initial state and player info
       sio.emit("ui.query", {});
+      send("player.info");
 
       // Initial language setup
       setLang(currentLang);
