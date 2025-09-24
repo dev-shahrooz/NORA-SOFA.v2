@@ -310,7 +310,7 @@
     border-radius: 40px 0 0 40px;
     width: 100px; 
     height: 100%;
-    padding: 10px; 
+    padding: 25px 10px; 
     display: flex; 
     flex-direction: column; 
     gap: 15px; 
@@ -324,7 +324,7 @@
   .new-panel h3 { margin: 0 0 4px 0; font-size: 16px; }
   .panel-btn, .panel-btn-toggle { 
     padding: 25px; 
-    border-radius: 10px; 
+    border-radius: 20px; 
     border: 1px solid rgba(255,255,255,0.03); 
     background: rgba(255,255,255,0.02); 
     color: #e6eef8; 
