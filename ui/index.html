@@ -174,8 +174,8 @@
       <div class="lang-section">
         <h3 data-i18n="language_title">Language</h3>
         <select id="lang-select-settings">
-          <option value="fa">فارسی</option>
           <option value="en">English</option>
+          <option value="fa">فارسی</option>
           <option value="tr">Türkçe</option>
           <option value="ar">العربية</option>
         </select>
@@ -611,6 +611,7 @@
         soundbar: false,
         boxlight: false,
         bluetooth: false,
+        btConnected: false,
         wifi: false,
         voice: false,
         headlight: false,
@@ -767,6 +768,7 @@
         const bluetooth = st?.bluetooth || {};
         const on = !!bluetooth.on;
         lastState.bluetooth = on;
+        lastState.btConnected = !!bluetooth.connected;
         setFeatureUI('bluetooth', on);
         bluetoothScanBtn.disabled = !on;
         bluetoothList.innerHTML = "";
@@ -793,6 +795,7 @@
         if (pendingBTDevice && bluetooth.connected && bluetooth.deviceId === pendingBTDevice) {
           pendingBTDevice = null;
         }
+        updateMusicPanelVisibility();
       }
 
       function renderWiFi(st, isSettingsWrapper = false) {
@@ -853,27 +856,29 @@
         const muted = !!st?.audio?.muted;
         volumeRanges.forEach(range => range.value = vol);
         volumeValues.forEach(value => value.textContent = vol);
-        lastState.sound = !muted;
-        setFeatureUI('sound', !muted);
+        // Removed conflicting lastState.sound and setFeatureUI calls here
+        // lastState.sound now only reflects player.playing, not mute state
+      }
+
+      function updateMusicPanelVisibility() {
+        const musicPanels = document.querySelectorAll('#musicPanel');
+        const shouldShow = lastState.btConnected; // Show when Bluetooth is connected
+        musicPanels.forEach(panel => {
+          panel.classList.toggle('connected', shouldShow);
+          panel.style.display = shouldShow ? 'block' : 'none';
+          if (shouldShow) {
+            gsap.fromTo(panel, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
+          }
+        });
       }
 
       function renderPlayer(st) {
         const p = st?.player || {};
         trackTitles.forEach(title => title.textContent = p.title || "");
         trackArtists.forEach(artist => artist.textContent = p.artist || "");
-        const musicPanels = document.querySelectorAll('#musicPanel');
-        musicPanels.forEach(panel => {
-          const shouldShow = (lastState.sound && lastState.bluetooth);
-          panel.classList.toggle('connected', shouldShow);
-          panel.style.display = shouldShow ? 'block' : 'block';
-          if (p.playing) {
-            panel.classList.add('playing');
-          } else {
-            panel.classList.remove('playing');
-          }
-        });
         lastState.sound = !!p.playing;
-        setFeatureUI('sound', p.playing);
+        setFeatureUI('sound', lastState.sound);
+        // Visibility handled in renderBluetooth and updateMusicPanelVisibility
       }
 
       function renderLightingInputs(st) {
@@ -936,13 +941,7 @@
         }
 
         if (feature === 'sound' || feature === 'bluetooth') {
-          const musicPanels = document.querySelectorAll('#musicPanel');
-          musicPanels.forEach(panel => {
-            const shouldShow = (lastState.sound && lastState.bluetooth);
-            panel.classList.toggle('connected', shouldShow);
-            panel.style.display = shouldShow ? 'block' : 'block';
-            gsap.fromTo(panel, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
-          });
+          // Visibility updated separately via updateMusicPanelVisibility
         }
 
         if (feature === 'sound') {
@@ -978,8 +977,6 @@
             send("reading_light.set", { on: lastState[f] });
           } else if (f === 'backlight') {
             send("back_light.set", { on: lastState[f] });
-          } else if (f === 'sound') {
-            send(lastState[f] ? "player.play" : "player.pause");
           } else if (f === 'soundbar') {
             const loadingOverlay = btn.querySelector('.loading-overlay');
             gsap.killTweensOf(loadingOverlay);
@@ -1015,8 +1012,6 @@
             send("reading_light.toggle");
           } else if (f === 'backlight') {
             send("back_light.toggle");
-          } else if (f === 'sound') {
-            send(lastState[f] ? "player.play" : "player.pause");
           } else if (f === 'soundbar') {
             send("mode.toggle");
           } else if (f === 'boxlight') {
