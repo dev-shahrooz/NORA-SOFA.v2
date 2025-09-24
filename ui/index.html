@@ -17,6 +17,19 @@
   <!-- GSAP for animations -->
   <script src="/ui/src/js/gsap.min.js"></script>
   <link rel="stylesheet" href="/ui/src/css/style.css" />
+  <style>
+    .loading-overlay {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 5px;
+      background: #4f46e5;
+      opacity: 0;
+      border-radius: 2px;
+    }
+  </style>
 </head>
 <body>
   <div class="swiper-container">
@@ -51,14 +64,11 @@
             <div class="top">
               <div class="viewer">
                 <div class="sofa-wrap">
-                  <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/LCD\ front.jpg')">
+                  <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/LCD front.jpg')">
                     <div class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></div>
-                    <div class="feature-btn f-headlight" data-feature="headlight" title="Headlight"><i class="fa-solid fa-helmet-safety"></i></div>
-                    <div class="feature-btn f-wcharger" data-feature="wcharger" title="Wireless charger"><i class="fa-solid fa-battery-half"></i></div>
-                    <div class="feature-btn f-massage" data-feature="massage" title="Massage mode"><i class="fa-solid fa-vibrate"></i></div>
-                    <div class="feature-btn f-climate" data-feature="climate" title="Climate control"><i class="fa-solid fa-thermometer"></i></div>
-                    <div class="feature-btn f-sound" data-feature="sound" title="Sound system"><i class="fa-solid fa-speaker"></i></div>
-                    <div class="polygon-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-bar"></div></div>
+                    <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></div>
+                    <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i></div>
+                    <div class="feature-btn f-boxlight" data-feature="boxlight" title="Box Light"><i class="fa-solid fa-lightbulb"></i></div>
                   </div>
                 </div>
               </div>
@@ -70,14 +80,15 @@
             <div class="top">
               <div class="viewer">
                 <div class="sofa-wrap">
-                  <div class="sofa-img" id="sofa-back" style="background-image: url('/ui/src/img/LCD\ back.jpg')">
+                  <div class="sofa-img" id="sofa-back" style="background-image: url('/ui/src/img/LCD back.jpg')">
+                    <div class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></div>
                     <div class="backlight-glow" id="backlightGlow" style="left: 10%; top: 10%; width: 80%; height: 80%; background: radial-gradient(circle at 50% 25%, rgba(79,70,229,0.35) 0%, rgba(79,70,229,0.12) 20%, rgba(79,70,229,0.02) 60%);;"></div>
-                    <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb-on"></i></div>
-                    <div class="feature-btn f-sound" data-feature="sound" title="Sound system"><i class="fa-solid fa-speaker"></i></div>
-                    <div class="polygon-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-bar"></div></div>
+                    <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></div>
                     <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
                     <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
                     <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
+                    <div class="feature-btn f-soundbarL" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
+                    <div class="feature-btn f-boxlightL" data-feature="boxlight" title="Box Light"><i class="fa-solid fa-lightbulb"></i><div class="loading-overlay"></div></div>
                   </div>
                 </div>
               </div>
@@ -108,37 +119,30 @@
           <span class="slider"></span>
         </label>
       </div>
-      <div class="list-item" data-feature="sound">
-        <i class="fa-solid fa-speaker"></i>
-        <div class="label" data-i18n="media_player_title">Sound System</div>
-        <div class="status" data-i18n="status_off">Off</div>
-      </div>
-      <div class="list-item" data-feature="soundbar">
-        <i class="fa-solid fa-volume-up"></i>
-        <div class="label" data-i18n="soundbar_title">Party Mode</div>
-        <div class="status" data-i18n="status_off">Off</div>
-      </div>
       <div class="list-item" data-feature="backlight">
-        <i class="fa-solid fa-lightbulb-on"></i>
+        <i class="fa-solid fa-lightbulb"></i>
         <div class="label" data-i18n="back_light_title">Backlight</div>
         <label class="switch">
           <input type="checkbox" class="feature-toggle" data-feature="backlight">
           <span class="slider"></span>
         </label>
       </div>
+      <div class="list-item" data-feature="boxlight">
+        <i class="fa-solid fa-lightbulb"></i>
+        <div class="label" data-i18n="box_light_title">Box Light</div>
+        <label class="switch">
+          <input type="checkbox" class="feature-toggle" data-feature="boxlight">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="list-item" data-feature="soundbar">
+        <i class="fa-solid fa-volume-up"></i>
+        <div class="label" data-i18n="soundbar_title">Party Mode</div>
+        <div class="status" data-i18n="status_off">Off</div>
+      </div>
       <div class="list-item" data-feature="voice">
         <i class="fa-solid fa-microphone"></i>
         <div class="label" data-i18n="voice_title">Voice Assistant</div>
-        <div class="status" data-i18n="status_off">Off</div>
-      </div>
-      <div class="list-item" data-feature="headlight">
-        <i class="fa-solid fa-helmet-safety"></i>
-        <div class="label" data-i18n="headlight_title">Headlight</div>
-        <div class="status" data-i18n="status_off">Off</div>
-      </div>
-      <div class="list-item" data-feature="wcharger">
-        <i class="fa-solid fa-battery-half"></i>
-        <div class="label" data-i18n="wcharger_title">Wireless Charger</div>
         <div class="status" data-i18n="status_off">Off</div>
       </div>
       <div class="list-item" data-feature="bluetooth">
@@ -149,16 +153,6 @@
       <div class="list-item" data-feature="wifi">
         <i class="fa-solid fa-wifi"></i>
         <div class="label" data-i18n="wifi_title">WiFi</div>
-        <div class="status" data-i18n="status_off">Off</div>
-      </div>
-      <div class="list-item" data-feature="massage">
-        <i class="fa-solid fa-vibrate"></i>
-        <div class="label" data-i18n="massage_title">Massage Mode</div>
-        <div class="status" data-i18n="status_off">Off</div>
-      </div>
-      <div class="list-item" data-feature="climate">
-        <i class="fa-solid fa-thermometer"></i>
-        <div class="label" data-i18n="climate_title">Climate Control</div>
         <div class="status" data-i18n="status_off">Off</div>
       </div>
     </div>
@@ -367,6 +361,11 @@
           massage_title: "حالت ماساژ",
           climate_title: "کنترل دما",
           soundbar_title: "حالت مهمانی",
+          soundbar_turn_on: "فعال کردن حالت مهمانی",
+          soundbar_turn_off: "غیرفعال کردن حالت مهمانی",
+          boxlight_title: "نور باکس",
+          boxlight_turn_on: "روشن کردن نور باکس",
+          boxlight_turn_off: "خاموش کردن نور باکس",
           bluetooth_scan: "جستجو دستگاه‌ها",
           bluetooth_disconnect: "قطع اتصال",
           light_color_title: "رنگ نور",
@@ -436,6 +435,11 @@
           massage_title: "Massage Mode",
           climate_title: "Climate Control",
           soundbar_title: "Party Mode",
+          soundbar_turn_on: "Turn on Party Mode",
+          soundbar_turn_off: "Turn off Party Mode",
+          boxlight_title: "Box Light",
+          boxlight_turn_on: "Turn on Box Light",
+          boxlight_turn_off: "Turn off Box Light",
           bluetooth_scan: "Scan Devices",
           bluetooth_disconnect: "Disconnect",
           light_color_title: "Light Color",
@@ -505,6 +509,11 @@
           massage_title: "Masaj Modu",
           climate_title: "İklim Kontrolü",
           soundbar_title: "Parti Modu",
+          soundbar_turn_on: "Parti Modunu Aç",
+          soundbar_turn_off: "Parti Modunu Kapat",
+          boxlight_title: "Kutu Işığı",
+          boxlight_turn_on: "Kutu Işığını Aç",
+          boxlight_turn_off: "Kutu Işığını Kapat",
           bluetooth_scan: "Cihazları Tara",
           bluetooth_disconnect: "Bağlantıyı Kes",
           light_color_title: "Işık Rengi",
@@ -574,6 +583,11 @@
           massage_title: "وضع التدليك",
           climate_title: "التحكم بالمناخ",
           soundbar_title: "وضع الحفلة",
+          soundbar_turn_on: "تشغيل وضع الحفلة",
+          soundbar_turn_off: "إيقاف وضع الحفلة",
+          boxlight_title: "إضاءة الصندوق",
+          boxlight_turn_on: "تشغيل إضاءة الصندوق",
+          boxlight_turn_off: "إيقاف إضاءة الصندوق",
           bluetooth_scan: "مسح الأجهزة",
           bluetooth_disconnect: "فصل",
           light_color_title: "لون الإضاءة",
@@ -595,6 +609,7 @@
         backlight: false,
         sound: false,
         soundbar: false,
+        boxlight: false,
         bluetooth: false,
         wifi: false,
         voice: false,
@@ -607,7 +622,6 @@
       let wifiScanRequested = false;
       let pendingBTDevice = null;
       let bluetoothScanRequested = false;
-      let pressTimer = null;
 
       function t(key, vars = {}) {
         let str = translations[currentLang][key] || key;
@@ -647,7 +661,6 @@
       // UI Elements
       const langSelectSettings = document.getElementById("lang-select-settings");
       const featureButtons = document.querySelectorAll('.feature-btn');
-      const polygonButtons = document.querySelectorAll('.polygon-btn');
       const listItems = document.querySelectorAll('.list-item');
       const wifiScanBtn = document.getElementById("wifi-scan");
       const wifiList = document.getElementById("wifi-networks");
@@ -736,6 +749,12 @@
         const on = !!st?.lighting?.back_light?.on;
         lastState.backlight = on;
         setFeatureUI('backlight', on);
+      }
+
+      function renderBoxLight(st) {
+        const on = !!st?.lighting?.box?.on;
+        lastState.boxlight = on;
+        setFeatureUI('boxlight', on);
       }
 
       function renderPartyMode(st) {
@@ -956,43 +975,32 @@
           lastState[f] = !lastState[f];
           setFeatureUI(f, lastState[f]);
           if (f === 'reading') {
-            send(lastState[f] ? "reading_light.set" : "reading_light.set", { on: lastState[f] });
+            send("reading_light.set", { on: lastState[f] });
           } else if (f === 'backlight') {
-            send(lastState[f] ? "back_light.set" : "back_light.set", { on: lastState[f] });
+            send("back_light.set", { on: lastState[f] });
           } else if (f === 'sound') {
             send(lastState[f] ? "player.play" : "player.pause");
+          } else if (f === 'soundbar') {
+            const loadingOverlay = btn.querySelector('.loading-overlay');
+            gsap.killTweensOf(loadingOverlay);
+            gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
+              gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
+            }});
+            send("mode.toggle");
+          } else if (f === 'boxlight') {
+            const loadingOverlay = btn.querySelector('.loading-overlay');
+            gsap.killTweensOf(loadingOverlay);
+            gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
+              gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
+            }});
+            send("lighting.set", { 
+              zone: "box", 
+              mode: lastState[f] ? "static" : "off", 
+              color: "#4f46e5", 
+              brightness: lastState[f] ? "mid" : "low" 
+            });
           } else if (['bluetooth', 'wifi', 'voice', 'headlight', 'wcharger', 'massage', 'climate'].includes(f)) {
             send(`${f}.set`, { on: lastState[f] });
-          }
-        });
-      });
-
-      let longPressed = false;
-      polygonButtons.forEach(btn => {
-        const loadingBar = btn.querySelector('.loading-bar');
-        btn.addEventListener('mousedown', () => {
-          longPressed = false;
-          gsap.to(loadingBar, { width: '100%', duration: 3, ease: 'linear' });
-          pressTimer = setTimeout(() => {
-            longPressed = true;
-            const f = btn.dataset.feature;
-            lastState[f] = !lastState[f];
-            setFeatureUI(f, lastState[f]);
-            send("mode.toggle");
-            gsap.to(loadingBar, { width: 0, duration: 0.3 });
-          }, 3000);
-        });
-        btn.addEventListener('mouseup', () => {
-          clearTimeout(pressTimer);
-          if (!longPressed) {
-            gsap.to(loadingBar, { width: 0, duration: 0.3 });
-            alert("You must press it for 3 seconds");
-          }
-        });
-        btn.addEventListener('mouseleave', () => {
-          clearTimeout(pressTimer);
-          if (!longPressed) {
-            gsap.to(loadingBar, { width: 0, duration: 0.3 });
           }
         });
       });
@@ -1011,6 +1019,13 @@
             send(lastState[f] ? "player.play" : "player.pause");
           } else if (f === 'soundbar') {
             send("mode.toggle");
+          } else if (f === 'boxlight') {
+            send("lighting.set", { 
+              zone: "box", 
+              mode: lastState[f] ? "static" : "off", 
+              color: "#4f46e5", 
+              brightness: lastState[f] ? "mid" : "low" 
+            });
           } else if (f === 'bluetooth') {
             send("bluetooth.toggle");
           } else if (f === 'wifi') {
@@ -1030,6 +1045,13 @@
             send("reading_light.set", { on: lastState[f] });
           } else if (f === 'backlight') {
             send("back_light.set", { on: lastState[f] });
+          } else if (f === 'boxlight') {
+            send("lighting.set", { 
+              zone: "box", 
+              mode: lastState[f] ? "static" : "off", 
+              color: "#4f46e5", 
+              brightness: lastState[f] ? "mid" : "low" 
+            });
           }
         });
       });
@@ -1205,6 +1227,7 @@
           backlight: !!st?.lighting?.back_light?.on,
           sound: !!st?.player?.playing,
           soundbar: !!st?.soundbar?.open || false,
+          boxlight: !!st?.lighting?.box?.on || false,
           bluetooth: !!st?.bluetooth?.on,
           wifi: !!st?.wifi?.on,
           voice: !!st?.voice?.on || false,
@@ -1220,6 +1243,7 @@
         }
         renderReadingLight(st);
         renderBackLight(st);
+        renderBoxLight(st);
         renderPartyMode(st);
         renderBluetooth(st);
         renderWiFi(st);

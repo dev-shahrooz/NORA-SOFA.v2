@@ -130,17 +130,20 @@
   }
   .feature-btn:hover { transform: scale(1.05); }
   .feature-btn.active { background: linear-gradient(90deg, var(--accent), #06b6d4); box-shadow: 0 6px 18px rgba(79,70,229,0.25); }
-  .f-reading { left: 35%; top: 2%; }
+  .f-reading { left: 50%; top: 8%; }
+  .f-boxlight { left: 66%; top: 79%; }
+  .f-boxlightL { left: 56%; top: 68%; }
   .f-headlight { right: 63%; top: 54%; }
-  .f-backlight { right: 64%; bottom: 64%; }
+  .f-backlight { right: 55%; bottom: 17%; }
   .f-sound { left: 52%; bottom: 16%; }
-  .f-wifi { right: 6%; top: 6%; }
+  .f-wifi { left: 14%; top: 6%; }
   .f-bluetooth { left: 6%; top: 6%; }
-  .f-voice { left: 50%; top: 6%; }
+  .f-voice { left: 22%; top: 6%; }
   .f-wcharger { left: 67%; bottom: 44%; }
   .f-massage { left: 40%; bottom: 10%; }
   .f-climate { right: 40%; bottom: 10%; }
-  .f-soundbar { left: 60%; top: 60%; } /* Positioned near sound button */
+  .f-soundbar { left: 61%; top: 55%; } /* Positioned near sound button */
+  .f-soundbarL { left: 29%; top: 55%; } /* Positioned near sound button */
   .backlight-glow { 
     position: absolute; 
     inset: auto; 
@@ -198,9 +201,9 @@
     max-width: 190px; 
     z-index: 3; 
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    display: none;
+    display: block;
     transform: translateY(0);
-    transition: transform 0.3s ease;
+    /* transition: transform 0.3s ease; */
   }
   .music-panel.connected { 
     display: block; 
