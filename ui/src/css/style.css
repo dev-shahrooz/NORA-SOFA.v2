@@ -1,3 +1,29 @@
+@font-face {
+  font-family: 'Peyda';
+  src: url('/ui/src/font/Peyda-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* Improves loading */
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF; /* Persian characters only */
+}
+
+@font-face {
+  font-family: 'Peyda';
+  src: url('/ui/src/font/Peyda-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+/* Morrello for English text */
+@font-face {
+  font-family: 'Manrope';
+  src: url('/ui/src/font/Manrope-VariableFont_wght.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
     --accent: #4f46e5;
     --bg: #0f172a;
@@ -6,7 +32,7 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
-  body { font-family: Inter, system-ui, Vazirmatn, sans-serif; background: linear-gradient(180deg, #07101a 0%, #071428 100%); color: #e6eef8; display: flex; align-items: center; justify-content: center; }
+  body { font-family: 'Peyda','Manrope', system-ui, Vazirmatn, sans-serif; background: linear-gradient(180deg, #07101a 0%, #071428 100%); color: #e6eef8; display: flex; align-items: center; justify-content: center; }
 
   /* Fullscreen Swiper Styles */
   .swiper-container {
