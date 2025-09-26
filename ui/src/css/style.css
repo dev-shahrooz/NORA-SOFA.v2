@@ -610,3 +610,119 @@
       height: 36px;
     }
   }
+      .loading-overlay {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 5px;
+      background: #4f46e5;
+      opacity: 0;
+      border-radius: 2px;
+    }
+    .controls hr {
+      margin: 20px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
+    .controls .btn {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .controls .badge {
+      padding: 5px 10px;
+      border-radius: 12px;
+      background: #ccc;
+      color: #fff;
+    }
+    .controls .badge.on {
+      background: #4f46e5;
+    }
+    .controls select, .controls input[type="color"], .controls input[type="range"] {
+      margin: 5px;
+      padding: 5px;
+    }
+    /* WiFi Password Panel Styles */
+    .wifi-password-wrapper {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #fff;
+    }
+    .wifi-password-wrapper.open {
+      display: flex;
+    }
+    .wifi-password-content {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    .wifi-password-content h2 {
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+    .wifi-password-content input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #4f46e5;
+      border-radius: 5px;
+      font-size: 1em;
+      background: #333;
+      color: #fff;
+    }
+    .wifi-keyboard {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      margin-top: 20px;
+    }
+    .wifi-keyboard button {
+      padding: 10px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .wifi-keyboard button:hover {
+      background: #6366f1;
+    }
+    .wifi-keyboard .special-key {
+      grid-column: span 2;
+    }
+    .wifi-keyboard .shift-active {
+      background: #6366f1;
+    }
+    .wifi-password-actions {
+      margin-top: 20px;
+    }
+    .wifi-password-actions button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .wifi-password-actions button.cancel {
+      background: #ccc;
+    }
+    [dir="rtl"] .wifi-password-content {
+      text-align: right;
+    }
