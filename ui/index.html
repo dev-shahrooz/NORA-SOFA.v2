@@ -601,6 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let wifiScanRequested = false;
   let isShiftActive = false;
   let isSpecialChars = false;
+  let isLoadingCompleted = false;
 
   function t(key, vars = {}) {
     let str = translations[currentLang][key] || key;
@@ -1073,12 +1074,24 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (f === 'backlight') {
         send("back_light.set", { on: next });
       } else if (f === 'soundbar') {
-        const loadingOverlay = btn.querySelector('.loading-overlay');
-        gsap.killTweensOf(loadingOverlay);
-        gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
-          gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
-        }});
-        send("mode.toggle");
+        if (isLoadingCompleted){
+          setTimeout(() => {
+            isLoadingCompleted = false;
+          }, 8000);
+        }
+        else{
+          isLoadingCompleted = true;
+          const loadingOverlay = btn.querySelector('.loading-overlay');
+          gsap.killTweensOf(loadingOverlay);
+          gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
+            gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
+          }});
+          send("mode.toggle");
+          setTimeout(() => {
+            isLoadingCompleted = false;
+          }, 8000);
+        }
+       
       } else if (['bluetooth', 'wifi', 'voice'].includes(f)) {
         send(`${f}.set`, { on: next });
       }
