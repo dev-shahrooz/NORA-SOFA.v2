@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="/ui/src/css/swiper-bundle.min.css">
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="/ui/src/font/fontawesome-free-7.0.1-web/css/all.min.css"/>
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="/ui/src/css/sweetalert2.min.css">
 
   <!-- Swiper JS -->
   <script src="/ui/src/js/swiper-bundle.min.js"></script>
@@ -16,6 +18,8 @@
   <script src="/ui/src/js/socket.io.min.js"></script>
   <!-- GSAP for animations -->
   <script src="/ui/src/js/gsap.min.js"></script>
+  <!-- SweetAlert2 JS -->
+  <script src="/ui/src/js/sweetalert2@11.js"></script>
   <link rel="stylesheet" href="/ui/src/css/style.css" />
   <style>
     .loading-overlay {
@@ -51,6 +55,88 @@
     .controls select, .controls input[type="color"], .controls input[type="range"] {
       margin: 5px;
       padding: 5px;
+    }
+    /* WiFi Password Panel Styles */
+    .wifi-password-wrapper {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #fff;
+    }
+    .wifi-password-wrapper.open {
+      display: flex;
+    }
+    .wifi-password-content {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    .wifi-password-content h2 {
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+    .wifi-password-content input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #4f46e5;
+      border-radius: 5px;
+      font-size: 1em;
+      background: #333;
+      color: #fff;
+    }
+    .wifi-keyboard {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      margin-top: 20px;
+    }
+    .wifi-keyboard button {
+      padding: 10px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .wifi-keyboard button:hover {
+      background: #6366f1;
+    }
+    .wifi-keyboard .special-key {
+      grid-column: span 2;
+    }
+    .wifi-keyboard .shift-active {
+      background: #6366f1;
+    }
+    .wifi-password-actions {
+      margin-top: 20px;
+    }
+    .wifi-password-actions button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .wifi-password-actions button.cancel {
+      background: #ccc;
+    }
+    [dir="rtl"] .wifi-password-content {
+      text-align: right;
     }
   </style>
 </head>
@@ -292,6 +378,17 @@
       <p data-i18n="voice_assistant_placeholder">Placeholder content for voice assistant. This section can be expanded to include voice assistant features.</p>
     </div>
   </div>
+  <div class="fullscreen-wrapper wifi-password-wrapper" id="wifiPasswordWrapper">
+    <div class="wifi-password-content">
+      <h2 data-i18n="wifi_password_prompt">Password for {ssid}</h2>
+      <input type="password" id="wifi-password-input" placeholder="Enter WiFi Password">
+      <div class="wifi-keyboard" id="wifiKeyboard"></div>
+      <div class="wifi-password-actions">
+        <button id="wifi-password-submit" data-i18n="apply_light">Connect</button>
+        <button id="wifi-password-cancel" class="cancel" data-i18n="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -321,292 +418,308 @@ document.addEventListener('DOMContentLoaded', () => {
   function send(type, payload = {}) {
     sio.emit("ui.intent", { type, payload, corr_id: String(Date.now()) });
   }
-const translations = {
-        fa: {
-          reading_light_title: "چراغ مطالعه",
-          reading_light_turn_on: "روشن کردن چراغ",
-          reading_light_turn_off: "خاموش کردن چراغ",
-          status_on: "روشن",
-          status_off: "خاموش",
-          back_light_title: "چراغ پشت",
-          back_light_turn_on: "روشن کردن چراغ پشت",
-          back_light_turn_off: "خاموش کردن چراغ پشت",
-          party_mode: "حالت مهمانی",
-          under_sofa_title: "نور زیر مبل",
-          zone_label: "زون:",
-          zone_under_sofa: "زیر مبل",
-          zone_box: "باکس",
-          mode_label: "حالت:",
-          mode_off: "خاموش",
-          mode_rainbow: "رینبو",
-          mode_static: "رنگ ثابت",
-          mode_equaalize: "اکولایزر",
-          mode_wakeup: "شنیدار دستیار صوتی",
-          color_label: "رنگ:",
-          brightness_label: "روشنایی:",
-          brightness_low: "نور کم",
-          brightness_mid: "نور متوسط",
-          brightness_high: "نور زیاد",
-          apply_light: "ثبت",
-          bluetooth_title: "بلوتوث سیستم",
-          bluetooth_turn_on: "روشن کردن بلوتوث",
-          bluetooth_turn_off: "خاموش کردن بلوتوث",
-          bluetooth_unpair: "لغو جفت‌سازی بلوتوث",
-          wifi_title: "وای‌فای",
-          wifi_turn_on: "روشن کردن وای‌فای",
-          wifi_turn_off: "خاموش کردن وای‌فای",
-          wifi_scan: "جستجو شبکه‌ها",
-          wifi_forget: "فراموش کردن",
-          wifi_connected_label: "اتصال فعلی:",
-          wifi_saved_label: "شبکه‌های ذخیره‌شده",
-          wifi_saved_current: "متصل",
-          wifi_password_prompt: "رمز برای {ssid}:",
-          wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
-          volume_title: "حجم صدا",
-          sound_turn_off: "قطع صدا",
-          sound_turn_on: "وصل صدا",
-          media_player_title: "مدیا پلیر",
-          player_prev: "قبلی",
-          player_play: "پلی",
-          player_pause: "پاز",
-          player_next: "بعدی",
-          panel_title: "ویژگی‌های مبل هوشمند",
-          panel_hint: "برای روشن/خاموش کردن ویژگی‌ها، روی آیکون‌ها در تصویر مبل یا لیست کلیک کنید.",
-          voice_title: "دستیار صوتی",
-          headlight_title: "چراغ سر",
-          wcharger_title: "شارژر بی‌سیم",
-          massage_title: "حالت ماساژ",
-          climate_title: "کنترل دما",
-          soundbar_title: "حالت مهمانی",
-          soundbar_turn_on: "فعال کردن حالت مهمانی",
-          soundbar_turn_off: "غیرفعال کردن حالت مهمانی",
-          bluetooth_scan: "جستجو دستگاه‌ها",
-          bluetooth_disconnect: "قطع اتصال",
-          light_color_title: "رنگ نور",
-          control_center_title: "مرکز کنترل",
-          settings_title: "تنظیمات",
-          streaming_title: "استریمینگ",
-          voice_assistant_title: "دستیار صوتی",
-          streaming_placeholder: "محتوای placeholder برای برنامه‌های استریمینگ. این بخش می‌تواند برای افزودن برنامه‌های استریمینگ مانند یوتیوب یا نتفلیکس گسترش یابد.",
-          voice_assistant_placeholder: "محتوای placeholder برای دستیار صوتی. این بخش می‌تواند برای افزودن قابلیت‌های دستیار صوتی گسترش یابد.",
-          language_title: "زبان",
-          under_sofa_light_title: "نور زیر مبل"
-        },
-        en: {
-          reading_light_title: "Reading Light",
-          reading_light_turn_on: "Turn on light",
-          reading_light_turn_off: "Turn off light",
-          status_on: "On",
-          status_off: "Off",
-          back_light_title: "Back Light",
-          back_light_turn_on: "Turn on back light",
-          back_light_turn_off: "Turn off back light",
-          party_mode: "Party Mode",
-          under_sofa_title: "Under-sofa Lights",
-          zone_label: "Zone:",
-          zone_under_sofa: "Under sofa",
-          zone_box: "Box",
-          mode_label: "Mode:",
-          mode_off: "Off",
-          mode_rainbow: "Rainbow",
-          mode_static: "Static color",
-          mode_equaalize: "Equalizer",
-          mode_wakeup: "Voice assistant listening",
-          color_label: "Color:",
-          brightness_label: "Brightness:",
-          brightness_low: "Low",
-          brightness_mid: "Medium",
-          brightness_high: "High",
-          apply_light: "Apply",
-          bluetooth_title: "System Bluetooth",
-          bluetooth_turn_on: "Turn on Bluetooth",
-          bluetooth_turn_off: "Turn off Bluetooth",
-          bluetooth_unpair: "Unpair Bluetooth",
-          wifi_title: "Wi-Fi",
-          wifi_turn_on: "Turn on Wi-Fi",
-          wifi_turn_off: "Turn off Wi-Fi",
-          wifi_scan: "Scan Networks",
-          wifi_forget: "Forget",
-          wifi_connected_label: "Currently connected:",
-          wifi_saved_label: "Saved networks",
-          wifi_saved_current: "Currently connected",
-          wifi_password_prompt: "Password for {ssid}:",
-          wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
-          volume_title: "Volume",
-          sound_turn_off: "Mute sound",
-          sound_turn_on: "Unmute sound",
-          media_player_title: "Media Player",
-          player_prev: "Previous",
-          player_play: "Play",
-          player_pause: "Pause",
-          player_next: "Next",
-          panel_title: "Smart Sofa Features",
-          panel_hint: "Click on icons on the sofa or the list to toggle features.",
-          voice_title: "Voice Assistant",
-          headlight_title: "Headlight",
-          wcharger_title: "Wireless Charger",
-          massage_title: "Massage Mode",
-          climate_title: "Climate Control",
-          soundbar_title: "Party Mode",
-          soundbar_turn_on: "Turn on Party Mode",
-          soundbar_turn_off: "Turn off Party Mode",
-          bluetooth_scan: "Scan Devices",
-          bluetooth_disconnect: "Disconnect",
-          light_color_title: "Light Color",
-          control_center_title: "Control Center",
-          settings_title: "Settings",
-          streaming_title: "Streaming",
-          voice_assistant_title: "Voice Assistant",
-          streaming_placeholder: "Placeholder content for streaming apps. This section can be expanded to include streaming apps like YouTube or Netflix.",
-          voice_assistant_placeholder: "Placeholder content for voice assistant. This section can be expanded to include voice assistant features.",
-          language_title: "Language",
-          under_sofa_light_title: "Under Sofa Lighting"
-        },
-        tr: {
-          reading_light_title: "Okuma Lambası",
-          reading_light_turn_on: "Lambayı aç",
-          reading_light_turn_off: "Lambayı kapat",
-          status_on: "Açık",
-          status_off: "Kapalı",
-          back_light_title: "Arka Işık",
-          back_light_turn_on: "Arka ışığı aç",
-          back_light_turn_off: "Arka ışığı kapat",
-          party_mode: "Parti Modu",
-          under_sofa_title: "Koltuk Altı Işıkları",
-          zone_label: "Bölge:",
-          zone_under_sofa: "Koltuk altı",
-          zone_box: "Kutu",
-          mode_label: "Mod:",
-          mode_off: "Kapalı",
-          mode_rainbow: "Gökkuşağı",
-          mode_static: "Sabit renk",
-          mode_equaalize: "Ekolayzır",
-          mode_wakeup: "Sesli asistan dinleme",
-          color_label: "Renk:",
-          brightness_label: "Parlaklık:",
-          brightness_low: "Düşük",
-          brightness_mid: "Orta",
-          brightness_high: "Yüksek",
-          apply_light: "Uygula",
-          bluetooth_title: "Sistem Bluetooth'u",
-          bluetooth_turn_on: "Bluetooth'u aç",
-          bluetooth_turn_off: "Bluetooth'u kapat",
-          bluetooth_unpair: "Bluetooth eşlemesini kaldır",
-          wifi_title: "Wi-Fi",
-          wifi_turn_on: "Wi-Fi'yi aç",
-          wifi_turn_off: "Wi-Fi'yi kapat",
-          wifi_scan: "Ağları Tara",
-          wifi_forget: "Unut",
-          wifi_connected_label: "Bağlı ağ:",
-          wifi_saved_label: "Kaydedilmiş ağlar",
-          wifi_saved_current: "Şu an bağlı",
-          wifi_password_prompt: "{ssid} için parola:",
-          wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
-          volume_title: "Ses",
-          sound_turn_off: "Sesi kapat",
-          sound_turn_on: "Sesi aç",
-          media_player_title: "Medya Oynatıcı",
-          player_prev: "Önceki",
-          player_play: "Oynat",
-          player_pause: "Duraklat",
-          player_next: "Sonraki",
-          panel_title: "Akıllı Koltuk Özellikleri",
-          panel_hint: "Özellikleri açıp kapatmak için koltuk üzerindeki veya listedeki simgelere tıklayın.",
-          voice_title: "Ses Asistanı",
-          headlight_title: "Baş Işığı",
-          wcharger_title: "Kablosuz Şarj Cihazı",
-          massage_title: "Masaj Modu",
-          climate_title: "İklim Kontrolü",
-          soundbar_title: "Parti Modu",
-          soundbar_turn_on: "Parti Modunu Aç",
-          soundbar_turn_off: "Parti Modunu Kapat",
-          bluetooth_scan: "Cihazları Tara",
-          bluetooth_disconnect: "Bağlantıyı Kes",
-          light_color_title: "Işık Rengi",
-          control_center_title: "Kontrol Merkezi",
-          settings_title: "Ayarlar",
-          streaming_title: "Yayın",
-          voice_assistant_title: "Ses Asistanı",
-          streaming_placeholder: "Yayın uygulamaları için placeholder içerik. Bu bölüm, YouTube veya Netflix gibi yayın uygulamalarını içerecek şekilde genişletilebilir.",
-          voice_assistant_placeholder: "Ses asistanı için placeholder içerik. Bu bölüm, ses asistanı özelliklerini içerecek şekilde genişletilebilir.",
-          language_title: "Dil",
-          under_sofa_light_title: "Koltuk Altı Aydınlatma"
-        },
-        ar: {
-          reading_light_title: "مصباح القراءة",
-          reading_light_turn_on: "تشغيل المصباح",
-          reading_light_turn_off: "إيقاف المصباح",
-          status_on: "تشغيل",
-          status_off: "إيقاف",
-          back_light_title: "الإضاءة الخلفية",
-          back_light_turn_on: "تشغيل الإضاءة الخلفية",
-          back_light_turn_off: "إيقاف الإضاءة الخلفية",
-          party_mode: "وضع الحفلة",
-          under_sofa_title: "إضاءة تحت الأريكة",
-          zone_label: "منطقة:",
-          zone_under_sofa: "تحت الأريكة",
-          zone_box: "الصندوق",
-          mode_label: "وضع:",
-          mode_off: "إيقاف",
-          mode_rainbow: "قوس قزح",
-          mode_static: "لون ثابت",
-          mode_equaalize: "موازن",
-          mode_wakeup: "وضع الاستماع للمساعد الصوتي",
-          color_label: "لون:",
-          brightness_label: "السطوع:",
-          brightness_low: "منخفض",
-          brightness_mid: "متوسط",
-          brightness_high: "عالٍ",
-          apply_light: "تطبيق",
-          bluetooth_title: "بلوتوث النظام",
-          bluetooth_turn_on: "تشغيل البلوتوث",
-          bluetooth_turn_off: "إيقاف البلوتوث",
-          bluetooth_unpair: "إلغاء اقتران البلوتوث",
-          wifi_title: "واي فاي",
-          wifi_turn_on: "تشغيل الواي فاي",
-          wifi_turn_off: "إيقاف الواي فاي",
-          wifi_scan: "مسح الشبكات",
-          wifi_forget: "نسيان",
-          wifi_connected_label: "الشبكة المتصلة:",
-          wifi_saved_label: "الشبكات المحفوظة",
-          wifi_saved_current: "متصل الآن",
-          wifi_password_prompt: "كلمة المرور لـ {ssid}:",
-          wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
-          volume_title: "مستوى الصوت",
-          sound_turn_off: "إيقاف الصوت",
-          sound_turn_on: "تشغيل الصوت",
-          media_player_title: "مشغل الوسائط",
-          player_prev: "السابق",
-          player_play: "تشغيل",
-          player_pause: "إيقاف مؤقت",
-          player_next: "التالي",
-          panel_title: "ميزات الأريكة الذكية",
-          panel_hint: "انقر على الأيقونات على الأريكة أو القائمة لتبديل الميزات.",
-          voice_title: "المساعد الصوتي",
-          headlight_title: "مصباح الرأس",
-          wcharger_title: "شاحن لاسلكي",
-          massage_title: "وضع التدليك",
-          climate_title: "التحكم بالمناخ",
-          soundbar_title: "وضع الحفلة",
-          soundbar_turn_on: "تشغيل وضع الحفلة",
-          soundbar_turn_off: "إيقاف وضع الحفلة",
-          bluetooth_scan: "مسح الأجهزة",
-          bluetooth_disconnect: "فصل",
-          light_color_title: "لون الإضاءة",
-          control_center_title: "مركز التحكم",
-          settings_title: "الإعدادات",
-          streaming_title: "البث",
-          voice_assistant_title: "المساعد الصوتي",
-          streaming_placeholder: "محتوى بديل لتطبيقات البث. يمكن توسيع هذا القسم ليشمل تطبيقات البث مثل يوتيوب أو نتفليكس.",
-          voice_assistant_placeholder: "محتوى بديل للمساعد الصوتي. يمكن توسيع هذا القسم ليشمل ميزات المساعد الصوتي.",
-          language_title: "اللغة",
-          under_sofa_light_title: "إضاءة أسفل الأريكة"
-        }
-      };  
+
+  const translations = {
+    fa: {
+      reading_light_title: "چراغ مطالعه",
+      reading_light_turn_on: "روشن کردن چراغ",
+      reading_light_turn_off: "خاموش کردن چراغ",
+      status_on: "روشن",
+      status_off: "خاموش",
+      back_light_title: "چراغ پشت",
+      back_light_turn_on: "روشن کردن چراغ پشت",
+      back_light_turn_off: "خاموش کردن چراغ پشت",
+      party_mode: "حالت مهمانی",
+      under_sofa_title: "نور زیر مبل",
+      zone_label: "زون:",
+      zone_under_sofa: "زیر مبل",
+      zone_box: "باکس",
+      mode_label: "حالت:",
+      mode_off: "خاموش",
+      mode_rainbow: "رینبو",
+      mode_static: "رنگ ثابت",
+      mode_equaalize: "اکولایزر",
+      mode_wakeup: "شنیدار دستیار صوتی",
+      color_label: "رنگ:",
+      brightness_label: "روشنایی:",
+      brightness_low: "نور کم",
+      brightness_mid: "نور متوسط",
+      brightness_high: "نور زیاد",
+      apply_light: "ثبت",
+      bluetooth_title: "بلوتوث سیستم",
+      bluetooth_turn_on: "روشن کردن بلوتوث",
+      bluetooth_turn_off: "خاموش کردن بلوتوث",
+      bluetooth_unpair: "لغو جفت‌سازی بلوتوث",
+      wifi_title: "وای‌فای",
+      wifi_turn_on: "روشن کردن وای‌فای",
+      wifi_turn_off: "خاموش کردن وای‌فای",
+      wifi_scan: "جستجو شبکه‌ها",
+      wifi_forget: "فراموش کردن",
+      wifi_connected_label: "اتصال فعلی:",
+      wifi_saved_label: "شبکه‌های ذخیره‌شده",
+      wifi_saved_current: "متصل",
+      wifi_password_prompt: "رمز برای {ssid}:",
+      wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
+      volume_title: "حجم صدا",
+      sound_turn_off: "قطع صدا",
+      sound_turn_on: "وصل صدا",
+      media_player_title: "مدیا پلیر",
+      player_prev: "قبلی",
+      player_play: "پلی",
+      player_pause: "پاز",
+      player_next: "بعدی",
+      panel_title: "ویژگی‌های مبل هوشمند",
+      panel_hint: "برای روشن/خاموش کردن ویژگی‌ها، روی آیکون‌ها در تصویر مبل یا لیست کلیک کنید.",
+      voice_title: "دستیار صوتی",
+      headlight_title: "چراغ سر",
+      wcharger_title: "شارژر بی‌سیم",
+      massage_title: "حالت ماساژ",
+      climate_title: "کنترل دما",
+      soundbar_title: "حالت مهمانی",
+      soundbar_turn_on: "فعال کردن حالت مهمانی",
+      soundbar_turn_off: "غیرفعال کردن حالت مهمانی",
+      bluetooth_scan: "جستجو دستگاه‌ها",
+      bluetooth_disconnect: "قطع اتصال",
+      light_color_title: "رنگ نور",
+      control_center_title: "مرکز کنترل",
+      settings_title: "تنظیمات",
+      streaming_title: "استریمینگ",
+      voice_assistant_title: "دستیار صوتی",
+      streaming_placeholder: "محتوای placeholder برای برنامه‌های استریمینگ. این بخش می‌تواند برای افزودن برنامه‌های استریمینگ مانند یوتیوب یا نتفلیکس گسترش یابد.",
+      voice_assistant_placeholder: "محتوای placeholder برای دستیار صوتی. این بخش می‌تواند برای افزودن قابلیت‌های دستیار صوتی گسترش یابد.",
+      language_title: "زبان",
+      under_sofa_light_title: "نور زیر مبل",
+      cancel: "لغو",
+      shift: "شیفت",
+      special_chars: "کاراکترهای ویژه"
+    },
+    en: {
+      reading_light_title: "Reading Light",
+      reading_light_turn_on: "Turn on light",
+      reading_light_turn_off: "Turn off light",
+      status_on: "On",
+      status_off: "Off",
+      back_light_title: "Back Light",
+      back_light_turn_on: "Turn on back light",
+      back_light_turn_off: "Turn off back light",
+      party_mode: "Party Mode",
+      under_sofa_title: "Under-sofa Lights",
+      zone_label: "Zone:",
+      zone_under_sofa: "Under sofa",
+      zone_box: "Box",
+      mode_label: "Mode:",
+      mode_off: "Off",
+      mode_rainbow: "Rainbow",
+      mode_static: "Static color",
+      mode_equaalize: "Equalizer",
+      mode_wakeup: "Voice assistant listening",
+      color_label: "Color:",
+      brightness_label: "Brightness:",
+      brightness_low: "Low",
+      brightness_mid: "Medium",
+      brightness_high: "High",
+      apply_light: "Apply",
+      bluetooth_title: "System Bluetooth",
+      bluetooth_turn_on: "Turn on Bluetooth",
+      bluetooth_turn_off: "Turn off Bluetooth",
+      bluetooth_unpair: "Unpair Bluetooth",
+      wifi_title: "Wi-Fi",
+      wifi_turn_on: "Turn on Wi-Fi",
+      wifi_turn_off: "Turn off Wi-Fi",
+      wifi_scan: "Scan Networks",
+      wifi_forget: "Forget",
+      wifi_connected_label: "Currently connected:",
+      wifi_saved_label: "Saved networks",
+      wifi_saved_current: "Currently connected",
+      wifi_password_prompt: "Password for {ssid}:",
+      wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
+      volume_title: "Volume",
+      sound_turn_off: "Mute sound",
+      sound_turn_on: "Unmute sound",
+      media_player_title: "Media Player",
+      player_prev: "Previous",
+      player_play: "Play",
+      player_pause: "Pause",
+      player_next: "Next",
+      panel_title: "Smart Sofa Features",
+      panel_hint: "Click on icons on the sofa or the list to toggle features.",
+      voice_title: "Voice Assistant",
+      headlight_title: "Headlight",
+      wcharger_title: "Wireless Charger",
+      massage_title: "Massage Mode",
+      climate_title: "Climate Control",
+      soundbar_title: "Party Mode",
+      soundbar_turn_on: "Turn on Party Mode",
+      soundbar_turn_off: "Turn off Party Mode",
+      bluetooth_scan: "Scan Devices",
+      bluetooth_disconnect: "Disconnect",
+      light_color_title: "Light Color",
+      control_center_title: "Control Center",
+      settings_title: "Settings",
+      streaming_title: "Streaming",
+      voice_assistant_title: "Voice Assistant",
+      streaming_placeholder: "Placeholder content for streaming apps. This section can be expanded to include streaming apps like YouTube or Netflix.",
+      voice_assistant_placeholder: "Placeholder content for voice assistant. This section can be expanded to include voice assistant features.",
+      language_title: "Language",
+      under_sofa_light_title: "Under Sofa Lighting",
+      cancel: "Cancel",
+      shift: "Shift",
+      special_chars: "Special Chars"
+    },
+    tr: {
+      reading_light_title: "Okuma Lambası",
+      reading_light_turn_on: "Lambayı aç",
+      reading_light_turn_off: "Lambayı kapat",
+      status_on: "Açık",
+      status_off: "Kapalı",
+      back_light_title: "Arka Işık",
+      back_light_turn_on: "Arka ışığı aç",
+      back_light_turn_off: "Arka ışığı kapat",
+      party_mode: "Parti Modu",
+      under_sofa_title: "Koltuk Altı Işıkları",
+      zone_label: "Bölge:",
+      zone_under_sofa: "Koltuk altı",
+      zone_box: "Kutu",
+      mode_label: "Mod:",
+      mode_off: "Kapalı",
+      mode_rainbow: "Gökkuşağı",
+      mode_static: "Sabit renk",
+      mode_equaalize: "Ekolayzır",
+      mode_wakeup: "Sesli asistan dinleme",
+      color_label: "Renk:",
+      brightness_label: "Parlaklık:",
+      brightness_low: "Düşük",
+      brightness_mid: "Orta",
+      brightness_high: "Yüksek",
+      apply_light: "Uygula",
+      bluetooth_title: "Sistem Bluetooth'u",
+      bluetooth_turn_on: "Bluetooth'u aç",
+      bluetooth_turn_off: "Bluetooth'u kapat",
+      bluetooth_unpair: "Bluetooth eşlemesini kaldır",
+      wifi_title: "Wi-Fi",
+      wifi_turn_on: "Wi-Fi'yi aç",
+      wifi_turn_off: "Wi-Fi'yi kapat",
+      wifi_scan: "Ağları Tara",
+      wifi_forget: "Unut",
+      wifi_connected_label: "Bağlı ağ:",
+      wifi_saved_label: "Kaydedilmiş ağlar",
+      wifi_saved_current: "Şu an bağlı",
+      wifi_password_prompt: "{ssid} için parola:",
+      wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
+      volume_title: "Ses",
+      sound_turn_off: "Sesi kapat",
+      sound_turn_on: "Sesi aç",
+      media_player_title: "Medya Oynatıcı",
+      player_prev: "Önceki",
+      player_play: "Oynat",
+      player_pause: "Duraklat",
+      player_next: "Sonraki",
+      panel_title: "Akıllı Koltuk Özellikleri",
+      panel_hint: "Özellikleri açıp kapatmak için koltuk üzerindeki veya listedeki simgelere tıklayın.",
+      voice_title: "Ses Asistanı",
+      headlight_title: "Baş Işığı",
+      wcharger_title: "Kablosuz Şarj Cihazı",
+      massage_title: "Masaj Modu",
+      climate_title: "İklim Kontrolü",
+      soundbar_title: "Parti Modu",
+      soundbar_turn_on: "Parti Modunu Aç",
+      soundbar_turn_off: "Parti Modunu Kapat",
+      bluetooth_scan: "Cihazları Tara",
+      bluetooth_disconnect: "Bağlantıyı Kes",
+      light_color_title: "Işık Rengi",
+      control_center_title: "Kontrol Merkezi",
+      settings_title: "Ayarlar",
+      streaming_title: "Yayın",
+      voice_assistant_title: "Ses Asistanı",
+      streaming_placeholder: "Yayın uygulamaları için placeholder içerik. Bu bölüm, YouTube veya Netflix gibi yayın uygulamalarını içerecek şekilde genişletilebilir.",
+      voice_assistant_placeholder: "Ses asistanı için placeholder içerik. Bu bölüm, ses asistanı özelliklerini içerecek şekilde genişletilebilir.",
+      language_title: "Dil",
+      under_sofa_light_title: "Koltuk Altı Aydınlatma",
+      cancel: "İptal",
+      shift: "Shift",
+      special_chars: "Özel Karakterler"
+    },
+    ar: {
+      reading_light_title: "مصباح القراءة",
+      reading_light_turn_on: "تشغيل المصباح",
+      reading_light_turn_off: "إيقاف المصباح",
+      status_on: "تشغيل",
+      status_off: "إيقاف",
+      back_light_title: "الإضاءة الخلفية",
+      back_light_turn_on: "تشغيل الإضاءة الخلفية",
+      back_light_turn_off: "إيقاف الإضاءة الخلفية",
+      party_mode: "وضع الحفلة",
+      under_sofa_title: "إضاءة تحت الأريكة",
+      zone_label: "منطقة:",
+      zone_under_sofa: "تحت الأريكة",
+      zone_box: "الصندوق",
+      mode_label: "وضع:",
+      mode_off: "إيقاف",
+      mode_rainbow: "قوس قزح",
+      mode_static: "لون ثابت",
+      mode_equaalize: "موازن",
+      mode_wakeup: "وضع الاستماع للمساعد الصوتي",
+      color_label: "لون:",
+      brightness_label: "السطوع:",
+      brightness_low: "منخفض",
+      brightness_mid: "متوسط",
+      brightness_high: "عالٍ",
+      apply_light: "تطبيق",
+      bluetooth_title: "بلوتوث النظام",
+      bluetooth_turn_on: "تشغيل البلوتوث",
+      bluetooth_turn_off: "إيقاف البلوتوث",
+      bluetooth_unpair: "إلغاء اقتران البلوتوث",
+      wifi_title: "واي فاي",
+      wifi_turn_on: "تشغيل الواي فاي",
+      wifi_turn_off: "إيقاف الواي فاي",
+      wifi_scan: "مسح الشبكات",
+      wifi_forget: "نسيان",
+      wifi_connected_label: "الشبكة المتصلة:",
+      wifi_saved_label: "الشبكات المحفوظة",
+      wifi_saved_current: "متصل الآن",
+      wifi_password_prompt: "كلمة المرور لـ {ssid}:",
+      wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
+      volume_title: "مستوى الصوت",
+      sound_turn_off: "إيقاف الصوت",
+      sound_turn_on: "تشغيل الصوت",
+      media_player_title: "مشغل الوسائط",
+      player_prev: "السابق",
+      player_play: "تشغيل",
+      player_pause: "إيقاف مؤقت",
+      player_next: "التالي",
+      panel_title: "ميزات الأريكة الذكية",
+      panel_hint: "انقر على الأيقونات على الأريكة أو القائمة لتبديل الميزات.",
+      voice_title: "المساعد الصوتي",
+      headlight_title: "مصباح الرأس",
+      wcharger_title: "شاحن لاسلكي",
+      massage_title: "وضع التدليك",
+      climate_title: "التحكم بالمناخ",
+      soundbar_title: "وضع الحفلة",
+      soundbar_turn_on: "تشغيل وضع الحفلة",
+      soundbar_turn_off: "إيقاف وضع الحفلة",
+      bluetooth_scan: "مسح الأجهزة",
+      bluetooth_disconnect: "فصل",
+      light_color_title: "لون الإضاءة",
+      control_center_title: "مركز التحكم",
+      settings_title: "الإعدادات",
+      streaming_title: "البث",
+      voice_assistant_title: "المساعد الصوتي",
+      streaming_placeholder: "محتوى بديل لتطبيقات البث. يمكن توسيع هذا القسم ليشمل تطبيقات البث مثل يوتيوب أو نتفليكس.",
+      voice_assistant_placeholder: "محتوى بديل للمساعد الصوتي. يمكن توسيع هذا القسم ليشمل ميزات المساعد الصوتي.",
+      language_title: "اللغة",
+      under_sofa_light_title: "إضاءة أسفل الأريكة",
+      cancel: "إلغاء",
+      shift: "شيفت",
+      special_chars: "رموز خاصة"
+    }
+  };
+
   let currentLang = "en";
   let lastState = {};
   let pendingSSID = null;
   let wifiScanRequested = false;
+  let isShiftActive = false;
+  let isSpecialChars = false;
 
   function t(key, vars = {}) {
     let str = translations[currentLang][key] || key;
@@ -636,6 +749,12 @@ const translations = {
       const icon = btn.querySelector('i');
       icon.className = playing ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     });
+    // Update WiFi password panel translations
+    const wifiPasswordWrapper = document.getElementById("wifiPasswordWrapper");
+    if (wifiPasswordWrapper && pendingSSID) {
+      const wifiPasswordTitle = wifiPasswordWrapper.querySelector("h2");
+      wifiPasswordTitle.textContent = t(lastState.wifi?.last_connection_attempt?.success === false ? "wifi_fail_prompt" : "wifi_password_prompt", { ssid: pendingSSID });
+    }
     renderSettings();
   }
 
@@ -697,6 +816,73 @@ const translations = {
   const wifiStatus = document.getElementById("wifi-status");
   const muteBtn = document.getElementById("mute-toggle");
   const digitalCrowns = document.querySelectorAll("#digitalCrown");
+  const wifiPasswordWrapper = document.getElementById("wifiPasswordWrapper");
+  const wifiPasswordInput = document.getElementById("wifi-password-input");
+  const wifiKeyboard = document.getElementById("wifiKeyboard");
+  const wifiPasswordSubmit = document.getElementById("wifi-password-submit");
+  const wifiPasswordCancel = document.getElementById("wifi-password-cancel");
+
+  // Virtual Keyboard Setup
+  function setupVirtualKeyboard() {
+    const lowercaseKeys = [
+      '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+      'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+      'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+      'z', 'x', 'c', 'v', 'b', 'n', 'm', 'backspace',
+      'shift', 'special_chars', 'space'
+    ];
+    const uppercaseKeys = [
+      '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+      'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+      'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
+      'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'backspace',
+      'shift', 'special_chars', 'space'
+    ];
+    const specialCharKeys = [
+      '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
+      '-', '_', '+', '=', '[', ']', '{', '}', '|', ';', ':',
+      '"', '\'', ',', '.', '/', '?', '<', '>', '~', '`',
+      'backspace', 'shift', 'special_chars', 'space'
+    ];
+
+    function renderKeyboard() {
+      wifiKeyboard.innerHTML = '';
+      const keys = isSpecialChars ? specialCharKeys : (isShiftActive ? uppercaseKeys : lowercaseKeys);
+      keys.forEach(key => {
+        const button = document.createElement('button');
+        button.textContent = key === 'backspace' ? '⌫' : key === 'space' ? t('space') : key === 'shift' ? t('shift') : key === 'special_chars' ? t('special_chars') : key;
+        if (['backspace', 'space', 'shift', 'special_chars'].includes(key)) {
+          button.classList.add('special-key');
+        }
+        if ((key === 'shift' && isShiftActive) || (key === 'special_chars' && isSpecialChars)) {
+          button.classList.add('shift-active');
+        }
+        button.onclick = () => {
+          if (key === 'backspace') {
+            wifiPasswordInput.value = wifiPasswordInput.value.slice(0, -1);
+          } else if (key === 'space') {
+            wifiPasswordInput.value += ' ';
+          } else if (key === 'shift') {
+            isShiftActive = !isShiftActive;
+            if (isSpecialChars) isSpecialChars = false; // Exit special chars mode when shift is toggled
+            renderKeyboard();
+          } else if (key === 'special_chars') {
+            isSpecialChars = !isSpecialChars;
+            isShiftActive = false; // Reset shift when switching modes
+            renderKeyboard();
+          } else {
+            wifiPasswordInput.value += key;
+          }
+        };
+        wifiKeyboard.appendChild(button);
+      });
+    }
+
+    renderKeyboard();
+  }
+
+  // Initialize virtual keyboard
+  setupVirtualKeyboard();
 
   // Sanitization Functions
   function sanitizeMode(mode) {
@@ -849,13 +1035,35 @@ const translations = {
     if (pendingSSID && attempt && attempt.ssid === pendingSSID) {
       if (attempt.success) {
         pendingSSID = null;
+        wifiPasswordWrapper.classList.remove('open');
+        gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => wifiPasswordWrapper.style.display = 'none' });
+        Swal.fire({
+          title: t("status_on"),
+          text: t("wifi_connected_label") + ` ${pendingSSID}`,
+          icon: 'success',
+          confirmButtonText: t("apply_light")
+        });
       } else {
-        const pwd = prompt(t("wifi_fail_prompt", { ssid: pendingSSID }));
-        if (pwd !== null) {
-          send("wifi.connect", { ssid: pendingSSID, password: pwd });
-        } else {
-          pendingSSID = null;
-        }
+        Swal.fire({
+          title: t("wifi_fail_prompt", { ssid: pendingSSID }),
+          text: t("wifi_fail_prompt", { ssid: pendingSSID }),
+          icon: 'error',
+          confirmButtonText: t("apply_light"),
+          showCancelButton: true,
+          cancelButtonText: t("cancel")
+        }).then((result) => {
+          if (result.isConfirmed) {
+            wifiPasswordWrapper.classList.add('open');
+            wifiPasswordWrapper.style.display = 'flex';
+            wifiPasswordInput.value = '';
+            gsap.fromTo(wifiPasswordWrapper, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.in' });
+            applyTranslations();
+          } else {
+            pendingSSID = null;
+            wifiPasswordWrapper.classList.remove('open');
+            gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => wifiPasswordWrapper.style.display = 'none' });
+          }
+        });
       }
     }
   }
@@ -1077,11 +1285,48 @@ const translations = {
   }
 
   function connectSSID(ssid) {
-    const pwd = prompt(t("wifi_password_prompt", { ssid }));
-    if (pwd !== null) {
-      pendingSSID = ssid;
-      send("wifi.connect", { ssid, password: pwd });
-    }
+    pendingSSID = ssid;
+    isShiftActive = false;
+    isSpecialChars = false;
+    setupVirtualKeyboard();
+    wifiPasswordWrapper.classList.add('open');
+    wifiPasswordWrapper.style.display = 'flex';
+    wifiPasswordInput.value = '';
+    gsap.fromTo(wifiPasswordWrapper, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.in' });
+    applyTranslations();
+  }
+
+  if (wifiPasswordSubmit) {
+    wifiPasswordSubmit.onclick = () => {
+      const pwd = wifiPasswordInput.value;
+      if (pwd) {
+        send("wifi.connect", { ssid: pendingSSID, password: pwd });
+        gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => {
+          wifiPasswordWrapper.classList.remove('open');
+          wifiPasswordWrapper.style.display = 'none';
+        }});
+      } else {
+        Swal.fire({
+          title: t("wifi_password_prompt", { ssid: pendingSSID }),
+          text: t("wifi_password_prompt", { ssid: pendingSSID }),
+          icon: 'warning',
+          confirmButtonText: t("apply_light")
+        });
+      }
+    };
+  }
+
+  if (wifiPasswordCancel) {
+    wifiPasswordCancel.onclick = () => {
+      pendingSSID = null;
+      isShiftActive = false;
+      isSpecialChars = false;
+      setupVirtualKeyboard();
+      gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => {
+        wifiPasswordWrapper.classList.remove('open');
+        wifiPasswordWrapper.style.display = 'none';
+      }});
+    };
   }
 
   toggleButtons.forEach(btn => {
