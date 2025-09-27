@@ -76,7 +76,7 @@
                     <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
                     <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
                     <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
-                    <div class="featurean-btn f-soundbarL" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
+                    <div class="feature-btn f-soundbarL" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
                   </div>
                 </div>
               </div>
@@ -118,22 +118,34 @@
       <div class="list-item" data-feature="soundbar">
         <i class="fa-solid fa-volume-up"></i>
         <div class="label" data-i18n="soundbar_title">Party Mode</div>
-        <div class="status" data-i18n="status_off">Off</div>
+        <label class="switch">
+          <input type="checkbox" class="feature-toggle" data-feature="soundbar">
+          <span class="slider"></span>
+        </label>
       </div>
       <div class="list-item" data-feature="voice">
         <i class="fa-solid fa-microphone"></i>
         <div class="label" data-i18n="voice_title">Voice Assistant</div>
-        <div class="status" data-i18n="status_off">Off</div>
+        <label class="switch">
+          <input type="checkbox" class="feature-toggle" data-feature="voice">
+          <span class="slider"></span>
+        </label>
       </div>
       <div class="list-item" data-feature="bluetooth">
         <i class="fa-brands fa-bluetooth"></i>
         <div class="label" data-i18n="bluetooth_title">Bluetooth</div>
-        <div class="status" data-i18n="status_off">Off</div>
+        <label class="switch">
+          <input type="checkbox" class="feature-toggle" data-feature="bluetooth">
+          <span class="slider"></span>
+        </label>
       </div>
       <div class="list-item" data-feature="wifi">
         <i class="fa-solid fa-wifi"></i>
         <div class="label" data-i18n="wifi_title">WiFi</div>
-        <div class="status" data-i18n="status_off">Off</div>
+        <label class="switch">
+          <input type="checkbox" class="feature-toggle" data-feature="wifi">
+          <span class="slider"></span>
+        </label>
       </div>
     </div>
     <div class="wifi-controls">
@@ -367,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
       streaming_title: "استریمینگ",
       voice_assistant_title: "دستیار صوتی",
       streaming_placeholder: "محتوای placeholder برای برنامه‌های استریمینگ. این بخش می‌تواند برای افزودن برنامه‌های استریمینگ مانند یوتیوب یا نتفلیکس گسترش یابد.",
-      voice_assistant_placeholder: "محتوای placeholder برای دستیار صوتی. این بخش می‌تواند برای افزودن قابلیت‌های دستیار صوتی گسترش یابد.",
+      voice_assistant_placeholder: "محتوى placeholder برای دستیار صوتی. این بخش می‌تواند برای افزودن قابلیت‌های دستیار صوتی گسترش یابد.",
       language_title: "زبان",
       under_sofa_light_title: "نور زیر مبل",
       cancel: "لغو",
@@ -614,12 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.dir = ["fa", "ar"].includes(currentLang) ? "rtl" : "ltr";
     document.querySelectorAll("[data-i18n]").forEach(el => {
       const key = el.getAttribute("data-i18n");
-      if (el.classList.contains("status")) {
-        const feature = el.parentElement.dataset.feature;
-        el.textContent = t(lastState[feature]?.on ? "status_on" : "status_off");
-      } else {
-        el.textContent = t(key);
-      }
+      el.textContent = t(key);
     });
     document.querySelectorAll(".panel-btn").forEach(btn => {
       const section = btn.dataset.section;
@@ -660,9 +667,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const wifiSSIDSettings = document.getElementById("wifi-ssid-settings");
   const wifiForgetBtnSettings = document.getElementById("wifi-forget-settings");
   const wifiConnectedSettings = document.querySelector(".wifi-controls .wifi-connected");
-  const wifiSavedContainer = document.querySelector(".wifi-saved");
-  const wifiSavedSelect = document.getElementById("wifi-saved-select");
-  const wifiSavedForgetBtn = document.getElementById("wifi-saved-forget");
   const volumeRanges = document.querySelectorAll(".volume-slider, #volume-settings");
   const volumeValues = document.querySelectorAll("#volume-value, #volume-value-settings");
   const toggleButtons = document.querySelectorAll("#player-toggle");
@@ -746,11 +750,11 @@ document.addEventListener('DOMContentLoaded', () => {
             wifiPasswordInput.value += ' ';
           } else if (key === 'shift') {
             isShiftActive = !isShiftActive;
-            if (isSpecialChars) isSpecialChars = false; // Exit special chars mode when shift is toggled
+            if (isSpecialChars) isSpecialChars = false;
             renderKeyboard();
           } else if (key === 'special_chars') {
             isSpecialChars = !isSpecialChars;
-            isShiftActive = false; // Reset shift when switching modes
+            isShiftActive = false;
             renderKeyboard();
           } else {
             wifiPasswordInput.value += key;
@@ -763,7 +767,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderKeyboard();
   }
 
-  // Initialize virtual keyboard
   setupVirtualKeyboard();
 
   // Sanitization Functions
@@ -801,44 +804,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderReadingLight(st) {
     const on = !!st?.lighting?.reading_light?.on;
     setFeatureUI('reading', on);
-    if (readingBtn && readingStatus) {
-      readingBtn.textContent = t(on ? "reading_light_turn_off" : "reading_light_turn_on");
-      readingBtn.classList.toggle("on", on);
-      readingStatus.textContent = t(on ? "status_on" : "status_off");
-      readingStatus.classList.toggle("on", on);
-    }
   }
 
   function renderBackLight(st) {
     const on = !!st?.lighting?.back_light?.on;
     setFeatureUI('backlight', on);
-    if (backBtn && backStatus) {
-      backBtn.textContent = t(on ? "back_light_turn_off" : "back_light_turn_on");
-      backBtn.classList.toggle("on", on);
-      backStatus.textContent = t(on ? "status_on" : "status_off");
-      backStatus.classList.toggle("on", on);
-    }
   }
 
   function renderPartyMode(st) {
     const active = !!st?.soundbar?.open;
     setFeatureUI('soundbar', active);
-    if (partyBtn) {
-      partyBtn.textContent = t(active ? "soundbar_turn_off" : "soundbar_turn_on");
-      partyBtn.classList.toggle("on", active);
-    }
   }
 
   function renderBluetooth(st) {
     const bluetooth = st?.bluetooth || {};
     const on = !!bluetooth.on;
     setFeatureUI('bluetooth', on);
-    if (btBtn && btStatus) {
-      btBtn.textContent = t(on ? "bluetooth_turn_off" : "bluetooth_turn_on");
-      btBtn.classList.toggle("on", on);
-      btStatus.textContent = t(on ? "status_on" : "status_off");
-      btStatus.classList.toggle("on", on);
-    }
     updateMusicPanelVisibility();
   }
 
@@ -870,34 +851,6 @@ document.addEventListener('DOMContentLoaded', () => {
       li.appendChild(btn);
       targetWifiList.appendChild(li);
     });
-
-    // Render saved networks
-    if (wifiSavedContainer && wifiSavedSelect) {
-      const savedRaw = Array.isArray(wifi.saved_networks) ? wifi.saved_networks : [];
-      const saved = savedRaw
-        .filter(net => net && typeof net.ssid === "string" && net.ssid.trim() !== "")
-        .map(net => ({ ssid: net.ssid.trim(), active: !!net.active }));
-      const previousSelection = wifiSavedSelect.value;
-      wifiSavedSelect.innerHTML = "";
-      saved.forEach(net => {
-        const option = document.createElement("option");
-        option.value = net.ssid;
-        option.textContent = net.active ? `${net.ssid} (${t("wifi_saved_current")})` : net.ssid;
-        wifiSavedSelect.appendChild(option);
-      });
-      if (saved.length > 0) {
-        let nextValue = previousSelection && saved.some(net => net.ssid === previousSelection)
-          ? previousSelection
-          : saved.find(net => net.active)?.ssid || saved[0].ssid;
-        wifiSavedSelect.value = nextValue;
-        wifiSavedContainer.style.display = "flex";
-        if (wifiSavedForgetBtn) wifiSavedForgetBtn.disabled = !nextValue;
-      } else {
-        wifiSavedContainer.style.display = "none";
-        wifiSavedSelect.value = "";
-        if (wifiSavedForgetBtn) wifiSavedForgetBtn.disabled = true;
-      }
-    }
 
     if (wifi.connected && wifi.ssid) {
       targetWifiSSID.textContent = wifi.ssid || "";
@@ -951,6 +904,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function renderVoice(st) {
+    const on = !!st?.voice?.on;
+    setFeatureUI('voice', on);
+  }
+
   function renderVolume(st) {
     const vol = st?.audio?.volume ?? 0;
     const muted = !!st?.audio?.muted;
@@ -1002,29 +960,21 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPartyMode(lastState);
     renderBluetooth(lastState);
     renderWiFi(lastState, true);
+    renderVoice(lastState);
     renderVolume(lastState);
     renderPlayer(lastState);
     renderLightingInputs(lastState);
   }
 
   function setFeatureUI(feature, enabled) {
+    console.log(`setFeatureUI: feature=${feature}, enabled=${enabled}`);
     // Update sofa feature buttons
     document.querySelectorAll(`.feature-btn[data-feature="${feature}"]`).forEach(el => {
-      if (enabled) {
-        el.classList.add('active');
-        el.title = t(`${feature}_turn_off`);
-      } else {
-        el.classList.remove('active');
-        el.title = t(`${feature}_turn_on`);
-      }
+      el.classList.toggle('active', enabled);
+      el.title = t(enabled ? `${feature}_turn_off` : `${feature}_turn_on`);
     });
-    // Update sidebar toggles and status
+    // Update sidebar toggles
     document.querySelectorAll(`.list-item[data-feature="${feature}"]`).forEach(el => {
-      const statusEl = el.querySelector('.status');
-      if (statusEl) {
-        statusEl.textContent = t(enabled ? "status_on" : "status_off");
-        statusEl.classList.toggle('on', enabled);
-      }
       const toggleEl = el.querySelector('.feature-toggle');
       if (toggleEl) {
         toggleEl.checked = enabled;
@@ -1060,12 +1010,8 @@ document.addEventListener('DOMContentLoaded', () => {
       wifiStatus.classList.toggle("on", enabled);
     }
     if (feature === 'voice') {
-      document.querySelectorAll(`.list-item[data-feature="voice"] .status`).forEach(statusEl => {
-        statusEl.textContent = t(enabled ? "status_on" : "status_off");
-        statusEl.classList.toggle("on", enabled);
-      });
+      // Voice does not have a dedicated settings button, but update sidebar
     }
-
     if (feature === 'backlight') {
       const glow = document.getElementById('backlightGlow');
       if (enabled) {
@@ -1077,7 +1023,6 @@ document.addEventListener('DOMContentLoaded', () => {
         glow.style.opacity = 0;
       }
     }
-
     if (feature === 'sound') {
       toggleButtons.forEach(btn => {
         const icon = btn.querySelector('i');
@@ -1085,24 +1030,23 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.title = t(enabled ? 'player_pause' : 'player_play');
       });
     }
-
     if (feature === 'soundbar') {
       const soundbarButtons = document.querySelectorAll('.f-soundbar, .f-soundbarL');
       soundbarButtons.forEach(btn => {
-        if (enabled) {
-          btn.classList.add('active');
-          btn.title = t('soundbar_turn_off');
-        } else {
-          btn.classList.remove('active');
-          btn.title = t('soundbar_turn_on');
-          gsap.killTweensOf(btn);
-        }
+        btn.classList.toggle('active', enabled);
+        btn.title = t(enabled ? 'soundbar_turn_off' : 'soundbar_turn_on');
       });
     }
   }
 
   // Event Handlers
   function toggleFeature(feature, next) {
+    console.log(`toggleFeature: feature=${feature}, next=${next}`);
+    // Prevent redundant updates if state hasn't changed
+    if (lastState[feature]?.on === next || (feature === 'soundbar' && lastState.soundbar?.open === next)) {
+      console.log(`toggleFeature: No change needed for ${feature}`);
+      return;
+    }
     setFeatureUI(feature, next);
     if (feature === 'reading') {
       send("reading_light.set", { on: next });
@@ -1110,79 +1054,91 @@ document.addEventListener('DOMContentLoaded', () => {
       send("back_light.set", { on: next });
     } else if (feature === 'soundbar') {
       if (isLoadingCompleted) {
-        setTimeout(() => {
-          isLoadingCompleted = false;
-        }, 8000);
-      } else {
-        isLoadingCompleted = true;
-        document.querySelectorAll('.f-soundbar, .f-soundbarL').forEach(btn => {
-          const loadingOverlay = btn.querySelector('.loading-overlay');
-          gsap.killTweensOf(loadingOverlay);
-          gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
-            gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
-          }});
-        });
-        send("mode.toggle");
-        setTimeout(() => {
-          isLoadingCompleted = false;
-        }, 8000);
+        console.log('Soundbar toggle skipped due to ongoing loading');
+        return;
       }
+      isLoadingCompleted = true;
+      document.querySelectorAll('.f-soundbar, .f-soundbarL').forEach(btn => {
+        const loadingOverlay = btn.querySelector('.loading-overlay');
+        gsap.killTweensOf(loadingOverlay);
+        gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, {
+          width: '100%',
+          duration: 8,
+          ease: 'linear',
+          onComplete: () => {
+            gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
+            isLoadingCompleted = false;
+          }
+        });
+      });
+      send("mode.toggle");
     } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
       send(`${feature}.set`, { on: next });
     }
   }
 
+  // Clear existing event listeners to prevent duplicates
   featureButtons.forEach(btn => {
+    btn.replaceWith(btn.cloneNode(true));
+  });
+  document.querySelectorAll('.feature-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const f = btn.dataset.feature;
-      const next = !lastState[f]?.on;
+      const next = !lastState[f]?.on && !(f === 'soundbar' && lastState.soundbar?.open);
       toggleFeature(f, next);
     });
   });
 
+  // Clear existing event listeners for list items
   listItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('feature-toggle') || e.target.classList.contains('slider')) {
+    item.replaceWith(item.cloneNode(true));
+  });
+  document.querySelectorAll('.list-item').forEach(item => {
+    const toggleEl = item.querySelector('.feature-toggle');
+    if (toggleEl) {
+      toggleEl.addEventListener('change', (e) => {
         const f = item.dataset.feature;
-        const toggleEl = item.querySelector('.feature-toggle');
-        const next = toggleEl.checked;
+        const next = e.target.checked;
         toggleFeature(f, next);
-      } else {
+      });
+    }
+    item.addEventListener('click', (e) => {
+      if (!e.target.closest('.feature-toggle, .slider')) {
         const f = item.dataset.feature;
-        const next = !lastState[f]?.on;
+        const next = !lastState[f]?.on && !(f === 'soundbar' && lastState.soundbar?.open);
         toggleFeature(f, next);
       }
     });
   });
 
+  // Clear existing event listeners for settings buttons
+  [readingBtn, backBtn, partyBtn, btBtn, wifiBtn].forEach(btn => {
+    if (btn) btn.replaceWith(btn.cloneNode(true));
+  });
   if (readingBtn) {
     readingBtn.onclick = () => {
       const next = !lastState.reading?.on;
       toggleFeature('reading', next);
     };
   }
-
   if (backBtn) {
     backBtn.onclick = () => {
       const next = !lastState.backlight?.on;
       toggleFeature('backlight', next);
     };
   }
-
   if (partyBtn) {
     partyBtn.onclick = () => {
       const next = !lastState.soundbar?.open;
       toggleFeature('soundbar', next);
     };
   }
-
   if (btBtn) {
     btBtn.onclick = () => {
       const next = !lastState.bluetooth?.on;
       toggleFeature('bluetooth', next);
     };
   }
-
   if (wifiBtn) {
     wifiBtn.onclick = () => {
       const next = !lastState.wifi?.on;
@@ -1200,17 +1156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ssid = wifiSSIDSettings.textContent;
     if (ssid) send("wifi.forget", { ssid });
   };
-  if (wifiSavedForgetBtn) {
-    wifiSavedForgetBtn.onclick = () => {
-      const ssid = wifiSavedSelect?.value || "";
-      if (ssid) send("wifi.forget", { ssid });
-    };
-  }
-  if (wifiSavedSelect) {
-    wifiSavedSelect.onchange = () => {
-      if (wifiSavedForgetBtn) wifiSavedForgetBtn.disabled = !wifiSavedSelect.value;
-    };
-  }
 
   function connectSSID(ssid) {
     pendingSSID = ssid;
@@ -1376,6 +1321,7 @@ document.addEventListener('DOMContentLoaded', () => {
   langSelectSettings.onchange = (e) => setLang(e.target.value);
 
   sio.on("sv.update", (st) => {
+    console.log('Received sv.update:', st);
     lastState = st;
     if (st.lang && st.lang !== currentLang) {
       currentLang = st.lang;
@@ -1387,7 +1333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPartyMode(st);
     renderBluetooth(st);
     renderWiFi(st);
-    renderWiFi(st, true);
+    renderVoice(st);
     renderVolume(st);
     renderPlayer(st);
     renderLightingInputs(st);
