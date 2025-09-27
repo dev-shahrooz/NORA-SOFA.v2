@@ -13,8 +13,6 @@
   <link rel="stylesheet" href="/ui/src/css/sweetalert2.min.css">
   <!-- Swiper JS -->
   <script src="/ui/src/js/swiper-bundle.min.js"></script>
-  <!-- Socket.IO -->
-  <script src="/ui/src/js/socket.io.min.js"></script>
   <!-- GSAP for animations -->
   <script src="/ui/src/js/gsap.min.js"></script>
   <!-- SweetAlert2 JS -->
@@ -294,10 +292,65 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('GSAP library failed to load.');
   }
 
-  const sio = io();
-
+  // New send function to log actions to console
   function send(type, payload = {}) {
-    sio.emit("ui.intent", { type, payload, corr_id: String(Date.now()) });
+    console.log('Action:', { type, payload, corr_id: String(Date.now()) });
+    // Simulate state update for UI testing (optional, can be removed if backend provides state)
+    if (type === 'ui.query') {
+      simulateStateUpdate({});
+    } else if (type === 'player.info') {
+      simulateStateUpdate({ player: { title: 'Sample Track', artist: 'Sample Artist', playing: false } });
+    } else if (type === 'reading_light.set') {
+      simulateStateUpdate({ lighting: { reading_light: { on: payload.on } } });
+    } else if (type === 'back_light.set') {
+      simulateStateUpdate({ lighting: { back_light: { on: payload.on } } });
+    } else if (type === 'mode.toggle') {
+      simulateStateUpdate({ soundbar: { open: !lastState.soundbar?.open } });
+    } else if (['bluetooth.set', 'wifi.set', 'voice.set'].includes(type)) {
+      simulateStateUpdate({ [type.split('.')[0]]: { on: payload.on } });
+    } else if (type === 'wifi.scan') {
+      simulateStateUpdate({ wifi: { networks: [{ ssid: 'SampleWiFi', signal: 'Strong' }], on: true } });
+    } else if (type === 'wifi.connect') {
+      simulateStateUpdate({ wifi: { ssid: payload.ssid, connected: true, last_connection_attempt: { ssid: payload.ssid, success: true } } });
+    } else if (type === 'wifi.forget') {
+      simulateStateUpdate({ wifi: { ssid: null, connected: false, networks: lastState.wifi?.networks || [] } });
+    } else if (type === 'audio.set_volume') {
+      simulateStateUpdate({ audio: { volume: payload.volume } });
+    } else if (type === 'audio.set_mute') {
+      simulateStateUpdate({ audio: { muted: payload.mute } });
+    } else if (type === 'player.play') {
+      simulateStateUpdate({ player: { playing: true } });
+    } else if (type === 'player.pause') {
+      simulateStateUpdate({ player: { playing: false } });
+    } else if (type === 'player.next' || type === 'player.previous') {
+      simulateStateUpdate({ player: { title: `Track ${Date.now()}`, artist: 'Sample Artist' } });
+    } else if (type === 'lighting.set') {
+      simulateStateUpdate({ lighting: { [payload.zone]: { mode: payload.mode, color: payload.color, brightness: payload.brightness } } });
+    } else if (type === 'bluetooth.unpair') {
+      simulateStateUpdate({ bluetooth: { connected: false } });
+    } else if (type === 'ui.set_lang') {
+      simulateStateUpdate({ lang: payload.lang });
+    }
+  }
+
+  // Simulated state update function for UI testing
+  let lastState = {};
+  function simulateStateUpdate(newState) {
+    lastState = { ...lastState, ...newState };
+    renderReadingLight(lastState);
+    renderBackLight(lastState);
+    renderPartyMode(lastState);
+    renderBluetooth(lastState);
+    renderWiFi(lastState);
+    renderWiFi(lastState, true);
+    renderVolume(lastState);
+    renderPlayer(lastState);
+    renderLightingInputs(lastState);
+    if (newState.lang && newState.lang !== currentLang) {
+      currentLang = newState.lang;
+      langSelectSettings.value = currentLang;
+      applyTranslations();
+    }
   }
 
   const translations = {
@@ -596,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let currentLang = "en";
-  let lastState = {};
+  // let lastState = {};
   let pendingSSID = null;
   let wifiScanRequested = false;
   let isShiftActive = false;
@@ -631,7 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const icon = btn.querySelector('i');
       icon.className = playing ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     });
-    // Update WiFi password panel translations
     const wifiPasswordWrapper = document.getElementById("wifiPasswordWrapper");
     if (wifiPasswordWrapper && pendingSSID) {
       const wifiPasswordTitle = wifiPasswordWrapper.querySelector("h2");
@@ -746,11 +798,11 @@ document.addEventListener('DOMContentLoaded', () => {
             wifiPasswordInput.value += ' ';
           } else if (key === 'shift') {
             isShiftActive = !isShiftActive;
-            if (isSpecialChars) isSpecialChars = false; // Exit special chars mode when shift is toggled
+            if (isSpecialChars) isSpecialChars = false;
             renderKeyboard();
           } else if (key === 'special_chars') {
             isSpecialChars = !isSpecialChars;
-            isShiftActive = false; // Reset shift when switching modes
+            isShiftActive = false;
             renderKeyboard();
           } else {
             wifiPasswordInput.value += key;
@@ -763,7 +815,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderKeyboard();
   }
 
-  // Initialize virtual keyboard
   setupVirtualKeyboard();
 
   // Sanitization Functions
@@ -871,7 +922,6 @@ document.addEventListener('DOMContentLoaded', () => {
       targetWifiList.appendChild(li);
     });
 
-    // Render saved networks
     if (wifiSavedContainer && wifiSavedSelect) {
       const savedRaw = Array.isArray(wifi.saved_networks) ? wifi.saved_networks : [];
       const saved = savedRaw
@@ -1016,7 +1066,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setFeatureUI(feature, enabled) {
-    // Update sofa feature buttons
     document.querySelectorAll(`.feature-btn[data-feature="${feature}"]`).forEach(el => {
       if (enabled) {
         el.classList.add('active');
@@ -1026,7 +1075,6 @@ document.addEventListener('DOMContentLoaded', () => {
         el.title = t(`${feature}_turn_on`);
       }
     });
-    // Update sidebar toggles and status
     document.querySelectorAll(`.list-item[data-feature="${feature}"]`).forEach(el => {
       const statusEl = el.querySelector('.status');
       if (statusEl) {
@@ -1038,7 +1086,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleEl.checked = enabled;
       }
     });
-    // Update settings panel buttons
     if (feature === 'reading' && readingBtn && readingStatus) {
       readingBtn.textContent = t(enabled ? "reading_light_turn_off" : "reading_light_turn_on");
       readingBtn.classList.toggle("on", enabled);
@@ -1073,7 +1120,6 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.classList.toggle("on", enabled);
       });
     }
-
     if (feature === 'backlight') {
       const glow = document.getElementById('backlightGlow');
       if (enabled) {
@@ -1085,7 +1131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         glow.style.opacity = 0;
       }
     }
-
     if (feature === 'sound') {
       toggleButtons.forEach(btn => {
         const icon = btn.querySelector('i');
@@ -1093,7 +1138,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.title = t(enabled ? 'player_pause' : 'player_play');
       });
     }
-
     if (feature === 'soundbar') {
       const soundbarButtons = document.querySelectorAll('.f-soundbar, .f-soundbarL');
       soundbarButtons.forEach(btn => {
@@ -1383,26 +1427,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   langSelectSettings.onchange = (e) => setLang(e.target.value);
 
-  sio.on("sv.update", (st) => {
-    lastState = st;
-    if (st.lang && st.lang !== currentLang) {
-      currentLang = st.lang;
-      langSelectSettings.value = currentLang;
-      applyTranslations();
-    }
-    renderReadingLight(st);
-    renderBackLight(st);
-    renderPartyMode(st);
-    renderBluetooth(st);
-    renderWiFi(st);
-    renderWiFi(st, true);
-    renderVolume(st);
-    renderPlayer(st);
-    renderLightingInputs(st);
-  });
-
   // Query initial state and player info
-  sio.emit("ui.query", {});
+  send("ui.query", {});
   send("player.info");
 
   // Initial language setup
