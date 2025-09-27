@@ -31,7 +31,7 @@
     --muted: #9ca3af;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+  html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden;cursor: none; }
   body { font-family: 'Peyda','Manrope', system-ui, Vazirmatn, sans-serif; background: linear-gradient(180deg, #07101a 0%, #071428 100%); color: #e6eef8; display: flex; align-items: center; justify-content: center; }
 
   /* Fullscreen Swiper Styles */
@@ -713,7 +713,7 @@
     }
     /* Keyboard Styles */
     .keyboard {
-      display: flex;
+      display: none;
       position: fixed;
       top: 0;
       left: 0;
