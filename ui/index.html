@@ -1204,28 +1204,64 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ssid) send("wifi.forget", { ssid });
   };
 
-  async function connectSSID(ssid) {
-    const { value: pwd } = await Swal.fire({
-      title: t(pendingSSID ? "wifi_fail_prompt" : "wifi_password_prompt", { ssid }),
-      input: 'password',
-      inputLabel: 'Password',
-      inputPlaceholder: 'Enter password',
-      showCancelButton: true,
-      confirmButtonText: 'Connect',
-      cancelButtonText: 'Cancel',
-      position: 'top',
-      inputAttributes: {
-        autocapitalize: 'off',
-        autocorrect: 'off'
+async function connectSSID(ssid) {
+  const { value: pwd } = await Swal.fire({
+    title: t(pendingSSID ? "wifi_fail_prompt" : "wifi_password_prompt", { ssid }),
+    input: 'password',
+    inputLabel: 'Password',
+    inputPlaceholder: 'Enter password',
+    showCancelButton: true,
+    confirmButtonText: 'Connect',
+    cancelButtonText: 'Cancel',
+    position: 'top',
+    inputAttributes: {
+      autocapitalize: 'off',
+      autocorrect: 'off',
+      class: 'swal2-password-input',
+      readonly: 'readonly' // Prevent native keyboard
+    },
+    customClass: {
+      popup: 'swal2-top'
+    },
+    showDenyButton: true, // Add a button for toggling password visibility
+    denyButtonText: '<i class="fa-solid fa-eye"></i>', // Use Font Awesome eye icon
+    denyButtonAriaLabel: 'Show Password',
+    didOpen: () => {
+      const swalInput = document.querySelector('.swal2-password-input');
+      const denyButton = document.querySelector('.swal2-deny');
+      if (swalInput) {
+        swalInput.removeAttribute('readonly'); // Allow virtual keyboard input
+        swalInput.focus();
+        currentInput = swalInput; // Set SweetAlert2 input as currentInput
+        showKeyboard(); // Show virtual keyboard
       }
-    });
-    if (pwd !== undefined) {
-      pendingSSID = ssid;
-      send("wifi.connect", { ssid, password: pwd });
-    } else {
-      pendingSSID = null;
+      if (denyButton) {
+        denyButton.style.background = 'none';
+        denyButton.style.border = 'none';
+        denyButton.style.padding = '0 10px';
+        denyButton.style.fontSize = '18px';
+        denyButton.style.cursor = 'pointer';
+        denyButton.style.color = '#666';
+        denyButton.onclick = () => {
+          const isPassword = swalInput.type === 'password';
+          swalInput.type = isPassword ? 'text' : 'password';
+          denyButton.innerHTML = isPassword ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+          denyButton.setAttribute('aria-label', isPassword ? 'Hide Password' : 'Show Password');
+        };
+      }
+    },
+    didClose: () => {
+      hideKeyboard(); // Ensure keyboard closes when alert closes
     }
+  });
+  if (pwd !== undefined) {
+    pendingSSID = ssid;
+    send("wifi.connect", { ssid, password: pwd });
+  } else {
+    pendingSSID = null;
+    hideKeyboard();
   }
+}
 
   toggleButtons.forEach(btn => {
     btn.onclick = () => {
