@@ -23,7 +23,25 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="/ui/src/css/style.css" />
   <style>
-    
+    /* Styling for the show password button */
+    .show-password-btn {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #4f46e5;
+    }
+    .show-password-btn:hover {
+      color: #3b82f6;
+    }
+    /* Ensure SweetAlert2 input container is positioned relatively */
+    .swal2-input-container {
+      position: relative;
+    }
   </style>
 </head>
 <body>
@@ -468,6 +486,8 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_saved_current: "متصل",
       wifi_password_prompt: "رمز برای {ssid}:",
       wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
+      wifi_show_password: "نمایش رمز",
+      wifi_hide_password: "مخفی کردن رمز",
       volume_title: "حجم صدا",
       sound_turn_off: "قطع صدا",
       sound_turn_on: "وصل صدا",
@@ -538,6 +558,8 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_saved_current: "Currently connected",
       wifi_password_prompt: "Password for {ssid}:",
       wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
+      wifi_show_password: "Show Password",
+      wifi_hide_password: "Hide Password",
       volume_title: "Volume",
       sound_turn_off: "Mute sound",
       sound_turn_on: "Unmute sound",
@@ -608,6 +630,8 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_saved_current: "Şu an bağlı",
       wifi_password_prompt: "{ssid} için parola:",
       wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
+      wifi_show_password: "Şifreyi Göster",
+      wifi_hide_password: "Şifreyi Gizle",
       volume_title: "Ses",
       sound_turn_off: "Sesi kapat",
       sound_turn_on: "Sesi aç",
@@ -678,6 +702,8 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_saved_current: "متصل الآن",
       wifi_password_prompt: "كلمة المرور لـ {ssid}:",
       wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
+      wifi_show_password: "إظهار كلمة المرور",
+      wifi_hide_password: "إخفاء كلمة المرور",
       volume_title: "مستوى الصوت",
       sound_turn_off: "إيقاف الصوت",
       sound_turn_on: "تشغيل الصوت",
@@ -1078,19 +1104,19 @@ document.addEventListener('DOMContentLoaded', () => {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
         // Get current state from lastState or DOM
-      const currentState = lastState?.lighting?.back_light?.on ?? btn.classList.contains('active');
-      const nextState = !currentState;
-      console.log(`Toggling backlight: current=${currentState}, next=${nextState}`);
-      
-      // Update local state
-      lastState.lighting = lastState.lighting || {};
-      lastState.lighting.back_light = { on: nextState };
-      
-      // Update UI immediately to provide feedback
-      setFeatureUI('backlight', nextState);
-      
-      // Send to server
-      send("back_light.set", { on: nextState });
+        const currentState = lastState?.lighting?.back_light?.on ?? btn.classList.contains('active');
+        const nextState = !currentState;
+        console.log(`Toggling backlight: current=${currentState}, next=${nextState}`);
+        
+        // Update local state
+        lastState.lighting = lastState.lighting || {};
+        lastState.lighting.back_light = { on: nextState };
+        
+        // Update UI immediately to provide feedback
+        setFeatureUI('backlight', nextState);
+        
+        // Send to server
+        send("back_light.set", { on: nextState });
       } else if (feature === 'soundbar') {
         send("mode.toggle");
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
@@ -1204,64 +1230,40 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ssid) send("wifi.forget", { ssid });
   };
 
-async function connectSSID(ssid) {
-  const { value: pwd } = await Swal.fire({
-    title: t(pendingSSID ? "wifi_fail_prompt" : "wifi_password_prompt", { ssid }),
-    input: 'password',
-    inputLabel: 'Password',
-    inputPlaceholder: 'Enter password',
-    showCancelButton: true,
-    confirmButtonText: 'Connect',
-    cancelButtonText: 'Cancel',
-    position: 'top',
-    inputAttributes: {
-      autocapitalize: 'off',
-      autocorrect: 'off',
-      class: 'swal2-password-input',
-      readonly: 'readonly' // Prevent native keyboard
-    },
-    customClass: {
-      popup: 'swal2-top'
-    },
-    showDenyButton: true, // Add a button for toggling password visibility
-    denyButtonText: '<i class="fa-solid fa-eye"></i>', // Use Font Awesome eye icon
-    denyButtonAriaLabel: 'Show Password',
-    didOpen: () => {
-      const swalInput = document.querySelector('.swal2-password-input');
-      const denyButton = document.querySelector('.swal2-deny');
-      if (swalInput) {
-        swalInput.removeAttribute('readonly'); // Allow virtual keyboard input
-        swalInput.focus();
-        currentInput = swalInput; // Set SweetAlert2 input as currentInput
-        showKeyboard(); // Show virtual keyboard
+  async function connectSSID(ssid) {
+    let isPasswordVisible = false;
+    const { value: pwd } = await Swal.fire({
+      title: t(pendingSSID ? "wifi_fail_prompt" : "wifi_password_prompt", { ssid }),
+      input: 'password',
+      inputLabel: 'Password',
+      inputPlaceholder: 'Enter password',
+      showCancelButton: true,
+      confirmButtonText: 'Connect',
+      cancelButtonText: 'Cancel',
+      position: 'top',
+      inputAttributes: {
+        autocapitalize: 'off',
+        autocorrect: 'off',
+        id: 'wifi-password-input'
+      },
+      html: '<button type="button" id="show-password-btn" class="show-password-btn">' + t('wifi_show_password') + '</button>',
+      didOpen: () => {
+        const input = document.getElementById('wifi-password-input');
+        const showPasswordBtn = document.getElementById('show-password-btn');
+        showPasswordBtn.addEventListener('click', () => {
+          isPasswordVisible = !isPasswordVisible;
+          input.type = isPasswordVisible ? 'text' : 'password';
+          showPasswordBtn.textContent = t(isPasswordVisible ? 'wifi_hide_password' : 'wifi_show_password');
+        });
       }
-      if (denyButton) {
-        denyButton.style.background = 'none';
-        denyButton.style.border = 'none';
-        denyButton.style.padding = '0 10px';
-        denyButton.style.fontSize = '18px';
-        denyButton.style.cursor = 'pointer';
-        denyButton.style.color = '#666';
-        denyButton.onclick = () => {
-          const isPassword = swalInput.type === 'password';
-          swalInput.type = isPassword ? 'text' : 'password';
-          denyButton.innerHTML = isPassword ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
-          denyButton.setAttribute('aria-label', isPassword ? 'Hide Password' : 'Show Password');
-        };
-      }
-    },
-    didClose: () => {
-      hideKeyboard(); // Ensure keyboard closes when alert closes
+    });
+    if (pwd !== undefined) {
+      pendingSSID = ssid;
+      send("wifi.connect", { ssid, password: pwd });
+    } else {
+      pendingSSID = null;
     }
-  });
-  if (pwd !== undefined) {
-    pendingSSID = ssid;
-    send("wifi.connect", { ssid, password: pwd });
-  } else {
-    pendingSSID = null;
-    hideKeyboard();
   }
-}
 
   toggleButtons.forEach(btn => {
     btn.onclick = () => {
@@ -1447,7 +1449,7 @@ async function connectSSID(ssid) {
   }
 
   // Event listeners for keyboard
-  closeKeyboardBtn.addEventListener('click', hideKeyboard);
+  closeKeyboardBtn.add
 
   document.addEventListener('focusin', (e) => {
     if (e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.type === 'password' || e.target.type === 'search')) {
