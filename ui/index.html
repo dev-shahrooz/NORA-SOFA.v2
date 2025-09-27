@@ -62,7 +62,7 @@
                   <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/LCD front.jpg')">
                     <button class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
                     <button class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
-                    <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i></div>
+                    <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
                   </div>
                 </div>
               </div>
@@ -714,6 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastState = {};
   let pendingSSID = null;
   let wifiScanRequested = false;
+  let isLoadingCompleted = false;
 
   function t(key, vars = {}) {
     let str = translations[currentLang][key] || key;
