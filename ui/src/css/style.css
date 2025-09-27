@@ -157,11 +157,13 @@
   }
   .feature-btn:hover { transform: scale(1.05); }
   .feature-btn.active { background: linear-gradient(90deg, var(--accent), #06b6d4); box-shadow: 0 6px 18px rgba(79,70,229,0.25); }
-  .f-reading { left: 50%; top: 8%; }
+  .f-reading { left: 40%; top: 5%; }
+  .f-readingL{ left: 60%; top: 10%;}
   .f-boxlight { left: 66%; top: 79%; }
   .f-boxlightL { left: 56%; top: 68%; }
   .f-headlight { right: 63%; top: 54%; }
-  .f-backlight { right: 55%; bottom: 17%; }
+  .f-backlight { right: 45%; bottom: 64%; }
+  .f-backlightL { right: 44%; bottom: 40%; }
   .f-sound { left: 52%; bottom: 16%; }
   .f-wifi { left: 14%; top: 6%; }
   .f-bluetooth { left: 6%; top: 6%; }
