@@ -747,6 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderBackLight(st) {
     const on = !!st?.lighting?.back_light?.on;
+    console.log(`Rendering backlight, server state: ${on}`); // Debug log
     setFeatureUI('backlight', on);
     if (backBtn && backStatus) {
       backBtn.textContent = t(on ? "back_light_turn_off" : "back_light_turn_on");
@@ -896,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function setFeatureUI(feature, enabled) {
     // Update feature buttons in swiper
     document.querySelectorAll(`.feature-btn[data-feature="${feature}"]`).forEach(el => {
-      el.classList.toggle('active', enabled);
+      el.classList.toggle('active', enabled); // Ensure class is added/removed based on enabled
       el.title = t(enabled ? `${feature}_turn_off` : `${feature}_turn_on`);
       if (feature === 'soundbar' && enabled) {
         const loadingOverlay = el.querySelector('.loading-overlay');
@@ -924,7 +925,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.classList.toggle('on', enabled);
       }
       if (toggleEl) {
-        toggleEl.checked = enabled;
+        toggleEl.checked = enabled; // Sync checkbox state
       }
     });
 
@@ -976,12 +977,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentState = lastState[feature]?.on || lastState?.lighting?.[`${feature}_light`]?.on || false;
       const nextState = !currentState;
       lastState[feature] = { on: nextState }; // Update local state
-      console.log(`New state for ${feature}: ${nextState}`);
+      console.log(`New state for ${feature}: ${nextState}`); // Debug log
       setFeatureUI(feature, nextState); // Update UI across all panels
       if (feature === 'reading') {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
         send("back_light.set", { on: nextState });
+        console.log(`Sent back_light.set with on: ${nextState}`); // Debug log
       } else if (feature === 'soundbar') {
         send("mode.toggle");
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
@@ -1005,6 +1007,7 @@ document.addEventListener('DOMContentLoaded', () => {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
         send("back_light.set", { on: nextState });
+        console.log(`Sent back_light.set with on: ${nextState}`); // Debug log
       } else if (feature === 'soundbar') {
         send("mode.toggle");
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
@@ -1025,6 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
         send("back_light.set", { on: nextState });
+        console.log(`Sent back_light.set with on: ${nextState}`); // Debug log
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
         send(`${feature}.set`, { on: nextState });
       }
@@ -1048,6 +1052,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lastState.backlight = { on: nextState }; // Update local state
       setFeatureUI('backlight', nextState); // Update UI across all panels
       send("back_light.set", { on: nextState });
+      console.log(`Settings panel backlight toggle, new state: ${nextState}`); // Debug log
     };
   }
 
@@ -1222,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', () => {
   langSelectSettings.onchange = (e) => setLang(e.target.value);
 
   sio.on("sv.update", (st) => {
-    console.log('Received server update:', st);
+    console.log('Received server update:', JSON.stringify(st, null, 2)); // Detailed state logging
     lastState = st;
     if (st.lang && st.lang !== currentLang) {
       currentLang = st.lang;
