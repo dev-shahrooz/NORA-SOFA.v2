@@ -458,7 +458,7 @@
     height: 100%; 
     background: rgba(7,17,40,1); 
     backdrop-filter: blur(8px); 
-    z-index: 2000; 
+    z-index: 2; 
     display: none; 
     padding: 40px; 
     overflow-y: auto; 
