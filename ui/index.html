@@ -93,8 +93,8 @@
               <div class="viewer">
                 <div class="sofa-wrap">
                   <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/LCD front.jpg')">
-                    <div class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></div>
-                    <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></div>
+                    <button class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
+                    <button class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
                     <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i></div>
                   </div>
                 </div>
@@ -108,9 +108,9 @@
               <div class="viewer">
                 <div class="sofa-wrap">
                   <div class="sofa-img" id="sofa-back" style="background-image: url('/ui/src/img/LCD back.jpg')">
-                    <div class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></div>
+                    <button class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
                     <div class="backlight-glow" id="backlightGlow" style="left: 10%; top: 10%; width: 80%; height: 80%; background: radial-gradient(circle at 50% 25%, rgba(79,70,229,0.35) 0%, rgba(79,70,229,0.12) 20%, rgba(79,70,229,0.02) 60%);;"></div>
-                    <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></div>
+                    <button class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
                     <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
                     <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
                     <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
@@ -742,8 +742,6 @@ document.addEventListener('DOMContentLoaded', () => {
       readingBtn.classList.toggle("on", on);
       readingStatus.textContent = t(on ? "status_on" : "status_off");
       readingStatus.classList.toggle("on", on);
-    }else{
-      
     }
   }
 
@@ -975,7 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation(); // Prevent event bubbling to Swiper
       const feature = btn.dataset.feature;
       console.log(`Toggling feature: ${feature}, current state:`, lastState[feature]);
-      const currentState = lastState[feature]?.on || false;
+      const currentState = lastState[feature]?.on || lastState?.lighting?.[`${feature}_light`]?.on || false;
       const nextState = !currentState;
       lastState[feature] = { on: nextState }; // Update local state
       console.log(`New state for ${feature}: ${nextState}`);
