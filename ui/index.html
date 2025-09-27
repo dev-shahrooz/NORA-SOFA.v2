@@ -23,7 +23,19 @@
   <script src="/ui/src/js/sweetalert2@11.js"></script>
   <link rel="stylesheet" href="/ui/src/css/style.css" />
   <style>
-    
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: rgba(255, 255, 255, 0.3);
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    .feature-btn.f-soundbar.active .loading-overlay {
+      background: linear-gradient(90deg, rgba(79, 70, 229, 0.5), rgba(79, 70, 229, 0.2));
+    }
   </style>
 </head>
 <body>
@@ -75,9 +87,9 @@
               <div class="viewer">
                 <div class="sofa-wrap">
                   <div class="sofa-img" id="sofa-back" style="background-image: url('/ui/src/img/LCD back.jpg')">
-                    <button class="feature-btn f-readingL" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
+                    <button class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
                     <div class="backlight-glow" id="backlightGlow" style="left: 10%; top: 10%; width: 80%; height: 80%; background: radial-gradient(circle at 50% 25%, rgba(79,70,229,0.35) 0%, rgba(79,70,229,0.12) 20%, rgba(79,70,229,0.02) 60%);;"></div>
-                    <button class="feature-btn f-backlightL" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
+                    <button class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
                     <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
                     <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
                     <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
@@ -123,7 +135,7 @@
       <div class="list-item" data-feature="soundbar">
         <i class="fa-solid fa-volume-up"></i>
         <div class="label" data-i18n="soundbar_title">Party Mode</div>
-        <div class="status" data-i18n="status_off"></div>
+        <div class="status" data-i18n="status_off">Off</div>
       </div>
       <div class="list-item" data-feature="voice">
         <i class="fa-solid fa-microphone"></i>
@@ -714,7 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastState = {};
   let pendingSSID = null;
   let wifiScanRequested = false;
-  let isLoadingCompleted = false;
 
   function t(key, vars = {}) {
     let str = translations[currentLang][key] || key;
@@ -993,21 +1004,25 @@ document.addEventListener('DOMContentLoaded', () => {
   function setFeatureUI(feature, enabled) {
     // Update feature buttons in swiper
     document.querySelectorAll(`.feature-btn[data-feature="${feature}"]`).forEach(el => {
-      el.classList.toggle('active', enabled); // Ensure class is added/removed based on enabled
+      el.classList.toggle('active', enabled);
       el.title = t(enabled ? `${feature}_turn_off` : `${feature}_turn_on`);
-      if (feature === 'soundbar' && enabled) {
+      if (feature === 'soundbar') {
         const loadingOverlay = el.querySelector('.loading-overlay');
         if (loadingOverlay) {
           gsap.killTweensOf(loadingOverlay);
-          gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
-            gsap.to(loadingOverlay, { opacity: 0, duration: 8 });
-          }});
-        }
-      } else if (feature === 'soundbar' && !enabled) {
-        const loadingOverlay = el.querySelector('.loading-overlay');
-        if (loadingOverlay) {
-          gsap.killTweensOf(loadingOverlay);
-          gsap.set(loadingOverlay, { width: 0, opacity: 0 });
+          if (enabled) {
+            gsap.set(loadingOverlay, { width: 0, opacity: 1 });
+            gsap.to(loadingOverlay, {
+              width: '100%',
+              duration: 8,
+              ease: 'linear',
+              onComplete: () => {
+                gsap.to(loadingOverlay, { opacity: 0, duration: 0.5 });
+              }
+            });
+          } else {
+            gsap.set(loadingOverlay, { width: 0, opacity: 0 });
+          }
         }
       }
     });
@@ -1021,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.classList.toggle('on', enabled);
       }
       if (toggleEl) {
-        toggleEl.checked = enabled; // Sync checkbox state
+        toggleEl.checked = enabled;
       }
     });
 
@@ -1066,33 +1081,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event Handlers for feature buttons
   featureButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
-      e.preventDefault(); // Prevent default behavior
-      e.stopPropagation(); // Prevent event bubbling to Swiper
+      e.preventDefault();
+      e.stopPropagation();
       const feature = btn.dataset.feature;
       console.log(`Toggling feature: ${feature}, current state:`, lastState[feature]);
-      const currentState = lastState[feature]?.on || lastState?.lighting?.[`${feature}_light`]?.on || false;
+      const currentState = lastState[feature]?.on || lastState?.lighting?.[`${feature}_light`]?.on || lastState?.soundbar?.open || false;
       const nextState = !currentState;
-      lastState[feature] = { on: nextState }; // Update local state
-      console.log(`New state for ${feature}: ${nextState}`); // Debug log
-      setFeatureUI(feature, nextState); // Update UI across all panels
+      lastState[feature] = { on: nextState };
+      console.log(`New state for ${feature}: ${nextState}`);
+      setFeatureUI(feature, nextState);
       if (feature === 'reading') {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
-        // Get current state from lastState or DOM
-      const currentState = lastState?.lighting?.back_light?.on ?? btn.classList.contains('active');
-      const nextState = !currentState;
-      console.log(`Toggling backlight: current=${currentState}, next=${nextState}`);
-      
-      // Update local state
-      lastState.lighting = lastState.lighting || {};
-      lastState.lighting.back_light = { on: nextState };
-      
-      // Update UI immediately to provide feedback
-      setFeatureUI('backlight', nextState);
-      
-      // Send to server
-      send("back_light.set", { on: nextState });
+        lastState.lighting = lastState.lighting || {};
+        lastState.lighting.back_light = { on: nextState };
+        setFeatureUI('backlight', nextState);
+        send("back_light.set", { on: nextState });
       } else if (feature === 'soundbar') {
+        lastState.soundbar = { open: nextState };
+        setFeatureUI('soundbar', nextState);
         send("mode.toggle");
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
         send(`${feature}.set`, { on: nextState });
@@ -1107,16 +1114,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const feature = item.dataset.feature;
       console.log(`Toggling list item: ${feature}, current state:`, lastState[feature]);
-      const currentState = lastState[feature]?.on || false;
+      const currentState = lastState[feature]?.on || lastState?.soundbar?.open || false;
       const nextState = !currentState;
-      lastState[feature] = { on: nextState }; // Update local state
-      setFeatureUI(feature, nextState); // Update UI across all panels
+      lastState[feature] = { on: nextState };
+      setFeatureUI(feature, nextState);
       if (feature === 'reading') {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
         send("back_light.set", { on: nextState });
-        console.log(`Sent back_light.set with on: ${nextState}`); // Debug log
+        console.log(`Sent back_light.set with on: ${nextState}`);
       } else if (feature === 'soundbar') {
+        lastState.soundbar = { open: nextState };
+        setFeatureUI('soundbar', nextState);
         send("mode.toggle");
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
         send(`${feature}.set`, { on: nextState });
@@ -1130,13 +1139,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const feature = toggle.dataset.feature;
       console.log(`Toggling switch: ${feature}, checked: ${e.target.checked}`);
       const nextState = e.target.checked;
-      lastState[feature] = { on: nextState }; // Update local state
-      setFeatureUI(feature, nextState); // Update UI across all panels
+      lastState[feature] = { on: nextState };
+      setFeatureUI(feature, nextState);
       if (feature === 'reading') {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
         send("back_light.set", { on: nextState });
-        console.log(`Sent back_light.set with on: ${nextState}`); // Debug log
+        console.log(`Sent back_light.set with on: ${nextState}`);
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
         send(`${feature}.set`, { on: nextState });
       }
@@ -1147,8 +1156,8 @@ document.addEventListener('DOMContentLoaded', () => {
     readingBtn.onclick = () => {
       console.log(`Toggling reading button, current state:`, lastState.reading);
       const nextState = !readingStatus.classList.contains("on");
-      lastState.reading = { on: nextState }; // Update local state
-      setFeatureUI('reading', nextState); // Update UI across all panels
+      lastState.reading = { on: nextState };
+      setFeatureUI('reading', nextState);
       send("reading_light.set", { on: nextState });
     };
   }
@@ -1157,19 +1166,19 @@ document.addEventListener('DOMContentLoaded', () => {
     backBtn.onclick = () => {
       console.log(`Toggling backlight button, current state:`, lastState.backlight);
       const nextState = !backStatus.classList.contains("on");
-      lastState.backlight = { on: nextState }; // Update local state
-      setFeatureUI('backlight', nextState); // Update UI across all panels
+      lastState.backlight = { on: nextState };
+      setFeatureUI('backlight', nextState);
       send("back_light.set", { on: nextState });
-      console.log(`Settings panel backlight toggle, new state: ${nextState}`); // Debug log
+      console.log(`Settings panel backlight toggle, new state: ${nextState}`);
     };
   }
 
   if (partyBtn) {
     partyBtn.onclick = () => {
-      console.log(`Toggling party mode, current state:`, lastState.soundbar);
+      console.log(` viper ToggToggling party mode, current state:`, lastState.soundbar);
       const nextState = !lastState.soundbar?.open;
-      lastState.soundbar = { open: nextState }; // Update local state
-      setFeatureUI('soundbar', nextState); // Update UI across all panels
+      lastState.soundbar = { open: nextState };
+      setFeatureUI('soundbar', nextState);
       send("mode.toggle");
     };
   }
@@ -1178,8 +1187,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btBtn.onclick = () => {
       console.log(`Toggling bluetooth, current state:`, lastState.bluetooth);
       const nextState = !btStatus.classList.contains("on");
-      lastState.bluetooth = { on: nextState }; // Update local state
-      setFeatureUI('bluetooth', nextState); // Update UI across all panels
+      lastState.bluetooth = { on: nextState };
+      setFeatureUI('bluetooth', nextState);
       send("bluetooth.set", { on: nextState });
     };
   }
@@ -1188,8 +1197,8 @@ document.addEventListener('DOMContentLoaded', () => {
     wifiBtn.onclick = () => {
       console.log(`Toggling wifi, current state:`, lastState.wifi);
       const nextState = !wifiStatus.classList.contains("on");
-      lastState.wifi = { on: nextState }; // Update local state
-      setFeatureUI('wifi', nextState); // Update UI across all panels
+      lastState.wifi = { on: nextState };
+      setFeatureUI('wifi', nextState);
       send("wifi.set", { on: nextState });
     };
   }
@@ -1232,8 +1241,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.onclick = () => {
       console.log(`Toggling player, current state:`, lastState.player);
       const nextState = !lastState.player?.playing;
-      lastState.player = { playing: nextState }; // Update local state
-      setFeatureUI('sound', nextState); // Update UI for player
+      lastState.player = { playing: nextState };
+      setFeatureUI('sound', nextState);
       send(nextState ? "player.play" : "player.pause");
     };
   });
@@ -1350,7 +1359,7 @@ document.addEventListener('DOMContentLoaded', () => {
   langSelectSettings.onchange = (e) => setLang(e.target.value);
 
   sio.on("sv.update", (st) => {
-    console.log('Received server update:', JSON.stringify(st, null, 2)); // Detailed state logging
+    console.log('Received server update:', JSON.stringify(st, null, 2));
     lastState = st;
     if (st.lang && st.lang !== currentLang) {
       currentLang = st.lang;
@@ -1426,7 +1435,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const key = e.target.dataset.key;
       if (key === 'enter') {
         hideKeyboard();
-        // Simulate enter if needed
         currentInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
       } else if (key) {
         currentInput.value += key;
