@@ -982,8 +982,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (feature === 'reading') {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
-        send("back_light.set", { on: nextState });
-        console.log(`Sent back_light.set with on: ${nextState}`); // Debug log
+        // Get current state from lastState or DOM
+      const currentState = lastState?.lighting?.back_light?.on ?? btn.classList.contains('active');
+      const nextState = !currentState;
+      console.log(`Toggling backlight: current=${currentState}, next=${nextState}`);
+      
+      // Update local state
+      lastState.lighting = lastState.lighting || {};
+      lastState.lighting.back_light = { on: nextState };
+      
+      // Update UI immediately to provide feedback
+      setFeatureUI('backlight', nextState);
+      
+      // Send to server
+      send("back_light.set", { on: nextState });
       } else if (feature === 'soundbar') {
         send("mode.toggle");
       } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
