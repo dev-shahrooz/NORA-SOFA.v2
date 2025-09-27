@@ -4,21 +4,55 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Smart Sofa Control</title>
+
   <!-- Swiper CSS -->
   <link rel="stylesheet" href="/ui/src/css/swiper-bundle.min.css">
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="/ui/src/font/fontawesome-free-7.0.1-web/css/all.min.css"/>
-  <!-- SweetAlert2 CSS -->
-  <link rel="stylesheet" href="/ui/src/css/sweetalert2.min.css">
+
   <!-- Swiper JS -->
   <script src="/ui/src/js/swiper-bundle.min.js"></script>
+  <!-- Socket.IO -->
+  <script src="/ui/src/js/socket.io.min.js"></script>
   <!-- GSAP for animations -->
   <script src="/ui/src/js/gsap.min.js"></script>
-  <!-- SweetAlert2 JS -->
-  <script src="/ui/src/js/sweetalert2@11.js"></script>
-  <!-- Socket.IO -->
-  <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="/ui/src/css/style.css" />
+  <style>
+    .loading-overlay {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 5px;
+      background: #4f46e5;
+      opacity: 0;
+      border-radius: 2px;
+    }
+    .controls hr {
+      margin: 20px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
+    .controls .btn {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    .controls .badge {
+      padding: 5px 10px;
+      border-radius: 12px;
+      background: #ccc;
+      color: #fff;
+    }
+    .controls .badge.on {
+      background: #4f46e5;
+    }
+    .controls select, .controls input[type="color"], .controls input[type="range"] {
+      margin: 5px;
+      padding: 5px;
+    }
+  </style>
 </head>
 <body>
   <div class="swiper-container">
@@ -56,7 +90,7 @@
                   <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/LCD front.jpg')">
                     <div class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></div>
                     <div class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></div>
-                    <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
+                    <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i></div>
                   </div>
                 </div>
               </div>
@@ -258,345 +292,339 @@
       <p data-i18n="voice_assistant_placeholder">Placeholder content for voice assistant. This section can be expanded to include voice assistant features.</p>
     </div>
   </div>
-  <div class="fullscreen-wrapper wifi-password-wrapper" id="wifiPasswordWrapper">
-    <div class="wifi-password-content">
-      <h2 data-i18n="wifi_password_prompt">Password for {ssid}</h2>
-      <input type="password" id="wifi-password-input" placeholder="Enter WiFi Password">
-      <div class="wifi-keyboard" id="wifiKeyboard"></div>
-      <div class="wifi-password-actions">
-        <button id="wifi-password-submit" data-i18n="apply_light">Connect</button>
-        <button id="wifi-password-cancel" class="cancel" data-i18n="cancel">Cancel</button>
-      </div>
-    </div>
-  </div>
 
   <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize Socket.IO
+  // Initialize Swiper
+  if (typeof Swiper !== 'undefined') {
+    const swiper = new Swiper('.mySwiper', {
+      loop: false,
+      navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+      pagination: { el: '.swiper-pagination', clickable: true },
+      spaceBetween: 0,
+      slidesPerView: 1,
+      centeredSlides: true,
+      effect: 'slide',
+      speed: 600
+    });
+  } else {
+    console.error('Swiper library failed to load.');
+  }
+
+  // Ensure GSAP is loaded
+  if (typeof gsap === 'undefined') {
+    console.error('GSAP library failed to load.');
+  }
+
   const sio = io();
 
-  // Send function using Socket.IO
   function send(type, payload = {}) {
     sio.emit("ui.intent", { type, payload, corr_id: String(Date.now()) });
   }
-
-  // Translations
-  const translations = {
-    fa: {
-      reading_light_title: "چراغ مطالعه",
-      reading_light_turn_on: "روشن کردن چراغ",
-      reading_light_turn_off: "خاموش کردن چراغ",
-      status_on: "روشن",
-      status_off: "خاموش",
-      back_light_title: "چراغ پشت",
-      back_light_turn_on: "روشن کردن چراغ پشت",
-      back_light_turn_off: "خاموش کردن چراغ پشت",
-      party_mode: "حالت مهمانی",
-      under_sofa_title: "نور زیر مبل",
-      zone_label: "زون:",
-      zone_under_sofa: "زیر مبل",
-      zone_box: "باکس",
-      mode_label: "حالت:",
-      mode_off: "خاموش",
-      mode_rainbow: "رینبو",
-      mode_static: "رنگ ثابت",
-      mode_equaalize: "اکولایزر",
-      mode_wakeup: "شنیدار دستیار صوتی",
-      color_label: "رنگ:",
-      brightness_label: "روشنایی:",
-      brightness_low: "نور کم",
-      brightness_mid: "نور متوسط",
-      brightness_high: "نور زیاد",
-      apply_light: "ثبت",
-      bluetooth_title: "بلوتوث سیستم",
-      bluetooth_turn_on: "روشن کردن بلوتوث",
-      bluetooth_turn_off: "خاموش کردن بلوتوث",
-      bluetooth_unpair: "لغو جفت‌سازی بلوتوث",
-      wifi_title: "وای‌فای",
-      wifi_turn_on: "روشن کردن وای‌فای",
-      wifi_turn_off: "خاموش کردن وای‌فای",
-      wifi_scan: "جستجو شبکه‌ها",
-      wifi_forget: "فراموش کردن",
-      wifi_connected_label: "اتصال فعلی:",
-      wifi_saved_label: "شبکه‌های ذخیره‌شده",
-      wifi_saved_current: "متصل",
-      wifi_password_prompt: "رمز برای {ssid}:",
-      wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
-      volume_title: "حجم صدا",
-      sound_turn_off: "قطع صدا",
-      sound_turn_on: "وصل صدا",
-      media_player_title: "مدیا پلیر",
-      player_prev: "قبلی",
-      player_play: "پلی",
-      player_pause: "پاز",
-      player_next: "بعدی",
-      panel_title: "ویژگی‌های مبل هوشمند",
-      panel_hint: "برای روشن/خاموش کردن ویژگی‌ها، روی آیکون‌ها در تصویر مبل یا لیست کلیک کنید.",
-      voice_title: "دستیار صوتی",
-      headlight_title: "چراغ سر",
-      wcharger_title: "شارژر بی‌سیم",
-      massage_title: "حالت ماساژ",
-      climate_title: "کنترل دما",
-      soundbar_title: "حالت مهمانی",
-      soundbar_turn_on: "فعال کردن حالت مهمانی",
-      soundbar_turn_off: "غیرفعال کردن حالت مهمانی",
-      bluetooth_scan: "جستجو دستگاه‌ها",
-      bluetooth_disconnect: "قطع اتصال",
-      light_color_title: "رنگ نور",
-      control_center_title: "مرکز کنترل",
-      settings_title: "تنظیمات",
-      streaming_title: "استریمینگ",
-      voice_assistant_title: "دستیار صوتی",
-      streaming_placeholder: "محتوای placeholder برای برنامه‌های استریمینگ. این بخش می‌تواند برای افزودن برنامه‌های استریمینگ مانند یوتیوب یا نتفلیکس گسترش یابد.",
-      voice_assistant_placeholder: "محتوای placeholder برای دستیار صوتی. این بخش می‌تواند برای افزودن قابلیت‌های دستیار صوتی گسترش یابد.",
-      language_title: "زبان",
-      under_sofa_light_title: "نور زیر مبل",
-      cancel: "لغو",
-      shift: "شیفت",
-      special_chars: "کاراکترهای ویژه"
-    },
-    en: {
-      reading_light_title: "Reading Light",
-      reading_light_turn_on: "Turn on light",
-      reading_light_turn_off: "Turn off light",
-      status_on: "On",
-      status_off: "Off",
-      back_light_title: "Back Light",
-      back_light_turn_on: "Turn on back light",
-      back_light_turn_off: "Turn off back light",
-      party_mode: "Party Mode",
-      under_sofa_title: "Under-sofa Lights",
-      zone_label: "Zone:",
-      zone_under_sofa: "Under sofa",
-      zone_box: "Box",
-      mode_label: "Mode:",
-      mode_off: "Off",
-      mode_rainbow: "Rainbow",
-      mode_static: "Static color",
-      mode_equaalize: "Equalizer",
-      mode_wakeup: "Voice assistant listening",
-      color_label: "Color:",
-      brightness_label: "Brightness:",
-      brightness_low: "Low",
-      brightness_mid: "Medium",
-      brightness_high: "High",
-      apply_light: "Apply",
-      bluetooth_title: "System Bluetooth",
-      bluetooth_turn_on: "Turn on Bluetooth",
-      bluetooth_turn_off: "Turn off Bluetooth",
-      bluetooth_unpair: "Unpair Bluetooth",
-      wifi_title: "Wi-Fi",
-      wifi_turn_on: "Turn on Wi-Fi",
-      wifi_turn_off: "Turn off Wi-Fi",
-      wifi_scan: "Scan Networks",
-      wifi_forget: "Forget",
-      wifi_connected_label: "Currently connected:",
-      wifi_saved_label: "Saved networks",
-      wifi_saved_current: "Currently connected",
-      wifi_password_prompt: "Password for {ssid}:",
-      wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
-      volume_title: "Volume",
-      sound_turn_off: "Mute sound",
-      sound_turn_on: "Unmute sound",
-      media_player_title: "Media Player",
-      player_prev: "Previous",
-      player_play: "Play",
-      player_pause: "Pause",
-      player_next: "Next",
-      panel_title: "Smart Sofa Features",
-      panel_hint: "Click on icons on the sofa or the list to toggle features.",
-      voice_title: "Voice Assistant",
-      headlight_title: "Headlight",
-      wcharger_title: "Wireless Charger",
-      massage_title: "Massage Mode",
-      climate_title: "Climate Control",
-      soundbar_title: "Party Mode",
-      soundbar_turn_on: "Turn on Party Mode",
-      soundbar_turn_off: "Turn off Party Mode",
-      bluetooth_scan: "Scan Devices",
-      bluetooth_disconnect: "Disconnect",
-      light_color_title: "Light Color",
-      control_center_title: "Control Center",
-      settings_title: "Settings",
-      streaming_title: "Streaming",
-      voice_assistant_title: "Voice Assistant",
-      streaming_placeholder: "Placeholder content for streaming apps. This section can be expanded to include streaming apps like YouTube or Netflix.",
-      voice_assistant_placeholder: "Placeholder content for voice assistant. This section can be expanded to include voice assistant features.",
-      language_title: "Language",
-      under_sofa_light_title: "Under Sofa Lighting",
-      cancel: "Cancel",
-      shift: "Shift",
-      special_chars: "Special Chars"
-    },
-    tr: {
-      reading_light_title: "Okuma Lambası",
-      reading_light_turn_on: "Lambayı aç",
-      reading_light_turn_off: "Lambayı kapat",
-      status_on: "Açık",
-      status_off: "Kapalı",
-      back_light_title: "Arka Işık",
-      back_light_turn_on: "Arka ışığı aç",
-      back_light_turn_off: "Arka ışığı kapat",
-      party_mode: "Parti Modu",
-      under_sofa_title: "Koltuk Altı Işıkları",
-      zone_label: "Bölge:",
-      zone_under_sofa: "Koltuk altı",
-      zone_box: "Kutu",
-      mode_label: "Mod:",
-      mode_off: "Kapalı",
-      mode_rainbow: "Gökkuşağı",
-      mode_static: "Sabit renk",
-      mode_equaalize: "Ekolayzır",
-      mode_wakeup: "Sesli asistan dinleme",
-      color_label: "Renk:",
-      brightness_label: "Parlaklık:",
-      brightness_low: "Düşük",
-      brightness_mid: "Orta",
-      brightness_high: "Yüksek",
-      apply_light: "Uygula",
-      bluetooth_title: "Sistem Bluetooth'u",
-      bluetooth_turn_on: "Bluetooth'u aç",
-      bluetooth_turn_off: "Bluetooth'u kapat",
-      bluetooth_unpair: "Bluetooth eşlemesini kaldır",
-      wifi_title: "Wi-Fi",
-      wifi_turn_on: "Wi-Fi'yi aç",
-      wifi_turn_off: "Wi-Fi'yi kapat",
-      wifi_scan: "Ağları Tara",
-      wifi_forget: "Unut",
-      wifi_connected_label: "Bağlı ağ:",
-      wifi_saved_label: "Kaydedilmiş ağlar",
-      wifi_saved_current: "Şu an bağlı",
-      wifi_password_prompt: "{ssid} için parola:",
-      wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
-      volume_title: "Ses",
-      sound_turn_off: "Sesi kapat",
-      sound_turn_on: "Sesi aç",
-      media_player_title: "Medya Oynatıcı",
-      player_prev: "Önceki",
-      player_play: "Oynat",
-      player_pause: "Duraklat",
-      player_next: "Sonraki",
-      panel_title: "Akıllı Koltuk Özellikleri",
-      panel_hint: "Özellikleri açıp kapatmak için koltuk üzerindeki veya listedeki simgelere tıklayın.",
-      voice_title: "Ses Asistanı",
-      headlight_title: "Baş Işığı",
-      wcharger_title: "Kablosuz Şarj Cihazı",
-      massage_title: "Masaj Modu",
-      climate_title: "İklim Kontrolü",
-      soundbar_title: "Parti Modu",
-      soundbar_turn_on: "Parti Modunu Aç",
-      soundbar_turn_off: "Parti Modunu Kapat",
-      bluetooth_scan: "Cihazları Tara",
-      bluetooth_disconnect: "Bağlantıyı Kes",
-      light_color_title: "Işık Rengi",
-      control_center_title: "Kontrol Merkezi",
-      settings_title: "Ayarlar",
-      streaming_title: "Yayın",
-      voice_assistant_title: "Ses Asistanı",
-      streaming_placeholder: "Yayın uygulamaları için placeholder içerik. Bu bölüm, YouTube veya Netflix gibi yayın uygulamalarını içerecek şekilde genişletilebilir.",
-      voice_assistant_placeholder: "Ses asistanı için placeholder içerik. Bu bölüm, ses asistanı özelliklerini içerecek şekilde genişletilebilir.",
-      language_title: "Dil",
-      under_sofa_light_title: "Koltuk Altı Aydınlatma",
-      cancel: "İptal",
-      shift: "Shift",
-      special_chars: "Özel Karakterler"
-    },
-    ar: {
-      reading_light_title: "مصباح القراءة",
-      reading_light_turn_on: "تشغيل المصباح",
-      reading_light_turn_off: "إيقاف المصباح",
-      status_on: "تشغيل",
-      status_off: "إيقاف",
-      back_light_title: "الإضاءة الخلفية",
-      back_light_turn_on: "تشغيل الإضاءة الخلفية",
-      back_light_turn_off: "إيقاف الإضاءة الخلفية",
-      party_mode: "وضع الحفلة",
-      under_sofa_title: "إضاءة تحت الأريكة",
-      zone_label: "منطقة:",
-      zone_under_sofa: "تحت الأريكة",
-      zone_box: "الصندوق",
-      mode_label: "وضع:",
-      mode_off: "إيقاف",
-      mode_rainbow: "قوس قزح",
-      mode_static: "لون ثابت",
-      mode_equaalize: "موازن",
-      mode_wakeup: "وضع الاستماع للمساعد الصوتي",
-      color_label: "لون:",
-      brightness_label: "السطوع:",
-      brightness_low: "منخفض",
-      brightness_mid: "متوسط",
-      brightness_high: "عالٍ",
-      apply_light: "تطبيق",
-      bluetooth_title: "بلوتوث النظام",
-      bluetooth_turn_on: "تشغيل البلوتوث",
-      bluetooth_turn_off: "إيقاف البلوتوث",
-      bluetooth_unpair: "إلغاء اقتران البلوتوث",
-      wifi_title: "واي فاي",
-      wifi_turn_on: "تشغيل الواي فاي",
-      wifi_turn_off: "إيقاف الواي فاي",
-      wifi_scan: "مسح الشبكات",
-      wifi_forget: "نسيان",
-      wifi_connected_label: "الشبكة المتصلة:",
-      wifi_saved_label: "الشبكات المحفوظة",
-      wifi_saved_current: "متصل الآن",
-      wifi_password_prompt: "كلمة المرور لـ {ssid}:",
-      wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
-      volume_title: "مستوى الصوت",
-      sound_turn_off: "إيقاف الصوت",
-      sound_turn_on: "تشغيل الصوت",
-      media_player_title: "مشغل الوسائط",
-      player_prev: "السابق",
-      player_play: "تشغيل",
-      player_pause: "إيقاف مؤقت",
-      player_next: "التالي",
-      panel_title: "ميزات الأريكة الذكية",
-      panel_hint: "انقر على الأيقونات على الأريكة أو القائمة لتبديل الميزات.",
-      voice_title: "المساعد الصوتي",
-      headlight_title: "مصباح الرأس",
-      wcharger_title: "شاحن لاسلكي",
-      massage_title: "وضع التدليك",
-      climate_title: "التحكم بالمناخ",
-      soundbar_title: "وضع الحفلة",
-      soundbar_turn_on: "تشغيل وضع الحفلة",
-      soundbar_turn_off: "إيقاف وضع الحفلة",
-      bluetooth_scan: "مسح الأجهزة",
-      bluetooth_disconnect: "فصل",
-      light_color_title: "لون الإضاءة",
-      control_center_title: "مركز التحكم",
-      settings_title: "الإعدادات",
-      streaming_title: "البث",
-      voice_assistant_title: "المساعد الصوتي",
-      streaming_placeholder: "محتوى بديل لتطبيقات البث. يمكن توسيع هذا القسم ليشمل تطبيقات البث مثل يوتيوب أو نتفليكس.",
-      voice_assistant_placeholder: "محتوى بديل للمساعد الصوتي. يمكن توسيع هذا القسم ليشمل ميزات المساعد الصوتي.",
-      language_title: "اللغة",
-      under_sofa_light_title: "إضاءة أسفل الأريكة",
-      cancel: "إلغاء",
-      shift: "شيفت",
-      special_chars: "رموز خاصة"
-    }
-  };
-
-  let currentLang = "fa";
+const translations = {
+        fa: {
+          reading_light_title: "چراغ مطالعه",
+          reading_light_turn_on: "روشن کردن چراغ",
+          reading_light_turn_off: "خاموش کردن چراغ",
+          status_on: "روشن",
+          status_off: "خاموش",
+          back_light_title: "چراغ پشت",
+          back_light_turn_on: "روشن کردن چراغ پشت",
+          back_light_turn_off: "خاموش کردن چراغ پشت",
+          party_mode: "حالت مهمانی",
+          under_sofa_title: "نور زیر مبل",
+          zone_label: "زون:",
+          zone_under_sofa: "زیر مبل",
+          zone_box: "باکس",
+          mode_label: "حالت:",
+          mode_off: "خاموش",
+          mode_rainbow: "رینبو",
+          mode_static: "رنگ ثابت",
+          mode_equaalize: "اکولایزر",
+          mode_wakeup: "شنیدار دستیار صوتی",
+          color_label: "رنگ:",
+          brightness_label: "روشنایی:",
+          brightness_low: "نور کم",
+          brightness_mid: "نور متوسط",
+          brightness_high: "نور زیاد",
+          apply_light: "ثبت",
+          bluetooth_title: "بلوتوث سیستم",
+          bluetooth_turn_on: "روشن کردن بلوتوث",
+          bluetooth_turn_off: "خاموش کردن بلوتوث",
+          bluetooth_unpair: "لغو جفت‌سازی بلوتوث",
+          wifi_title: "وای‌فای",
+          wifi_turn_on: "روشن کردن وای‌فای",
+          wifi_turn_off: "خاموش کردن وای‌فای",
+          wifi_scan: "جستجو شبکه‌ها",
+          wifi_forget: "فراموش کردن",
+          wifi_connected_label: "اتصال فعلی:",
+          wifi_saved_label: "شبکه‌های ذخیره‌شده",
+          wifi_saved_current: "متصل",
+          wifi_password_prompt: "رمز برای {ssid}:",
+          wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
+          volume_title: "حجم صدا",
+          sound_turn_off: "قطع صدا",
+          sound_turn_on: "وصل صدا",
+          media_player_title: "مدیا پلیر",
+          player_prev: "قبلی",
+          player_play: "پلی",
+          player_pause: "پاز",
+          player_next: "بعدی",
+          panel_title: "ویژگی‌های مبل هوشمند",
+          panel_hint: "برای روشن/خاموش کردن ویژگی‌ها، روی آیکون‌ها در تصویر مبل یا لیست کلیک کنید.",
+          voice_title: "دستیار صوتی",
+          headlight_title: "چراغ سر",
+          wcharger_title: "شارژر بی‌سیم",
+          massage_title: "حالت ماساژ",
+          climate_title: "کنترل دما",
+          soundbar_title: "حالت مهمانی",
+          soundbar_turn_on: "فعال کردن حالت مهمانی",
+          soundbar_turn_off: "غیرفعال کردن حالت مهمانی",
+          bluetooth_scan: "جستجو دستگاه‌ها",
+          bluetooth_disconnect: "قطع اتصال",
+          light_color_title: "رنگ نور",
+          control_center_title: "مرکز کنترل",
+          settings_title: "تنظیمات",
+          streaming_title: "استریمینگ",
+          voice_assistant_title: "دستیار صوتی",
+          streaming_placeholder: "محتوای placeholder برای برنامه‌های استریمینگ. این بخش می‌تواند برای افزودن برنامه‌های استریمینگ مانند یوتیوب یا نتفلیکس گسترش یابد.",
+          voice_assistant_placeholder: "محتوای placeholder برای دستیار صوتی. این بخش می‌تواند برای افزودن قابلیت‌های دستیار صوتی گسترش یابد.",
+          language_title: "زبان",
+          under_sofa_light_title: "نور زیر مبل"
+        },
+        en: {
+          reading_light_title: "Reading Light",
+          reading_light_turn_on: "Turn on light",
+          reading_light_turn_off: "Turn off light",
+          status_on: "On",
+          status_off: "Off",
+          back_light_title: "Back Light",
+          back_light_turn_on: "Turn on back light",
+          back_light_turn_off: "Turn off back light",
+          party_mode: "Party Mode",
+          under_sofa_title: "Under-sofa Lights",
+          zone_label: "Zone:",
+          zone_under_sofa: "Under sofa",
+          zone_box: "Box",
+          mode_label: "Mode:",
+          mode_off: "Off",
+          mode_rainbow: "Rainbow",
+          mode_static: "Static color",
+          mode_equaalize: "Equalizer",
+          mode_wakeup: "Voice assistant listening",
+          color_label: "Color:",
+          brightness_label: "Brightness:",
+          brightness_low: "Low",
+          brightness_mid: "Medium",
+          brightness_high: "High",
+          apply_light: "Apply",
+          bluetooth_title: "System Bluetooth",
+          bluetooth_turn_on: "Turn on Bluetooth",
+          bluetooth_turn_off: "Turn off Bluetooth",
+          bluetooth_unpair: "Unpair Bluetooth",
+          wifi_title: "Wi-Fi",
+          wifi_turn_on: "Turn on Wi-Fi",
+          wifi_turn_off: "Turn off Wi-Fi",
+          wifi_scan: "Scan Networks",
+          wifi_forget: "Forget",
+          wifi_connected_label: "Currently connected:",
+          wifi_saved_label: "Saved networks",
+          wifi_saved_current: "Currently connected",
+          wifi_password_prompt: "Password for {ssid}:",
+          wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
+          volume_title: "Volume",
+          sound_turn_off: "Mute sound",
+          sound_turn_on: "Unmute sound",
+          media_player_title: "Media Player",
+          player_prev: "Previous",
+          player_play: "Play",
+          player_pause: "Pause",
+          player_next: "Next",
+          panel_title: "Smart Sofa Features",
+          panel_hint: "Click on icons on the sofa or the list to toggle features.",
+          voice_title: "Voice Assistant",
+          headlight_title: "Headlight",
+          wcharger_title: "Wireless Charger",
+          massage_title: "Massage Mode",
+          climate_title: "Climate Control",
+          soundbar_title: "Party Mode",
+          soundbar_turn_on: "Turn on Party Mode",
+          soundbar_turn_off: "Turn off Party Mode",
+          bluetooth_scan: "Scan Devices",
+          bluetooth_disconnect: "Disconnect",
+          light_color_title: "Light Color",
+          control_center_title: "Control Center",
+          settings_title: "Settings",
+          streaming_title: "Streaming",
+          voice_assistant_title: "Voice Assistant",
+          streaming_placeholder: "Placeholder content for streaming apps. This section can be expanded to include streaming apps like YouTube or Netflix.",
+          voice_assistant_placeholder: "Placeholder content for voice assistant. This section can be expanded to include voice assistant features.",
+          language_title: "Language",
+          under_sofa_light_title: "Under Sofa Lighting"
+        },
+        tr: {
+          reading_light_title: "Okuma Lambası",
+          reading_light_turn_on: "Lambayı aç",
+          reading_light_turn_off: "Lambayı kapat",
+          status_on: "Açık",
+          status_off: "Kapalı",
+          back_light_title: "Arka Işık",
+          back_light_turn_on: "Arka ışığı aç",
+          back_light_turn_off: "Arka ışığı kapat",
+          party_mode: "Parti Modu",
+          under_sofa_title: "Koltuk Altı Işıkları",
+          zone_label: "Bölge:",
+          zone_under_sofa: "Koltuk altı",
+          zone_box: "Kutu",
+          mode_label: "Mod:",
+          mode_off: "Kapalı",
+          mode_rainbow: "Gökkuşağı",
+          mode_static: "Sabit renk",
+          mode_equaalize: "Ekolayzır",
+          mode_wakeup: "Sesli asistan dinleme",
+          color_label: "Renk:",
+          brightness_label: "Parlaklık:",
+          brightness_low: "Düşük",
+          brightness_mid: "Orta",
+          brightness_high: "Yüksek",
+          apply_light: "Uygula",
+          bluetooth_title: "Sistem Bluetooth'u",
+          bluetooth_turn_on: "Bluetooth'u aç",
+          bluetooth_turn_off: "Bluetooth'u kapat",
+          bluetooth_unpair: "Bluetooth eşlemesini kaldır",
+          wifi_title: "Wi-Fi",
+          wifi_turn_on: "Wi-Fi'yi aç",
+          wifi_turn_off: "Wi-Fi'yi kapat",
+          wifi_scan: "Ağları Tara",
+          wifi_forget: "Unut",
+          wifi_connected_label: "Bağlı ağ:",
+          wifi_saved_label: "Kaydedilmiş ağlar",
+          wifi_saved_current: "Şu an bağlı",
+          wifi_password_prompt: "{ssid} için parola:",
+          wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
+          volume_title: "Ses",
+          sound_turn_off: "Sesi kapat",
+          sound_turn_on: "Sesi aç",
+          media_player_title: "Medya Oynatıcı",
+          player_prev: "Önceki",
+          player_play: "Oynat",
+          player_pause: "Duraklat",
+          player_next: "Sonraki",
+          panel_title: "Akıllı Koltuk Özellikleri",
+          panel_hint: "Özellikleri açıp kapatmak için koltuk üzerindeki veya listedeki simgelere tıklayın.",
+          voice_title: "Ses Asistanı",
+          headlight_title: "Baş Işığı",
+          wcharger_title: "Kablosuz Şarj Cihazı",
+          massage_title: "Masaj Modu",
+          climate_title: "İklim Kontrolü",
+          soundbar_title: "Parti Modu",
+          soundbar_turn_on: "Parti Modunu Aç",
+          soundbar_turn_off: "Parti Modunu Kapat",
+          bluetooth_scan: "Cihazları Tara",
+          bluetooth_disconnect: "Bağlantıyı Kes",
+          light_color_title: "Işık Rengi",
+          control_center_title: "Kontrol Merkezi",
+          settings_title: "Ayarlar",
+          streaming_title: "Yayın",
+          voice_assistant_title: "Ses Asistanı",
+          streaming_placeholder: "Yayın uygulamaları için placeholder içerik. Bu bölüm, YouTube veya Netflix gibi yayın uygulamalarını içerecek şekilde genişletilebilir.",
+          voice_assistant_placeholder: "Ses asistanı için placeholder içerik. Bu bölüm, ses asistanı özelliklerini içerecek şekilde genişletilebilir.",
+          language_title: "Dil",
+          under_sofa_light_title: "Koltuk Altı Aydınlatma"
+        },
+        ar: {
+          reading_light_title: "مصباح القراءة",
+          reading_light_turn_on: "تشغيل المصباح",
+          reading_light_turn_off: "إيقاف المصباح",
+          status_on: "تشغيل",
+          status_off: "إيقاف",
+          back_light_title: "الإضاءة الخلفية",
+          back_light_turn_on: "تشغيل الإضاءة الخلفية",
+          back_light_turn_off: "إيقاف الإضاءة الخلفية",
+          party_mode: "وضع الحفلة",
+          under_sofa_title: "إضاءة تحت الأريكة",
+          zone_label: "منطقة:",
+          zone_under_sofa: "تحت الأريكة",
+          zone_box: "الصندوق",
+          mode_label: "وضع:",
+          mode_off: "إيقاف",
+          mode_rainbow: "قوس قزح",
+          mode_static: "لون ثابت",
+          mode_equaalize: "موازن",
+          mode_wakeup: "وضع الاستماع للمساعد الصوتي",
+          color_label: "لون:",
+          brightness_label: "السطوع:",
+          brightness_low: "منخفض",
+          brightness_mid: "متوسط",
+          brightness_high: "عالٍ",
+          apply_light: "تطبيق",
+          bluetooth_title: "بلوتوث النظام",
+          bluetooth_turn_on: "تشغيل البلوتوث",
+          bluetooth_turn_off: "إيقاف البلوتوث",
+          bluetooth_unpair: "إلغاء اقتران البلوتوث",
+          wifi_title: "واي فاي",
+          wifi_turn_on: "تشغيل الواي فاي",
+          wifi_turn_off: "إيقاف الواي فاي",
+          wifi_scan: "مسح الشبكات",
+          wifi_forget: "نسيان",
+          wifi_connected_label: "الشبكة المتصلة:",
+          wifi_saved_label: "الشبكات المحفوظة",
+          wifi_saved_current: "متصل الآن",
+          wifi_password_prompt: "كلمة المرور لـ {ssid}:",
+          wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
+          volume_title: "مستوى الصوت",
+          sound_turn_off: "إيقاف الصوت",
+          sound_turn_on: "تشغيل الصوت",
+          media_player_title: "مشغل الوسائط",
+          player_prev: "السابق",
+          player_play: "تشغيل",
+          player_pause: "إيقاف مؤقت",
+          player_next: "التالي",
+          panel_title: "ميزات الأريكة الذكية",
+          panel_hint: "انقر على الأيقونات على الأريكة أو القائمة لتبديل الميزات.",
+          voice_title: "المساعد الصوتي",
+          headlight_title: "مصباح الرأس",
+          wcharger_title: "شاحن لاسلكي",
+          massage_title: "وضع التدليك",
+          climate_title: "التحكم بالمناخ",
+          soundbar_title: "وضع الحفلة",
+          soundbar_turn_on: "تشغيل وضع الحفلة",
+          soundbar_turn_off: "إيقاف وضع الحفلة",
+          bluetooth_scan: "مسح الأجهزة",
+          bluetooth_disconnect: "فصل",
+          light_color_title: "لون الإضاءة",
+          control_center_title: "مركز التحكم",
+          settings_title: "الإعدادات",
+          streaming_title: "البث",
+          voice_assistant_title: "المساعد الصوتي",
+          streaming_placeholder: "محتوى بديل لتطبيقات البث. يمكن توسيع هذا القسم ليشمل تطبيقات البث مثل يوتيوب أو نتفليكس.",
+          voice_assistant_placeholder: "محتوى بديل للمساعد الصوتي. يمكن توسيع هذا القسم ليشمل ميزات المساعد الصوتي.",
+          language_title: "اللغة",
+          under_sofa_light_title: "إضاءة أسفل الأريكة"
+        }
+      };  
+  let currentLang = "en";
   let lastState = {};
   let pendingSSID = null;
   let wifiScanRequested = false;
-  let isShiftActive = false;
-  let isSpecialChars = false;
 
   function t(key, vars = {}) {
     let str = translations[currentLang][key] || key;
-    Object.keys(vars).forEach((k) => {
-      str = str.replace(`{${k}}`, vars[k]);
-    });
+    Object.keys(vars).forEach(k => str = str.replace(`{${k}}`, vars[k]));
     return str;
   }
 
   function applyTranslations() {
     document.documentElement.lang = currentLang;
-    document.documentElement.dir = ["fa", "ar"].includes(currentLang) ? "rtl" : "ltr";
-    document.querySelectorAll("[data-i18n]").forEach((el) => {
+    document.body.dir = ["fa", "ar"].includes(currentLang) ? "rtl" : "ltr";
+    document.querySelectorAll("[data-i18n]").forEach(el => {
       const key = el.getAttribute("data-i18n");
-      el.textContent = t(key);
+      if (el.classList.contains("status")) {
+        const feature = el.parentElement.dataset.feature;
+        el.textContent = t(lastState[feature]?.on ? "status_on" : "status_off");
+      } else {
+        el.textContent = t(key);
+      }
     });
     document.querySelectorAll(".panel-btn").forEach(btn => {
       const section = btn.dataset.section;
@@ -608,20 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const icon = btn.querySelector('i');
       icon.className = playing ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     });
-    const wifiPasswordWrapper = document.getElementById("wifiPasswordWrapper");
-    if (wifiPasswordWrapper && pendingSSID) {
-      const wifiPasswordTitle = wifiPasswordWrapper.querySelector("h2");
-      wifiPasswordTitle.textContent = t(lastState.wifi?.last_connection_attempt?.success === false ? "wifi_fail_prompt" : "wifi_password_prompt", { ssid: pendingSSID });
-    }
-    renderReadingLight(lastState);
-    renderBackLight(lastState);
-    renderPartyMode(lastState);
-    renderLightingInputs(lastState);
-    renderBluetooth(lastState);
-    renderWiFi(lastState);
-    renderWiFi(lastState, true);
-    renderVolume(lastState);
-    renderPlayer(lastState);
+    renderSettings();
   }
 
   function setLang(lang) {
@@ -631,24 +646,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // UI Elements
-  const langSelect = document.getElementById("lang-select-settings");
-  const readingBtn = document.getElementById("reading-toggle");
-  const readingStatus = document.getElementById("reading-status");
-  const backBtn = document.getElementById("back-toggle");
-  const backStatus = document.getElementById("back-status");
-  const partyBtn = document.getElementById("party-toggle");
-  const zoneSelect = document.getElementById("zone");
-  const modeSelect = document.getElementById("mode");
-  const colorInput = document.getElementById("color");
-  const brightnessInput = document.getElementById("brightness");
-  const btBtn = document.getElementById("bt-toggle");
-  const btStatus = document.getElementById("bt-status");
-  const wifiBtn = document.getElementById("wifi-toggle");
-  const wifiStatus = document.getElementById("wifi-status");
+  const langSelectSettings = document.getElementById("lang-select-settings");
+  const featureButtons = document.querySelectorAll('.feature-btn');
+  const listItems = document.querySelectorAll('.list-item');
   const wifiScanBtn = document.getElementById("wifi-scan");
   const wifiList = document.getElementById("wifi-networks");
   const wifiSSID = document.getElementById("wifi-ssid");
-  const wifiForgetCurrentBtn = document.getElementById("wifi-forget");
+  const wifiForgetBtn = document.getElementById("wifi-forget");
   const wifiConnected = document.querySelector(".wifi-connected");
   const wifiScanBtnSettings = document.getElementById("wifi-scan-settings");
   const wifiListSettings = document.getElementById("wifi-networks-settings");
@@ -658,14 +662,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const wifiSavedContainer = document.querySelector(".wifi-saved");
   const wifiSavedSelect = document.getElementById("wifi-saved-select");
   const wifiSavedForgetBtn = document.getElementById("wifi-saved-forget");
-  const volumeRange = document.getElementById("volume");
-  const volumeValue = document.getElementById("volume-value");
-  const muteBtn = document.getElementById("mute-toggle");
-  const playBtn = document.getElementById("player-toggle");
-  const nextBtn = document.getElementById("player-next");
-  const prevBtn = document.getElementById("player-prev");
-  const trackTitle = document.getElementById("track-title");
-  const trackArtist = document.getElementById("track-artist");
+  const volumeRanges = document.querySelectorAll(".volume-slider, #volume-settings");
+  const volumeValues = document.querySelectorAll("#volume-value, #volume-value-settings");
+  const toggleButtons = document.querySelectorAll("#player-toggle");
+  const nextButtons = document.querySelectorAll("#player-next");
+  const prevButtons = document.querySelectorAll("#player-prev");
+  const trackTitles = document.querySelectorAll("#track-title");
+  const trackArtists = document.querySelectorAll("#track-artist");
   const sidebar = document.getElementById("sidebar");
   const closeSidebar = document.getElementById("closeSidebar");
   const panelButtons = document.querySelectorAll(".panel-btn");
@@ -678,75 +681,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const homeStreaming = document.getElementById("homeStreaming");
   const closeVoiceAssistant = document.getElementById("closeVoiceAssistant");
   const homeVoiceAssistant = document.getElementById("homeVoiceAssistant");
-  const wifiPasswordWrapper = document.getElementById("wifiPasswordWrapper");
-  const wifiPasswordInput = document.getElementById("wifi-password-input");
-  const wifiKeyboard = document.getElementById("wifiKeyboard");
-  const wifiPasswordSubmit = document.getElementById("wifi-password-submit");
-  const wifiPasswordCancel = document.getElementById("wifi-password-cancel");
-  const digitalCrown = document.getElementById("digitalCrown");
-  const featureButtons = document.querySelectorAll('.feature-btn');
-  const listItems = document.querySelectorAll('.list-item');
-
-  // Virtual Keyboard Setup
-  function setupVirtualKeyboard() {
-    const lowercaseKeys = [
-      '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-      'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
-      'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
-      'z', 'x', 'c', 'v', 'b', 'n', 'm', 'backspace',
-      'shift', 'special_chars', 'space'
-    ];
-    const uppercaseKeys = [
-      '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
-      'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
-      'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',
-      'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'backspace',
-      'shift', 'special_chars', 'space'
-    ];
-    const specialCharKeys = [
-      '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
-      '-', '_', '+', '=', '[', ']', '{', '}', '|', ';', ':',
-      '"', '\'', ',', '.', '/', '?', '<', '>', '~', '`',
-      'backspace', 'shift', 'special_chars', 'space'
-    ];
-
-    function renderKeyboard() {
-      wifiKeyboard.innerHTML = '';
-      const keys = isSpecialChars ? specialCharKeys : (isShiftActive ? uppercaseKeys : lowercaseKeys);
-      keys.forEach(key => {
-        const button = document.createElement('button');
-        button.textContent = key === 'backspace' ? '⌫' : key === 'space' ? t('space') : key === 'shift' ? t('shift') : key === 'special_chars' ? t('special_chars') : key;
-        if (['backspace', 'space', 'shift', 'special_chars'].includes(key)) {
-          button.classList.add('special-key');
-        }
-        if ((key === 'shift' && isShiftActive) || (key === 'special_chars' && isSpecialChars)) {
-          button.classList.add('shift-active');
-        }
-        button.onclick = () => {
-          if (key === 'backspace') {
-            wifiPasswordInput.value = wifiPasswordInput.value.slice(0, -1);
-          } else if (key === 'space') {
-            wifiPasswordInput.value += ' ';
-          } else if (key === 'shift') {
-            isShiftActive = !isShiftActive;
-            if (isSpecialChars) isSpecialChars = false;
-            renderKeyboard();
-          } else if (key === 'special_chars') {
-            isSpecialChars = !isSpecialChars;
-            isShiftActive = false;
-            renderKeyboard();
-          } else {
-            wifiPasswordInput.value += key;
-          }
-        };
-        wifiKeyboard.appendChild(button);
-      });
-    }
-
-    renderKeyboard();
-  }
-
-  setupVirtualKeyboard();
+  const readingBtn = document.getElementById("reading-toggle");
+  const readingStatus = document.getElementById("reading-status");
+  const backBtn = document.getElementById("back-toggle");
+  const backStatus = document.getElementById("back-status");
+  const partyBtn = document.getElementById("party-toggle");
+  const zoneSelect = document.getElementById("zone");
+  const modeSelect = document.getElementById("mode");
+  const colorInput = document.getElementById("color");
+  const brightnessInput = document.getElementById("brightness");
+  const applyLightBtn = document.getElementById("apply-light");
+  const btBtn = document.getElementById("bt-toggle");
+  const btStatus = document.getElementById("bt-status");
+  const wifiBtn = document.getElementById("wifi-toggle");
+  const wifiStatus = document.getElementById("wifi-status");
+  const muteBtn = document.getElementById("mute-toggle");
+  const digitalCrowns = document.querySelectorAll("#digitalCrown");
 
   // Sanitization Functions
   function sanitizeMode(mode) {
@@ -782,19 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Rendering Functions
   function renderReadingLight(st) {
     const on = !!st?.lighting?.reading_light?.on;
-    document.querySelectorAll(`.feature-btn[data-feature="reading"]`).forEach(el => {
-      el.classList.toggle("active", on);
-      el.title = t(on ? "reading_light_turn_off" : "reading_light_turn_on");
-    });
-    document.querySelectorAll(`.list-item[data-feature="reading"]`).forEach(el => {
-      const statusEl = el.querySelector('.status');
-      if (statusEl) {
-        statusEl.textContent = t(on ? "status_on" : "status_off");
-        statusEl.classList.toggle('on', on);
-      }
-      const toggleEl = el.querySelector('.feature-toggle');
-      if (toggleEl) toggleEl.checked = on;
-    });
+    setFeatureUI('reading', on);
     if (readingBtn && readingStatus) {
       readingBtn.textContent = t(on ? "reading_light_turn_off" : "reading_light_turn_on");
       readingBtn.classList.toggle("on", on);
@@ -805,124 +743,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderBackLight(st) {
     const on = !!st?.lighting?.back_light?.on;
-    document.querySelectorAll(`.feature-btn[data-feature="backlight"]`).forEach(el => {
-      el.classList.toggle("active", on);
-      el.title = t(on ? "back_light_turn_off" : "back_light_turn_on");
-    });
-    document.querySelectorAll(`.list-item[data-feature="backlight"]`).forEach(el => {
-      const statusEl = el.querySelector('.status');
-      if (statusEl) {
-        statusEl.textContent = t(on ? "status_on" : "status_off");
-        statusEl.classList.toggle('on', on);
-      }
-      const toggleEl = el.querySelector('.feature-toggle');
-      if (toggleEl) toggleEl.checked = on;
-    });
+    setFeatureUI('backlight', on);
     if (backBtn && backStatus) {
       backBtn.textContent = t(on ? "back_light_turn_off" : "back_light_turn_on");
       backBtn.classList.toggle("on", on);
       backStatus.textContent = t(on ? "status_on" : "status_off");
       backStatus.classList.toggle("on", on);
     }
-    const glow = document.getElementById('backlightGlow');
-    if (glow) {
-      if (on) {
-        glow.classList.add('on');
-        gsap.killTweensOf(glow);
-        gsap.to(glow, { opacity: 1, scale: 1.02, duration: 1.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-      } else {
-        gsap.killTweensOf(glow);
-        glow.style.opacity = 0;
-      }
-    }
   }
 
   function renderPartyMode(st) {
-    const active = st.mode === "party";
-    document.querySelectorAll(`.feature-btn[data-feature="soundbar"]`).forEach(el => {
-      el.classList.toggle("active", active);
-      el.title = t(active ? "soundbar_turn_off" : "soundbar_turn_on");
-      if (active) {
-        const loadingOverlay = el.querySelector('.loading-overlay');
-        gsap.killTweensOf(loadingOverlay);
-        gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
-          gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
-        }});
-      } else {
-        const loadingOverlay = el.querySelector('.loading-overlay');
-        gsap.killTweensOf(loadingOverlay);
-        loadingOverlay.style.opacity = 0;
-      }
-    });
-    document.querySelectorAll(`.list-item[data-feature="soundbar"]`).forEach(el => {
-      const statusEl = el.querySelector('.status');
-      if (statusEl) {
-        statusEl.textContent = t(active ? "status_on" : "status_off");
-        statusEl.classList.toggle('on', active);
-      }
-    });
+    const active = !!st?.soundbar?.open;
+    setFeatureUI('soundbar', active);
     if (partyBtn) {
       partyBtn.classList.toggle("on", active);
-      partyBtn.textContent = t(active ? "soundbar_turn_off" : "soundbar_turn_on");
     }
   }
 
   function renderBluetooth(st) {
-    const on = !!st?.bluetooth?.on;
-    document.querySelectorAll(`.feature-btn[data-feature="bluetooth"]`).forEach(el => {
-      el.classList.toggle("active", on);
-      el.title = t(on ? "bluetooth_turn_off" : "bluetooth_turn_on");
-    });
-    document.querySelectorAll(`.list-item[data-feature="bluetooth"]`).forEach(el => {
-      const statusEl = el.querySelector('.status');
-      if (statusEl) {
-        statusEl.textContent = t(on ? "status_on" : "status_off");
-        statusEl.classList.toggle('on', on);
-      }
-    });
+    const bluetooth = st?.bluetooth || {};
+    const on = !!bluetooth.on;
+    setFeatureUI('bluetooth', on);
     if (btBtn && btStatus) {
       btBtn.textContent = t(on ? "bluetooth_turn_off" : "bluetooth_turn_on");
       btBtn.classList.toggle("on", on);
       btStatus.textContent = t(on ? "status_on" : "status_off");
       btStatus.classList.toggle("on", on);
     }
-    const musicPanels = document.querySelectorAll('#musicPanel');
-    const shouldShow = !!st?.bluetooth?.connected;
-    musicPanels.forEach(panel => {
-      panel.classList.toggle('connected', shouldShow);
-      panel.style.display = shouldShow ? 'block' : 'block';
-      if (shouldShow) {
-        gsap.fromTo(panel, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
-      }
-    });
+    updateMusicPanelVisibility();
   }
 
   function renderWiFi(st, isSettingsWrapper = false) {
     const wifi = st?.wifi || {};
     const on = !!wifi.on;
+    setFeatureUI('wifi', on);
     const targetWifiList = isSettingsWrapper ? wifiListSettings : wifiList;
     const targetWifiSSID = isSettingsWrapper ? wifiSSIDSettings : wifiSSID;
-    const targetWifiForgetBtn = isSettingsWrapper ? wifiForgetBtnSettings : wifiForgetCurrentBtn;
+    const targetWifiForgetBtn = isSettingsWrapper ? wifiForgetBtnSettings : wifiForgetBtn;
     const targetWifiConnected = isSettingsWrapper ? wifiConnectedSettings : wifiConnected;
     const targetWifiScanBtn = isSettingsWrapper ? wifiScanBtnSettings : wifiScanBtn;
-
-    document.querySelectorAll(`.feature-btn[data-feature="wifi"]`).forEach(el => {
-      el.classList.toggle("active", on);
-      el.title = t(on ? "wifi_turn_off" : "wifi_turn_on");
-    });
-    document.querySelectorAll(`.list-item[data-feature="wifi"]`).forEach(el => {
-      const statusEl = el.querySelector('.status');
-      if (statusEl) {
-        statusEl.textContent = t(on ? "status_on" : "status_off");
-        statusEl.classList.toggle('on', on);
-      }
-    });
-    if (wifiBtn && wifiStatus) {
-      wifiBtn.textContent = t(on ? "wifi_turn_off" : "wifi_turn_on");
-      wifiBtn.classList.toggle("on", on);
-      wifiStatus.textContent = t(on ? "status_on" : "status_off");
-      wifiStatus.classList.toggle("on", on);
-    }
 
     if (on && !wifiScanRequested && !wifi.networks) {
       wifiScanRequested = true;
@@ -943,6 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
       targetWifiList.appendChild(li);
     });
 
+    // Render saved networks
     if (wifiSavedContainer && wifiSavedSelect) {
       const savedRaw = Array.isArray(wifi.saved_networks) ? wifi.saved_networks : [];
       const saved = savedRaw
@@ -979,40 +839,23 @@ document.addEventListener('DOMContentLoaded', () => {
       targetWifiForgetBtn.style.display = "none";
       targetWifiConnected.style.display = "none";
     }
-
+    if (wifiBtn && wifiStatus) {
+      wifiBtn.textContent = t(on ? "wifi_turn_off" : "wifi_turn_on");
+      wifiBtn.classList.toggle("on", on);
+      wifiStatus.textContent = t(on ? "status_on" : "status_off");
+      wifiStatus.classList.toggle("on", on);
+    }
     const attempt = wifi.last_connection_attempt;
     if (pendingSSID && attempt && attempt.ssid === pendingSSID) {
       if (attempt.success) {
         pendingSSID = null;
-        wifiPasswordWrapper.classList.remove('open');
-        gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => wifiPasswordWrapper.style.display = 'none' });
-        Swal.fire({
-          title: t("status_on"),
-          text: t("wifi_connected_label") + ` ${pendingSSID}`,
-          icon: 'success',
-          confirmButtonText: t("apply_light")
-        });
       } else {
-        Swal.fire({
-          title: t("wifi_fail_prompt", { ssid: pendingSSID }),
-          text: t("wifi_fail_prompt", { ssid: pendingSSID }),
-          icon: 'error',
-          confirmButtonText: t("apply_light"),
-          showCancelButton: true,
-          cancelButtonText: t("cancel")
-        }).then((result) => {
-          if (result.isConfirmed) {
-            wifiPasswordWrapper.classList.add('open');
-            wifiPasswordWrapper.style.display = 'flex';
-            wifiPasswordInput.value = '';
-            gsap.fromTo(wifiPasswordWrapper, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.in' });
-            applyTranslations();
-          } else {
-            pendingSSID = null;
-            wifiPasswordWrapper.classList.remove('open');
-            gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => wifiPasswordWrapper.style.display = 'none' });
-          }
-        });
+        const pwd = prompt(t("wifi_fail_prompt", { ssid: pendingSSID }));
+        if (pwd !== null) {
+          send("wifi.connect", { ssid: pendingSSID, password: pwd });
+        } else {
+          pendingSSID = null;
+        }
       }
     }
   }
@@ -1020,24 +863,31 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderVolume(st) {
     const vol = st?.audio?.volume ?? 0;
     const muted = !!st?.audio?.muted;
-    volumeRange.value = vol;
-    volumeValue.textContent = vol;
-    document.getElementById("volume-settings").value = vol;
-    document.getElementById("volume-value-settings").textContent = vol;
+    volumeRanges.forEach(range => range.value = vol);
+    volumeValues.forEach(value => value.textContent = vol);
     if (muteBtn) {
       muteBtn.textContent = t(muted ? "sound_turn_on" : "sound_turn_off");
       muteBtn.classList.toggle("on", muted);
     }
   }
 
+  function updateMusicPanelVisibility() {
+    const musicPanels = document.querySelectorAll('#musicPanel');
+    const shouldShow = lastState.bluetooth?.connected;
+    musicPanels.forEach(panel => {
+      panel.classList.toggle('connected', shouldShow);
+      panel.style.display = shouldShow ? 'block' : 'block';
+      if (shouldShow) {
+        gsap.fromTo(panel, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' });
+      }
+    });
+  }
+
   function renderPlayer(st) {
     const p = st?.player || {};
-    trackTitle.textContent = p.title || "";
-    trackArtist.textContent = p.artist || "";
-    const playing = !!p.playing;
-    playBtn.title = t(playing ? "player_pause" : "player_play");
-    const icon = playBtn.querySelector('i');
-    icon.className = playing ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+    trackTitles.forEach(title => title.textContent = p.title || "");
+    trackArtists.forEach(artist => artist.textContent = p.artist || "");
+    setFeatureUI('sound', !!p.playing);
   }
 
   function renderLightingInputs(st) {
@@ -1055,102 +905,171 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function renderSettings() {
+    renderReadingLight(lastState);
+    renderBackLight(lastState);
+    renderPartyMode(lastState);
+    renderBluetooth(lastState);
+    renderWiFi(lastState, true);
+    renderVolume(lastState);
+    renderPlayer(lastState);
+    renderLightingInputs(lastState);
+  }
+
+  function setFeatureUI(feature, enabled) {
+    document.querySelectorAll(`[data-feature="${feature}"]`).forEach(el => {
+      if (enabled) {
+        el.classList.add('active');
+        el.title = t(`${feature}_turn_off`);
+      } else {
+        el.classList.remove('active');
+        el.title = t(`${feature}_turn_on`);
+      }
+    });
+    document.querySelectorAll(`.list-item[data-feature="${feature}"]`).forEach(el => {
+      const statusEl = el.querySelector('.status');
+      if (statusEl) {
+        statusEl.textContent = t(enabled ? "status_on" : "status_off");
+        statusEl.classList.toggle('on', enabled);
+      }
+      const toggleEl = el.querySelector('.feature-toggle');
+      if (toggleEl) {
+        toggleEl.checked = enabled;
+      }
+    });
+
+    if (feature === 'backlight') {
+      const glow = document.getElementById('backlightGlow');
+      if (enabled) {
+        glow.classList.add('on');
+        gsap.killTweensOf(glow);
+        gsap.to(glow, { opacity: 1, scale: 1.02, duration: 1.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      } else {
+        gsap.killTweensOf(glow);
+        glow.style.opacity = 0;
+      }
+    }
+
+    if (feature === 'sound') {
+      toggleButtons.forEach(btn => {
+        const icon = btn.querySelector('i');
+        icon.className = enabled ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+        btn.title = t(enabled ? 'player_pause' : 'player_play');
+      });
+    }
+
+    if (feature === 'soundbar') {
+      const soundbarButtons = document.querySelectorAll('.f-soundbar');
+      soundbarButtons.forEach(btn => {
+        if (enabled) {
+          btn.classList.add('active');
+          btn.title = t('soundbar_turn_off');
+        } else {
+          btn.classList.remove('active');
+          btn.title = t('soundbar_turn_on');
+          gsap.killTweensOf(btn);
+        }
+      });
+    }
+  }
+
   // Event Handlers
   featureButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const f = btn.dataset.feature;
-      let next;
-      if (f === 'reading') {
-        next = !lastState?.lighting?.reading_light?.on;
-        send("reading_light.set", { on: next });
-      } else if (f === 'backlight') {
-        next = !lastState?.lighting?.back_light?.on;
-        send("back_light.set", { on: next });
-      } else if (f === 'soundbar') {
-        send("mode.toggle");
-      } else if (f === 'bluetooth') {
-        next = !lastState?.bluetooth?.on;
-        send("bluetooth.set", { on: next });
-      } else if (f === 'wifi') {
-        next = !lastState?.wifi?.on;
-        send("wifi.set", { on: next });
-      } else if (f === 'voice') {
-        next = !lastState?.voice?.on;
-        send("voice.set", { on: next });
-      }
-    });
-  });
-
-  listItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      const f = item.dataset.feature;
-      let next;
-      if (e.target.classList.contains('feature-toggle') || e.target.classList.contains('slider')) {
-        const toggleEl = item.querySelector('.feature-toggle');
-        next = toggleEl.checked;
-      } else {
-        next = !lastState[f]?.on && !(f === 'reading' ? lastState.lighting?.reading_light?.on : f === 'backlight' ? lastState.lighting?.back_light?.on : false);
-      }
+      const next = !lastState[f]?.on;
+      setFeatureUI(f, next);
       if (f === 'reading') {
         send("reading_light.set", { on: next });
       } else if (f === 'backlight') {
         send("back_light.set", { on: next });
       } else if (f === 'soundbar') {
+        const loadingOverlay = btn.querySelector('.loading-overlay');
+        gsap.killTweensOf(loadingOverlay);
+        gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
+          gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
+        }});
         send("mode.toggle");
-      } else if (f === 'bluetooth') {
-        send("bluetooth.set", { on: next });
-      } else if (f === 'wifi') {
-        send("wifi.set", { on: next });
-      } else if (f === 'voice') {
-        send("voice.set", { on: next });
+      } else if (['bluetooth', 'wifi', 'voice'].includes(f)) {
+        send(`${f}.set`, { on: next });
       }
     });
   });
 
-  readingBtn.onclick = () => {
-    const next = !readingStatus.classList.contains("on");
-    send("reading_light.set", { on: next });
-  };
+  listItems.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if (e.target.classList.contains('feature-toggle') || e.target.classList.contains('slider')) return;
+      const f = btn.dataset.feature;
+      const next = !lastState[f]?.on;
+      setFeatureUI(f, next);
+      if (f === 'reading') {
+        send("reading_light.toggle");
+      } else if (f === 'backlight') {
+        send("back_light.toggle");
+      } else if (f === 'soundbar') {
+        send("mode.toggle");
+      } else if (['bluetooth', 'wifi', 'voice'].includes(f)) {
+        send(`${f}.toggle`);
+      }
+    });
+  });
 
-  backBtn.onclick = () => {
-    const next = !backStatus.classList.contains("on");
-    send("back_light.set", { on: next });
-  };
+  if (readingBtn) {
+    readingBtn.onclick = () => {
+      const next = !readingStatus.classList.contains("on");
+      setFeatureUI('reading', next);
+      send("reading_light.set", { on: next });
+    };
+  }
 
-  partyBtn.onclick = () => {
-    send("mode.toggle");
-  };
+  if (backBtn) {
+    backBtn.onclick = () => {
+      const next = !backStatus.classList.contains("on");
+      setFeatureUI('backlight', next);
+      send("back_light.set", { on: next });
+    };
+  }
 
-  btBtn.onclick = () => {
-    const next = !btStatus.classList.contains("on");
-    send("bluetooth.set", { on: next });
-  };
+  if (partyBtn) {
+    partyBtn.onclick = () => {
+      const next = !lastState.soundbar?.open;
+      setFeatureUI('soundbar', next);
+      send("mode.toggle");
+    };
+  }
 
-  wifiBtn.onclick = () => {
-    const next = !wifiStatus.classList.contains("on");
-    send("wifi.set", { on: next });
-  };
+  if (btBtn) {
+    btBtn.onclick = () => {
+      const next = !btStatus.classList.contains("on");
+      setFeatureUI('bluetooth', next);
+      send("bluetooth.set", { on: next });
+    };
+  }
+
+  if (wifiBtn) {
+    wifiBtn.onclick = () => {
+      const next = !wifiStatus.classList.contains("on");
+      setFeatureUI('wifi', next);
+      send("wifi.set", { on: next });
+    };
+  }
 
   wifiScanBtn.onclick = () => send("wifi.scan");
-  wifiScanBtnSettings.onclick = () => send("wifi.scan");
-
-  wifiForgetCurrentBtn.onclick = () => {
+  wifiForgetBtn.onclick = () => {
     const ssid = wifiSSID.textContent;
     if (ssid) send("wifi.forget", { ssid });
   };
-
+  wifiScanBtnSettings.onclick = () => send("wifi.scan");
   wifiForgetBtnSettings.onclick = () => {
     const ssid = wifiSSIDSettings.textContent;
     if (ssid) send("wifi.forget", { ssid });
   };
-
   if (wifiSavedForgetBtn) {
     wifiSavedForgetBtn.onclick = () => {
       const ssid = wifiSavedSelect?.value || "";
       if (ssid) send("wifi.forget", { ssid });
     };
   }
-
   if (wifiSavedSelect) {
     wifiSavedSelect.onchange = () => {
       if (wifiSavedForgetBtn) wifiSavedForgetBtn.disabled = !wifiSavedSelect.value;
@@ -1158,120 +1077,90 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function connectSSID(ssid) {
-    pendingSSID = ssid;
-    isShiftActive = false;
-    isSpecialChars = false;
-    setupVirtualKeyboard();
-    wifiPasswordWrapper.classList.add('open');
-    wifiPasswordWrapper.style.display = 'flex';
-    wifiPasswordInput.value = '';
-    gsap.fromTo(wifiPasswordWrapper, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.in' });
-    applyTranslations();
+    const pwd = prompt(t("wifi_password_prompt", { ssid }));
+    if (pwd !== null) {
+      pendingSSID = ssid;
+      send("wifi.connect", { ssid, password: pwd });
+    }
   }
 
-  wifiPasswordSubmit.onclick = () => {
-    const pwd = wifiPasswordInput.value;
-    if (pwd) {
-      send("wifi.connect", { ssid: pendingSSID, password: pwd });
-      gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => {
-        wifiPasswordWrapper.classList.remove('open');
-        wifiPasswordWrapper.style.display = 'none';
-      }});
-    } else {
-      Swal.fire({
-        title: t("wifi_password_prompt", { ssid: pendingSSID }),
-        text: t("wifi_password_prompt", { ssid: pendingSSID }),
-        icon: 'warning',
-        confirmButtonText: t("apply_light")
-      });
-    }
-  };
+  toggleButtons.forEach(btn => {
+    btn.onclick = () => {
+      const next = !lastState.player?.playing;
+      setFeatureUI('sound', next);
+      send(next ? "player.play" : "player.pause");
+    };
+  });
 
-  wifiPasswordCancel.onclick = () => {
-    pendingSSID = null;
-    isShiftActive = false;
-    isSpecialChars = false;
-    setupVirtualKeyboard();
-    gsap.to(wifiPasswordWrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => {
-      wifiPasswordWrapper.classList.remove('open');
-      wifiPasswordWrapper.style.display = 'none';
-    }});
-  };
+  nextButtons.forEach(btn => btn.onclick = () => send("player.next"));
+  prevButtons.forEach(btn => btn.onclick = () => send("player.previous"));
 
-  playBtn.onclick = () => {
-    const next = !lastState.player?.playing;
-    send(next ? "player.play" : "player.pause");
-  };
+  volumeRanges.forEach(range => {
+    range.oninput = () => {
+      const vol = +range.value;
+      volumeValues.forEach(value => value.textContent = vol);
+      send("audio.set_volume", { volume: vol });
+    };
+  });
 
-  nextBtn.onclick = () => send("player.next");
-  prevBtn.onclick = () => send("player.previous");
+  if (muteBtn) {
+    muteBtn.onclick = () => {
+      const next = !muteBtn.classList.contains("on");
+      send("audio.set_mute", { mute: next });
+    };
+  }
 
-  muteBtn.onclick = () => {
-    const next = !muteBtn.classList.contains("on");
-    send("audio.set_mute", { mute: next });
-  };
+  digitalCrowns.forEach(crown => {
+    crown.onclick = () => {
+      const vol = +volumeRanges[0].value;
+      const newVol = Math.min(100, vol + 10);
+      volumeRanges.forEach(range => range.value = newVol);
+      volumeValues.forEach(value => value.textContent = newVol);
+      send("audio.set_volume", { volume: newVol });
+    };
+  });
 
-  volumeRange.oninput = () => {
-    const vol = +volumeRange.value;
-    volumeValue.textContent = vol;
-    document.getElementById("volume-settings").value = vol;
-    document.getElementById("volume-value-settings").textContent = vol;
-    send("audio.set_volume", { volume: vol });
-  };
-
-  digitalCrown.onclick = () => {
-    const vol = +volumeRange.value;
-    const newVol = Math.min(100, vol + 10);
-    volumeRange.value = newVol;
-    volumeValue.textContent = newVol;
-    document.getElementById("volume-settings").value = newVol;
-    document.getElementById("volume-value-settings").textContent = newVol;
-    send("audio.set_volume", { volume: newVol });
-  };
-
-  document.getElementById("apply-light").onclick = () => {
-    const zone = zoneSelect?.value || "under_sofa";
-    const mode = sanitizeMode(modeSelect?.value);
-    const color = sanitizeColor(colorInput?.value);
-    const brightness = sanitizeBrightness(brightnessInput?.value);
-    if (colorInput) colorInput.value = color;
-    if (brightnessInput) brightnessInput.value = brightness;
-    send("lighting.set", { zone, mode, color, brightness });
-  };
-
-  document.getElementById("unpair").onclick = () => {
-    send("bluetooth.unpair");
-  };
-
-  if (zoneSelect) {
-    zoneSelect.onchange = () => {
-      renderLightingInputs(lastState);
+  if (applyLightBtn) {
+    applyLightBtn.onclick = () => {
+      const zone = zoneSelect?.value || "under_sofa";
+      const mode = sanitizeMode(modeSelect?.value);
+      const color = sanitizeColor(colorInput?.value);
+      const brightness = sanitizeBrightness(brightnessInput?.value);
+      send("lighting.set", { zone, mode, color, brightness });
     };
   }
 
   if (modeSelect && colorInput) {
     modeSelect.onchange = () => {
       colorInput.disabled = modeSelect.value !== "static";
+      const zone = zoneSelect?.value || "under_sofa";
+      const mode = sanitizeMode(modeSelect.value);
+      const color = sanitizeColor(colorInput.value);
+      const brightness = sanitizeBrightness(brightnessInput?.value);
+      send("lighting.set", { zone, mode, color, brightness });
     };
   }
 
-  // Initialize Swiper
-  if (typeof Swiper !== 'undefined') {
-    const swiper = new Swiper('.mySwiper', {
-      loop: false,
-      navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-      pagination: { el: '.swiper-pagination', clickable: true },
-      spaceBetween: 0,
-      slidesPerView: 1,
-      centeredSlides: true,
-      effect: 'slide',
-      speed: 600
-    });
-  } else {
-    console.error('Swiper library failed to load.');
+  if (colorInput) {
+    colorInput.oninput = () => {
+      const zone = zoneSelect?.value || "under_sofa";
+      const mode = sanitizeMode(modeSelect?.value);
+      const color = sanitizeColor(colorInput.value);
+      const brightness = sanitizeBrightness(brightnessInput?.value);
+      send("lighting.set", { zone, mode, color, brightness });
+    };
   }
 
-  // Panel and Sidebar Handlers
+  if (brightnessInput) {
+    brightnessInput.onchange = () => {
+      const zone = zoneSelect?.value || "under_sofa";
+      const mode = sanitizeMode(modeSelect?.value);
+      const color = sanitizeColor(colorInput?.value);
+      const brightness = sanitizeBrightness(brightnessInput.value);
+      send("lighting.set", { zone, mode, color, brightness });
+    };
+  }
+
   panelButtons.forEach(btn => {
     btn.onclick = () => {
       const section = btn.dataset.section;
@@ -1311,32 +1200,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Socket.IO State Updates
+  langSelectSettings.onchange = (e) => setLang(e.target.value);
+
   sio.on("sv.update", (st) => {
     lastState = st;
     if (st.lang && st.lang !== currentLang) {
       currentLang = st.lang;
-      if (langSelect) langSelect.value = currentLang;
+      langSelectSettings.value = currentLang;
       applyTranslations();
     }
     renderReadingLight(st);
     renderBackLight(st);
     renderPartyMode(st);
-    renderLightingInputs(st);
     renderBluetooth(st);
     renderWiFi(st);
     renderWiFi(st, true);
     renderVolume(st);
     renderPlayer(st);
+    renderLightingInputs(st);
   });
 
-  // Initialize language selector and query initial state
-  if (langSelect) {
-    langSelect.value = currentLang;
-    langSelect.onchange = (e) => setLang(e.target.value);
-  }
+  // Query initial state and player info
   sio.emit("ui.query", {});
-  applyTranslations();
+  send("player.info");
+
+  // Initial language setup
+  setLang(currentLang);
 });
   </script>
 </body>
