@@ -906,6 +906,12 @@ document.addEventListener('DOMContentLoaded', () => {
             gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
           }});
         }
+      } else if (feature === 'soundbar' && !enabled) {
+        const loadingOverlay = el.querySelector('.loading-overlay');
+        if (loadingOverlay) {
+          gsap.killTweensOf(loadingOverlay);
+          gsap.set(loadingOverlay, { width: 0, opacity: 0 });
+        }
       }
     });
 
@@ -942,7 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
           gsap.to(glow, { opacity: 1, scale: 1.02, duration: 1.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         } else {
           gsap.killTweensOf(glow);
-          glow.style.opacity = 0;
+          gsap.set(glow, { opacity: 0, scale: 1 });
           glow.classList.remove('on');
         }
       }
@@ -960,107 +966,118 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Event Handlers
+  // Event Handlers for feature buttons
   featureButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent event bubbling
-      const f = btn.dataset.feature;
-      const next = !lastState[f]?.on;
-      lastState[f] = { on: next }; // Update local state
-      setFeatureUI(f, next); // Update UI across all panels
-      if (f === 'reading') {
-        send("reading_light.set", { on: next });
-      } else if (f === 'backlight') {
-        send("back_light.set", { on: next });
-      } else if (f === 'soundbar') {
+      e.preventDefault(); // Prevent default behavior
+      e.stopPropagation(); // Prevent event bubbling to Swiper
+      const feature = btn.dataset.feature;
+      console.log(`Toggling feature: ${feature}, current state:`, lastState[feature]);
+      const currentState = lastState[feature]?.on || false;
+      const nextState = !currentState;
+      lastState[feature] = { on: nextState }; // Update local state
+      console.log(`New state for ${feature}: ${nextState}`);
+      setFeatureUI(feature, nextState); // Update UI across all panels
+      if (feature === 'reading') {
+        send("reading_light.set", { on: nextState });
+      } else if (feature === 'backlight') {
+        send("back_light.set", { on: nextState });
+      } else if (feature === 'soundbar') {
         send("mode.toggle");
-      } else if (['bluetooth', 'wifi', 'voice'].includes(f)) {
-        send(`${f}.set`, { on: next });
+      } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
+        send(`${feature}.set`, { on: nextState });
       }
     });
   });
 
   listItems.forEach(item => {
     item.addEventListener('click', (e) => {
-      // Prevent toggle clicks from triggering list item click
       if (e.target.classList.contains('feature-toggle') || e.target.classList.contains('slider')) {
         return;
       }
-      const f = item.dataset.feature;
-      const next = !lastState[f]?.on;
-      lastState[f] = { on: next }; // Update local state
-      setFeatureUI(f, next); // Update UI across all panels
-      if (f === 'reading') {
-        send("reading_light.set", { on: next });
-      } else if (f === 'backlight') {
-        send("back_light.set", { on: next });
-      } else if (f === 'soundbar') {
+      const feature = item.dataset.feature;
+      console.log(`Toggling list item: ${feature}, current state:`, lastState[feature]);
+      const currentState = lastState[feature]?.on || false;
+      const nextState = !currentState;
+      lastState[feature] = { on: nextState }; // Update local state
+      setFeatureUI(feature, nextState); // Update UI across all panels
+      if (feature === 'reading') {
+        send("reading_light.set", { on: nextState });
+      } else if (feature === 'backlight') {
+        send("back_light.set", { on: nextState });
+      } else if (feature === 'soundbar') {
         send("mode.toggle");
-      } else if (['bluetooth', 'wifi', 'voice'].includes(f)) {
-        send(`${f}.set`, { on: next });
+      } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
+        send(`${feature}.set`, { on: nextState });
       }
     });
   });
 
   document.querySelectorAll('.feature-toggle').forEach(toggle => {
     toggle.addEventListener('change', (e) => {
-      e.stopPropagation(); // Prevent list item click handler
-      const f = toggle.dataset.feature;
-      const next = e.target.checked;
-      lastState[f] = { on: next }; // Update local state
-      setFeatureUI(f, next); // Update UI across all panels
-      if (f === 'reading') {
-        send("reading_light.set", { on: next });
-      } else if (f === 'backlight') {
-        send("back_light.set", { on: next });
-      } else if (['bluetooth', 'wifi', 'voice'].includes(f)) {
-        send(`${f}.set`, { on: next });
+      e.stopPropagation();
+      const feature = toggle.dataset.feature;
+      console.log(`Toggling switch: ${feature}, checked: ${e.target.checked}`);
+      const nextState = e.target.checked;
+      lastState[feature] = { on: nextState }; // Update local state
+      setFeatureUI(feature, nextState); // Update UI across all panels
+      if (feature === 'reading') {
+        send("reading_light.set", { on: nextState });
+      } else if (feature === 'backlight') {
+        send("back_light.set", { on: nextState });
+      } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
+        send(`${feature}.set`, { on: nextState });
       }
     });
   });
 
   if (readingBtn) {
     readingBtn.onclick = () => {
-      const next = !readingStatus.classList.contains("on");
-      lastState.reading = { on: next }; // Update local state
-      setFeatureUI('reading', next); // Update UI across all panels
-      send("reading_light.set", { on: next });
+      console.log(`Toggling reading button, current state:`, lastState.reading);
+      const nextState = !readingStatus.classList.contains("on");
+      lastState.reading = { on: nextState }; // Update local state
+      setFeatureUI('reading', nextState); // Update UI across all panels
+      send("reading_light.set", { on: nextState });
     };
   }
 
   if (backBtn) {
     backBtn.onclick = () => {
-      const next = !backStatus.classList.contains("on");
-      lastState.backlight = { on: next }; // Update local state
-      setFeatureUI('backlight', next); // Update UI across all panels
-      send("back_light.set", { on: next });
+      console.log(`Toggling backlight button, current state:`, lastState.backlight);
+      const nextState = !backStatus.classList.contains("on");
+      lastState.backlight = { on: nextState }; // Update local state
+      setFeatureUI('backlight', nextState); // Update UI across all panels
+      send("back_light.set", { on: nextState });
     };
   }
 
   if (partyBtn) {
     partyBtn.onclick = () => {
-      const next = !lastState.soundbar?.open;
-      lastState.soundbar = { open: next }; // Update local state
-      setFeatureUI('soundbar', next); // Update UI across all panels
+      console.log(`Toggling party mode, current state:`, lastState.soundbar);
+      const nextState = !lastState.soundbar?.open;
+      lastState.soundbar = { open: nextState }; // Update local state
+      setFeatureUI('soundbar', nextState); // Update UI across all panels
       send("mode.toggle");
     };
   }
 
   if (btBtn) {
     btBtn.onclick = () => {
-      const next = !btStatus.classList.contains("on");
-      lastState.bluetooth = { on: next }; // Update local state
-      setFeatureUI('bluetooth', next); // Update UI across all panels
-      send("bluetooth.set", { on: next });
+      console.log(`Toggling bluetooth, current state:`, lastState.bluetooth);
+      const nextState = !btStatus.classList.contains("on");
+      lastState.bluetooth = { on: nextState }; // Update local state
+      setFeatureUI('bluetooth', nextState); // Update UI across all panels
+      send("bluetooth.set", { on: nextState });
     };
   }
 
   if (wifiBtn) {
     wifiBtn.onclick = () => {
-      const next = !wifiStatus.classList.contains("on");
-      lastState.wifi = { on: next }; // Update local state
-      setFeatureUI('wifi', next); // Update UI across all panels
-      send("wifi.set", { on: next });
+      console.log(`Toggling wifi, current state:`, lastState.wifi);
+      const nextState = !wifiStatus.classList.contains("on");
+      lastState.wifi = { on: nextState }; // Update local state
+      setFeatureUI('wifi', nextState); // Update UI across all panels
+      send("wifi.set", { on: nextState });
     };
   }
 
@@ -1085,10 +1102,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   toggleButtons.forEach(btn => {
     btn.onclick = () => {
-      const next = !lastState.player?.playing;
-      lastState.player = { playing: next }; // Update local state
-      setFeatureUI('sound', next); // Update UI for player
-      send(next ? "player.play" : "player.pause");
+      console.log(`Toggling player, current state:`, lastState.player);
+      const nextState = !lastState.player?.playing;
+      lastState.player = { playing: nextState }; // Update local state
+      setFeatureUI('sound', nextState); // Update UI for player
+      send(nextState ? "player.play" : "player.pause");
     };
   });
 
@@ -1105,8 +1123,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (muteBtn) {
     muteBtn.onclick = () => {
-      const next = !muteBtn.classList.contains("on");
-      send("audio.set_mute", { mute: next });
+      console.log(`Toggling mute, current state:`, lastState.audio?.muted);
+      const nextState = !muteBtn.classList.contains("on");
+      send("audio.set_mute", { mute: nextState });
     };
   }
 
@@ -1203,6 +1222,7 @@ document.addEventListener('DOMContentLoaded', () => {
   langSelectSettings.onchange = (e) => setLang(e.target.value);
 
   sio.on("sv.update", (st) => {
+    console.log('Received server update:', st);
     lastState = st;
     if (st.lang && st.lang !== currentLang) {
       currentLang = st.lang;
