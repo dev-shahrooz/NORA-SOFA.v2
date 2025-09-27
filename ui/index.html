@@ -1000,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loadingOverlay) {
           gsap.killTweensOf(loadingOverlay);
           gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
-            gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
+            gsap.to(loadingOverlay, { opacity: 0, duration: 8 });
           }});
         }
       } else if (feature === 'soundbar' && !enabled) {
