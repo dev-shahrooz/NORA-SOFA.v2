@@ -52,6 +52,11 @@
       margin: 5px;
       padding: 5px;
     }
+    .feature-btn.active {
+      background-color: #4f46e5;
+      color: #fff;
+      border: 2px solid #fff;
+    }
   </style>
 </head>
 <body>
@@ -661,9 +666,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const wifiSSIDSettings = document.getElementById("wifi-ssid-settings");
   const wifiForgetBtnSettings = document.getElementById("wifi-forget-settings");
   const wifiConnectedSettings = document.querySelector(".wifi-controls .wifi-connected");
-  const wifiSavedContainer = document.querySelector(".wifi-saved");
-  const wifiSavedSelect = document.getElementById("wifi-saved-select");
-  const wifiSavedForgetBtn = document.getElementById("wifi-saved-forget");
   const volumeRanges = document.querySelectorAll(".volume-slider, #volume-settings");
   const volumeValues = document.querySelectorAll("#volume-value, #volume-value-settings");
   const toggleButtons = document.querySelectorAll("#player-toggle");
@@ -896,6 +898,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(`.feature-btn[data-feature="${feature}"]`).forEach(el => {
       el.classList.toggle('active', enabled);
       el.title = t(enabled ? `${feature}_turn_off` : `${feature}_turn_on`);
+      if (feature === 'soundbar' && enabled) {
+        const loadingOverlay = el.querySelector('.loading-overlay');
+        if (loadingOverlay) {
+          gsap.killTweensOf(loadingOverlay);
+          gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
+            gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
+          }});
+        }
+      }
     });
 
     // Update sidebar list items
@@ -939,16 +950,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (feature === 'soundbar' && partyBtn) {
       partyBtn.textContent = t(enabled ? "soundbar_turn_off" : "soundbar_turn_on");
       partyBtn.classList.toggle("on", enabled);
-      document.querySelectorAll('.f-soundbar, .f-soundbarL').forEach(btn => {
-        if (enabled) {
-          btn.classList.add('active');
-          btn.title = t('soundbar_turn_off');
-        } else {
-          btn.classList.remove('active');
-          btn.title = t('soundbar_turn_on');
-          gsap.killTweensOf(btn);
-        }
-      });
     }
     if (feature === 'sound') {
       toggleButtons.forEach(btn => {
@@ -961,23 +962,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event Handlers
   featureButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent event bubbling
       const f = btn.dataset.feature;
       const next = !lastState[f]?.on;
       lastState[f] = { on: next }; // Update local state
-      setFeatureUI(f, next);
+      setFeatureUI(f, next); // Update UI across all panels
       if (f === 'reading') {
         send("reading_light.set", { on: next });
       } else if (f === 'backlight') {
         send("back_light.set", { on: next });
       } else if (f === 'soundbar') {
-        const loadingOverlay = btn.querySelector('.loading-overlay');
-        if (loadingOverlay) {
-          gsap.killTweensOf(loadingOverlay);
-          gsap.fromTo(loadingOverlay, { width: 0, opacity: 1 }, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
-            gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
-          }});
-        }
         send("mode.toggle");
       } else if (['bluetooth', 'wifi', 'voice'].includes(f)) {
         send(`${f}.set`, { on: next });
@@ -994,7 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const f = item.dataset.feature;
       const next = !lastState[f]?.on;
       lastState[f] = { on: next }; // Update local state
-      setFeatureUI(f, next);
+      setFeatureUI(f, next); // Update UI across all panels
       if (f === 'reading') {
         send("reading_light.set", { on: next });
       } else if (f === 'backlight') {
@@ -1013,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const f = toggle.dataset.feature;
       const next = e.target.checked;
       lastState[f] = { on: next }; // Update local state
-      setFeatureUI(f, next);
+      setFeatureUI(f, next); // Update UI across all panels
       if (f === 'reading') {
         send("reading_light.set", { on: next });
       } else if (f === 'backlight') {
@@ -1028,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
     readingBtn.onclick = () => {
       const next = !readingStatus.classList.contains("on");
       lastState.reading = { on: next }; // Update local state
-      setFeatureUI('reading', next);
+      setFeatureUI('reading', next); // Update UI across all panels
       send("reading_light.set", { on: next });
     };
   }
@@ -1037,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backBtn.onclick = () => {
       const next = !backStatus.classList.contains("on");
       lastState.backlight = { on: next }; // Update local state
-      setFeatureUI('backlight', next);
+      setFeatureUI('backlight', next); // Update UI across all panels
       send("back_light.set", { on: next });
     };
   }
@@ -1046,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', () => {
     partyBtn.onclick = () => {
       const next = !lastState.soundbar?.open;
       lastState.soundbar = { open: next }; // Update local state
-      setFeatureUI('soundbar', next);
+      setFeatureUI('soundbar', next); // Update UI across all panels
       send("mode.toggle");
     };
   }
@@ -1055,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btBtn.onclick = () => {
       const next = !btStatus.classList.contains("on");
       lastState.bluetooth = { on: next }; // Update local state
-      setFeatureUI('bluetooth', next);
+      setFeatureUI('bluetooth', next); // Update UI across all panels
       send("bluetooth.set", { on: next });
     };
   }
@@ -1064,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wifiBtn.onclick = () => {
       const next = !wifiStatus.classList.contains("on");
       lastState.wifi = { on: next }; // Update local state
-      setFeatureUI('wifi', next);
+      setFeatureUI('wifi', next); // Update UI across all panels
       send("wifi.set", { on: next });
     };
   }
@@ -1079,17 +1074,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ssid = wifiSSIDSettings.textContent;
     if (ssid) send("wifi.forget", { ssid });
   };
-  if (wifiSavedForgetBtn) {
-    wifiSavedForgetBtn.onclick = () => {
-      const ssid = wifiSavedSelect?.value || "";
-      if (ssid) send("wifi.forget", { ssid });
-    };
-  }
-  if (wifiSavedSelect) {
-    wifiSavedSelect.onchange = () => {
-      if (wifiSavedForgetBtn) wifiSavedForgetBtn.disabled = !wifiSavedSelect.value;
-    };
-  }
 
   function connectSSID(ssid) {
     const pwd = prompt(t("wifi_password_prompt", { ssid }));
@@ -1103,7 +1087,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.onclick = () => {
       const next = !lastState.player?.playing;
       lastState.player = { playing: next }; // Update local state
-      setFeatureUI('sound', next);
+      setFeatureUI('sound', next); // Update UI for player
       send(next ? "player.play" : "player.pause");
     };
   });
