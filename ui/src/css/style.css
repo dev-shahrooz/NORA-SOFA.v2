@@ -153,6 +153,7 @@
     cursor: pointer; 
     transition: transform .18s, background .18s; 
     z-index: 3; 
+    color: white;
   }
   .feature-btn:hover { transform: scale(1.05); }
   .feature-btn.active { background: linear-gradient(90deg, var(--accent), #06b6d4); box-shadow: 0 6px 18px rgba(79,70,229,0.25); }
