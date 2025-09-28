@@ -1030,23 +1030,25 @@ document.addEventListener('DOMContentLoaded', () => {
       readingStatus.classList.toggle("on", enabled);
     }
     if (feature === 'backlight' && backBtn && backStatus) {
-      backBtn.textContent = t(enabled ? "back_light_turn_off" : "back_light_turn_on");
-      backBtn.classList.toggle("on", enabled);
-      backStatus.textContent = t(enabled ? "status_on" : "status_off");
-      backStatus.classList.toggle("on", enabled);
-      const glow = document.getElementById('backlightGlow');
-      if (glow) {
-        if (enabled) {
-          glow.classList.add('on');
-          gsap.killTweensOf(glow);
-          gsap.to(glow, { opacity: 1, scale: 1.02, duration: 1.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-        } else {
-          gsap.killTweensOf(glow);
-          gsap.set(glow, { opacity: 0, scale: 1 });
-          glow.classList.remove('on');
-        }
-      }
+  backBtn.textContent = t(enabled ? "back_light_turn_off" : "back_light_turn_on");
+  backBtn.classList.toggle("on", enabled);
+  backStatus.textContent = t(enabled ? "status_on" : "status_off");
+  backStatus.classList.toggle("on", enabled);
+  const glow = document.getElementById('backlightGlow');
+  if (glow) {
+    if (enabled) {
+      console.log('Backlight ON: Starting glow animation');
+      glow.classList.add('on');
+      gsap.killTweensOf(glow);
+      gsap.to(glow, { opacity: 1, scale: 1.02, duration: 1.4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    } else {
+      console.log('Backlight OFF: Stopping glow animation');
+      gsap.killTweensOf(glow);
+      gsap.set(glow, { opacity: 0, scale: 1 });
+      glow.classList.remove('on');
     }
+  }
+}
     if (feature === 'soundbar' && partyBtn) {
       partyBtn.textContent = t(enabled ? "soundbar_turn_off" : "soundbar_turn_on");
       partyBtn.classList.toggle("on", enabled);
