@@ -1553,18 +1553,12 @@ function showApp(app) {
     if (app === 'youtube') {
       // Fixed: Use a valid public playlist (YouTube's "Global Top 50" example - replace with your preferred)
       appContent.innerHTML = `
-<iframe src="https://www.youtube.com/embed/videoseries?list=37i9dQZF1eLbV6bWZw1r7P&ab_channel=YouTubeMusic&wmode=transparent" 
-                title="YouTube Global Top Music Videos" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                allowfullscreen 
-                referrerpolicy="strict-origin-when-cross-origin"
-                style="border: 0;">
-        </iframe>
+<iframe width="100%" height="450" src="https://www.youtube.com/embed/N6DW31S_oyI" title="Mega Hits 2025 🌱 The Best Of Vocal Deep House Music Mix 2025 🌱 Summer Music Mix 2025 #4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
       `;
       // Error handling: Listen for load errors
       const iframe = appContent.querySelector('iframe');
       iframe.addEventListener('error', () => {
-        appContent.classList.remove('loading');
+        appContent.classList.remove('loading');a
         appContent.classList.add('error');
         appContent.innerHTML = '<p>Unable to load YouTube. <a href="https://www.youtube.com" target="_blank">Open in browser</a></p>';
       });
