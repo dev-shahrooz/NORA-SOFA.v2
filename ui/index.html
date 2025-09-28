@@ -1301,14 +1301,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  toggleButtons.forEach(btn => {
-    btn.onclick = () => {
-      const nextState = !lastState.player?.playing;
-      lastState.player = { playing: nextState };
-      setFeatureUI('sound', nextState);
-      send(nextState ? "player.play" : "player.pause");
-    };
-  });
+toggleButtons.forEach(btn => {
+  btn.onclick = () => {
+    const currentPlaying = lastState.player?.playing || false;
+    const nextState = !currentPlaying;
+    lastState.player = lastState.player || {};
+    lastState.player.playing = nextState; // Optimistic update
+    setFeatureUI('sound', nextState); // Update UI immediately
+    btn.disabled = true; // Disable button during request
+    send(nextState ? "player.play" : "player.pause");
+    setTimeout(() => {
+      btn.disabled = false; // Re-enable after 2 seconds
+    }, 2000);
+  };
+});
 
   nextButtons.forEach(btn => btn.onclick = () => send("player.next"));
   prevButtons.forEach(btn => btn.onclick = () => send("player.previous"));
@@ -1555,7 +1561,6 @@ function showApp(app) {
       appContent.innerHTML = `
 <iframe width="100%" height="450" src="https://www.youtube.com/embed/N6DW31S_oyI" title="Mega Hits 2025 🌱 The Best Of Vocal Deep House Music Mix 2025 🌱 Summer Music Mix 2025 #4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
       `;
-      // Error handling: Listen for load errors
       const iframe = appContent.querySelector('iframe');
       iframe.addEventListener('error', () => {
         appContent.classList.remove('loading');a
