@@ -250,7 +250,7 @@
   .controls {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 10px;
   }
   .control-btn {
