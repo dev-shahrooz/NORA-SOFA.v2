@@ -99,6 +99,7 @@
       <div class="controls">
         <button class="control-btn" id="player-prev" title="Previous"><i class="fa-solid fa-backward"></i></button>
         <button class="control-btn" id="player-toggle" title="Play"><i class="fa-solid fa-play"></i></button>
+        <button class="control-btn" id="player-pause" title="Pause"><i class="fa-solid fa-pause"></i></button>
         <button class="control-btn" id="player-next" title="Next"><i class="fa-solid fa-forward"></i></button>
       </div>
       <div class="track-info">
@@ -816,6 +817,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const icon = btn.querySelector('i');
       icon.className = playing ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     });
+    // Add event listener for pause button
+document.querySelectorAll("#player-pause").forEach(btn => {
+  btn.onclick = () => {
+    lastState.player = lastState.player || {};
+    lastState.player.playing = false; // Optimistic update
+    setFeatureUI('sound', false); // Update UI to reflect paused state
+    btn.disabled = true; // Disable button during request
+    send("player.pause");
+    setTimeout(() => {
+      btn.disabled = false; // Re-enable after 1 second
+    }, 1000);
+  };
+});
     renderSettings();
   }
 
@@ -1132,7 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleButtons.forEach(btn => {
         const icon = btn.querySelector('i');
         icon.className = enabled ? 'fa-solid fa-pause' : 'fa-solid fa-play';
-        btn.title = t(enabled ? 'player_pause' : 'player_play');
+        btn.title = t(enabled ? 'player-pause' : 'player-play');
       });
     }
   }
@@ -1305,6 +1319,7 @@ toggleButtons.forEach(btn => {
   btn.onclick = () => {
     const currentPlaying = lastState.player?.playing || false;
     const nextState = !currentPlaying;
+    console.log(nextState);
     lastState.player = lastState.player || {};
     lastState.player.playing = nextState; // Optimistic update
     setFeatureUI('sound', nextState); // Update UI immediately
@@ -1312,7 +1327,7 @@ toggleButtons.forEach(btn => {
     send(nextState ? "player.play" : "player.pause");
     setTimeout(() => {
       btn.disabled = false; // Re-enable after 2 seconds
-    }, 2000);
+    }, 1000);
   };
 });
 
