@@ -711,6 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastState = {};
   let pendingSSID = null;
   let wifiScanRequested = false;
+  let soundbarLoading = false; // Variable to track soundbar loading state
 
   function t(key, vars = {}) {
     let str = translations[currentLang][key] || key;
@@ -985,25 +986,23 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLightingInputs(lastState);
   }
 
-  function setFeatureUI(feature, enabled, isLoading = false) {
+  function setFeatureUI(feature, enabled) {
     // Update feature buttons in swiper
     document.querySelectorAll(`.feature-btn[data-feature="${feature}"]`).forEach(el => {
       el.classList.toggle('active', enabled);
       el.title = t(enabled ? `${feature}_turn_off` : `${feature}_turn_on`);
-      el.disabled = isLoading; // Disable button during loading
+      el.disabled = feature === 'soundbar' && soundbarLoading; // Disable button during loading
       if (feature === 'soundbar') {
         const loadingOverlay = el.querySelector('.loading-overlay');
         if (loadingOverlay) {
-          gsap.killTweensOf(loadingOverlay);
-          if (isLoading) {
+          if (soundbarLoading) {
+            gsap.killTweensOf(loadingOverlay);
             gsap.set(loadingOverlay, { width: 0, opacity: 1 });
             gsap.to(loadingOverlay, { width: '100%', duration: 8, ease: 'linear', onComplete: () => {
-              gsap.to(loadingOverlay, { opacity: 0, duration: 0.3, onComplete: () => {
-                el.disabled = false; // Re-enable button after loading
-                setFeatureUI(feature, enabled, false); // Update UI without loading
-              }});
+              gsap.to(loadingOverlay, { opacity: 0, duration: 0.3 });
             }});
           } else {
+            gsap.killTweensOf(loadingOverlay);
             gsap.set(loadingOverlay, { width: 0, opacity: 0 });
           }
         }
@@ -1051,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (feature === 'soundbar' && partyBtn) {
       partyBtn.textContent = t(enabled ? "soundbar_turn_off" : "soundbar_turn_on");
       partyBtn.classList.toggle("on", enabled);
-      partyBtn.disabled = isLoading; // Disable settings panel button during loading
+      partyBtn.disabled = soundbarLoading; // Disable settings panel button during loading
     }
     if (feature === 'sound') {
       toggleButtons.forEach(btn => {
@@ -1068,13 +1067,18 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       e.stopPropagation();
       const feature = btn.dataset.feature;
-      if (feature === 'soundbar' && btn.disabled) return; // Prevent clicks during loading
+      if (feature === 'soundbar' && soundbarLoading) return; // Prevent clicks during loading
       const currentState = lastState[feature]?.on || lastState?.lighting?.[`${feature}_light`]?.on || lastState?.soundbar?.open || false;
       const nextState = !currentState;
       lastState[feature] = { on: nextState };
       if (feature === 'soundbar') {
-        setFeatureUI(feature, nextState, true); // Show loading animation
+        soundbarLoading = true; // Set loading state
+        setFeatureUI(feature, nextState);
         send("mode.toggle");
+        setTimeout(() => {
+          soundbarLoading = false; // Reset loading state after 8 seconds
+          setFeatureUI(feature, nextState); // Update UI to reflect loading state
+        }, 8000);
       } else {
         setFeatureUI(feature, nextState);
         if (feature === 'reading') {
@@ -1094,12 +1098,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const feature = item.dataset.feature;
+      if (feature === 'soundbar' && soundbarLoading) return; // Prevent clicks during loading
       const currentState = lastState[feature]?.on || false;
       const nextState = !currentState;
       lastState[feature] = { on: nextState };
-      if (feature === 'soundbar' && !item.querySelector('.status').classList.contains('on')) {
-        setFeatureUI(feature, nextState, true);
+      if (feature === 'soundbar') {
+        soundbarLoading = true; // Set loading state
+        setFeatureUI(feature, nextState);
         send("mode.toggle");
+        setTimeout(() => {
+          soundbarLoading = false; // Reset loading state after 8 seconds
+          setFeatureUI(feature, nextState); // Update UI to reflect loading state
+        }, 8000);
       } else {
         setFeatureUI(feature, nextState);
         if (feature === 'reading') {
@@ -1150,11 +1160,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (partyBtn) {
     partyBtn.onclick = () => {
-      if (partyBtn.disabled) return; // Prevent clicks during loading
+      if (soundbarLoading) return; // Prevent clicks during loading
       const nextState = !lastState.soundbar?.open;
       lastState.soundbar = { open: nextState };
-      setFeatureUI('soundbar', nextState, true);
+      soundbarLoading = true; // Set loading state
+      setFeatureUI('soundbar', nextState);
       send("mode.toggle");
+      setTimeout(() => {
+        soundbarLoading = false; // Reset loading state after 8 seconds
+        setFeatureUI('soundbar', nextState); // Update UI to reflect loading state
+      }, 8000);
     };
   }
 
