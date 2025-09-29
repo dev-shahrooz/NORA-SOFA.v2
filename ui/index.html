@@ -89,6 +89,7 @@
     <div class="music-panel" id="musicPanel">
       <div class="music-panel-header">
         <strong data-i18n="media_player_title">Media Player</strong>
+        <button class="toggle-btn-player" id="togglePanelPlayer" title="Toggle Panel"><i class="fa-solid fa-music"></i></button>
         <div class="eq" id="eqVis">
           <div class="bar"></div>
           <div class="bar"></div>
@@ -1675,6 +1676,12 @@ function showApp(app) {
         });
       };
     });
+  document.getElementById('togglePanelPlayer').addEventListener('click', function() {
+    const musicPanel = document.getElementById('musicPanel');
+    const isToggled = musicPanel.classList.contains('toggled');
+    musicPanel.classList.toggle('toggled');
+    musicPanel.style.left = isToggled ? '-182px' : '27px';
+  });
   </script>
 </body>
 </html>
