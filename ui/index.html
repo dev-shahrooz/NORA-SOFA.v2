@@ -83,6 +83,13 @@
       color: #333;
       font-size: 16px;
     }
+    .coming-soon {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.8em;
+  color: #888;
+  font-weight: normal;
+}
   </style>
 </head>
 <body>
@@ -318,18 +325,22 @@
         <button class="app-btn youtube" data-app="youtube">
           <i class="fa-brands fa-youtube"></i>
           YouTube
+          <span class="coming-soon">Preview</span>
         </button>
         <button class="app-btn spotify" data-app="spotify">
           <i class="fa-brands fa-spotify"></i>
           Spotify
+          <span class="coming-soon">Preview</span>
         </button>
         <button class="app-btn melodify" data-app="melodify" disabled="disabled">
           <i class="fa-solid fa-play"></i>
           Melodify
+          <span class="coming-soon">Coming Soon</span>
         </button>
         <button class="app-btn chatgpt" data-app="chatgpt" disabled="disabled">
           <i class="fa-solid fa-comment"></i>
           ChatGPT
+          <span class="coming-soon">Coming Soon</span>
         </button>
       </div>
       <div class="app-content" id="appContent"></div>
@@ -1691,7 +1702,7 @@ function showApp(app) {
     const musicPanel = document.getElementById('musicPanel');
     const isToggled = musicPanel.classList.contains('toggled');
     musicPanel.classList.toggle('toggled');
-    musicPanel.style.left = isToggled ? '-182px' : '27px';
+    musicPanel.style.left = isToggled ? '-170px' : '27px';
   });
   function iframeMelodify(){
     // Access iframe content (same-origin only)
