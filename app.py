@@ -35,7 +35,7 @@ def find_esp32_port():
                (port.vid == 0x1A86 and port.pid == 0x7523) or \
                (port.vid == 0x0403 and port.pid == 0x6001): 
                 return port.device
-    return os.environ.get("ESP_PORT", "/dev/ttyUSB0")
+    return os.environ.get("ESP_PORT", "/dev/ttyACM0")
 
 # نخ برای خالی کردن بافر سریال
 def serial_reader(esp):
