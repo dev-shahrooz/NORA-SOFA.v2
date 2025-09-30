@@ -37,6 +37,7 @@ DEFAULT_STATE = {
     "audio": {"volume": 50, "muted": False},
     "player": {"status": "Unknown", "title": "", "artist": ""},
     "lang": "en",
+    "clock": {"time": "00:00:00"},
     }
 
 class StateStore:
@@ -81,6 +82,8 @@ class StateStore:
             s["player"].setdefault("title", "")
             s["player"].setdefault("artist", "")
             s.setdefault("lang", "en")
+            s.setdefault("clock", {})
+            s["clock"].setdefault("time", "00:00:00")
 
             return s
 

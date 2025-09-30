@@ -18,6 +18,7 @@ from core.usecases.mode import ModeUsecase
 from core.usecases.bluetooth import BluetoothUsecase
 from core.usecases.audio import AudioUsecase
 from core.usecases.player import PlayerUsecase
+from core.usecases.clock import ClockUsecase
 from core.usecases.wifi import WiFiUsecase
 from services.bluetooth_service import BluetoothService
 from services.audio_service import AudioService
@@ -88,7 +89,8 @@ mode_uc = ModeUsecase(
     lighting,
     esp,
 )
-router = ActionRouter(state, lighting, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc)
+clock_uc = ClockUsecase(esp)
+router = ActionRouter(state, lighting, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc, clock_uc)
 
 def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
     """Apply persisted state to physical hardware without mutating DB."""
@@ -129,6 +131,13 @@ def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
         audio_uc.set_volume(vol)
         muted = bool(s.get("audio", {}).get("muted", False))
         audio_uc.set_mute(muted)
+    except Exception:
+        pass
+    try:
+        clock_state = s.get("clock", {})
+        time_str = clock_state.get("time")
+        if time_str:
+            clock_uc.apply_time_string(time_str)
     except Exception:
         pass
 

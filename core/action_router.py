@@ -4,7 +4,19 @@ from typing import Dict
 # from nora.core.usecases.reading_light import ReadingLightUsecase  # تزریق از app.py انجام می‌شود
 
 class ActionRouter:
-    def __init__(self, state_store, lighting_uc, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc):
+    def __init__(
+        self,
+        state_store,
+        lighting_uc,
+        reading_light_uc,
+        back_light_uc,
+        mode_uc,
+        bluetooth_uc,
+        audio_uc,
+        player_uc,
+        wifi_uc,
+        clock_uc,
+    ):        
         self.state_store = state_store
         self.lighting = lighting_uc
         self.reading_light = reading_light_uc
@@ -14,6 +26,7 @@ class ActionRouter:
         self.audio = audio_uc
         self.player = player_uc
         self.wifi = wifi_uc
+        self.clock = clock_uc
 
 
     def handle(self, source: str, action: str, payload: Dict, corr_id: str = "") -> Dict:
@@ -120,6 +133,18 @@ class ActionRouter:
         elif action == "ui.set_lang":
             lang = payload.get("lang", "en")
             patch = {"lang": lang}
+
+        # --- Clock ---
+        elif action == "clock.set_time":
+            try:
+                patch = self.clock.set_time(
+                    hour=payload.get("hour"),
+                    minute=payload.get("minute"),
+                    second=payload.get("second"),
+                    time_str=payload.get("time"),
+                )
+            except ValueError:
+                patch = {}
         
         # --- Default ---
         else:
