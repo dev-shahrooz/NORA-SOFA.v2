@@ -313,6 +313,23 @@
         <span id="volume-value-settings">50</span>
         <button id="mute-toggle" class="btn" data-i18n="sound_turn_off">Mute sound</button>
       </div>
+      <hr />
+      <h2 data-i18n="clock_title">Clock</h2>
+      <div class="clock-settings">
+        <label>
+          <span data-i18n="clock_hour_label">Hour</span>
+          <input type="number" id="clock-hour" min="0" max="23" placeholder="HH" inputmode="numeric" pattern="[0-9]*">
+        </label>
+        <label>
+          <span data-i18n="clock_minute_label">Minute</span>
+          <input type="number" id="clock-minute" min="0" max="59" placeholder="MM" inputmode="numeric" pattern="[0-9]*">
+        </label>
+        <label>
+          <span data-i18n="clock_second_label">Second</span>
+          <input type="number" id="clock-second" min="0" max="59" placeholder="SS" inputmode="numeric" pattern="[0-9]*">
+        </label>
+        <button id="clock-set" class="btn" data-i18n="clock_set_time">Set Time</button>
+      </div>
       </div>
     </div>
   </div>
@@ -562,6 +579,14 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_password_prompt: "رمز برای {ssid}:",
       wifi_fail_prompt: "اتصال ناموفق بود. رمز را دوباره وارد کنید برای {ssid}:",
       volume_title: "حجم صدا",
+      clock_title: "تنظیم ساعت",
+      clock_hour_label: "ساعت",
+      clock_minute_label: "دقیقه",
+      clock_second_label: "ثانیه",
+      clock_set_time: "تنظیم ساعت",
+      clock_invalid_time: "لطفاً زمان معتبری وارد کنید.",
+      clock_success_message: "ساعت به‌روزرسانی شد.",
+      clock_success_description: "زمان تنظیم شد: {time}",
       sound_turn_off: "قطع صدا",
       sound_turn_on: "وصل صدا",
       media_player_title: "مدیا پلیر",
@@ -632,6 +657,14 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_password_prompt: "Password for {ssid}:",
       wifi_fail_prompt: "Connection failed. Enter password again for {ssid}:",
       volume_title: "Volume",
+      clock_title: "Clock",
+      clock_hour_label: "Hour",
+      clock_minute_label: "Minute",
+      clock_second_label: "Second",
+      clock_set_time: "Set Time",
+      clock_invalid_time: "Please enter a valid time.",
+      clock_success_message: "Clock updated.",
+      clock_success_description: "Time set to {time}.",
       sound_turn_off: "Mute sound",
       sound_turn_on: "Unmute sound",
       media_player_title: "Media Player",
@@ -702,6 +735,14 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_password_prompt: "{ssid} için parola:",
       wifi_fail_prompt: "Bağlantı başarısız. {ssid} için parolayı tekrar girin:",
       volume_title: "Ses",
+      clock_title: "Saat Ayarı",
+      clock_hour_label: "Saat",
+      clock_minute_label: "Dakika",
+      clock_second_label: "Saniye",
+      clock_set_time: "Saati Ayarla",
+      clock_invalid_time: "Lütfen geçerli bir saat girin.",
+      clock_success_message: "Saat güncellendi.",
+      clock_success_description: "Saat {time} olarak ayarlandı.",
       sound_turn_off: "Sesi kapat",
       sound_turn_on: "Sesi aç",
       media_player_title: "Medya Oynatıcı",
@@ -772,6 +813,14 @@ document.addEventListener('DOMContentLoaded', () => {
       wifi_password_prompt: "كلمة المرور لـ {ssid}:",
       wifi_fail_prompt: "فشل الاتصال. أدخل كلمة المرور مرة أخرى لـ {ssid}:",
       volume_title: "مستوى الصوت",
+      clock_title: "الساعة",
+      clock_hour_label: "ساعة",
+      clock_minute_label: "دقيقة",
+      clock_second_label: "ثانية",
+      clock_set_time: "تعيين الوقت",
+      clock_invalid_time: "يرجى إدخال وقت صالح.",
+      clock_success_message: "تم تحديث الساعة.",
+      clock_success_description: "تم ضبط الوقت: {time}",
       sound_turn_off: "إيقاف الصوت",
       sound_turn_on: "تشغيل الصوت",
       media_player_title: "مشغل الوسائط",
@@ -907,6 +956,10 @@ document.querySelectorAll("#player-pause").forEach(btn => {
   const wifiBtn = document.getElementById("wifi-toggle");
   const wifiStatus = document.getElementById("wifi-status");
   const muteBtn = document.getElementById("mute-toggle");
+  const clockHourInput = document.getElementById("clock-hour");
+  const clockMinuteInput = document.getElementById("clock-minute");
+  const clockSecondInput = document.getElementById("clock-second");
+  const clockSetBtn = document.getElementById("clock-set");
   const digitalCrowns = document.querySelectorAll("#digitalCrown");
 
   // Sanitization Functions
@@ -1051,6 +1104,19 @@ document.querySelectorAll("#player-pause").forEach(btn => {
     }
   }
 
+  function renderClock(st) {
+    if (!clockHourInput || !clockMinuteInput || !clockSecondInput) return;
+    const time = st?.clock?.time;
+    if (typeof time !== "string" || !time) return;
+    const parts = time.split(":");
+    if (parts.length < 2) return;
+    const [hour = "00", minute = "00", second = "00"] = parts;
+    const normalizedSecond = (second ?? "00").padStart(2, "0");
+    if (clockHourInput.value !== hour) clockHourInput.value = hour.padStart(2, "0");
+    if (clockMinuteInput.value !== minute) clockMinuteInput.value = minute.padStart(2, "0");
+    if (clockSecondInput.value !== normalizedSecond) clockSecondInput.value = normalizedSecond;
+  }
+
   function updateMusicPanelVisibility() {
     const musicPanels = document.querySelectorAll('#musicPanel');
     const shouldShow = lastState.bluetooth?.connected;
@@ -1092,6 +1158,7 @@ document.querySelectorAll("#player-pause").forEach(btn => {
     renderBluetooth(lastState);
     renderWiFi(lastState, true);
     renderVolume(lastState);
+    renderClock(lastState);
     renderPlayer(lastState);
     renderLightingInputs(lastState);
   }
@@ -1369,6 +1436,49 @@ toggleButtons.forEach(btn => {
     };
   }
 
+  if (clockSetBtn) {
+    clockSetBtn.onclick = () => {
+      const hourRaw = (clockHourInput?.value ?? "").trim();
+      const minuteRaw = (clockMinuteInput?.value ?? "").trim();
+      const secondRaw = (clockSecondInput?.value ?? "").trim();
+      const hourVal = Number.parseInt(hourRaw, 10);
+      const minuteVal = Number.parseInt(minuteRaw, 10);
+      const hasSecond = secondRaw !== "";
+      const secondVal = hasSecond ? Number.parseInt(secondRaw, 10) : 0;
+      const invalid = (
+        Number.isNaN(hourVal) ||
+        Number.isNaN(minuteVal) ||
+        hourVal < 0 || hourVal > 23 ||
+        minuteVal < 0 || minuteVal > 59 ||
+        (hasSecond && (Number.isNaN(secondVal) || secondVal < 0 || secondVal > 59))
+      );
+      if (invalid) {
+        const message = t("clock_invalid_time");
+        if (typeof Swal !== "undefined") {
+          Swal.fire({ icon: 'error', title: message });
+        } else {
+          alert(message);
+        }
+        return;
+      }
+      const pad = (value) => String(value).padStart(2, "0");
+      const formatted = `${pad(hourVal)}:${pad(minuteVal)}:${pad(secondVal)}`;
+      if (clockHourInput) clockHourInput.value = pad(hourVal);
+      if (clockMinuteInput) clockMinuteInput.value = pad(minuteVal);
+      if (clockSecondInput) clockSecondInput.value = pad(secondVal);
+      lastState.clock = { time: formatted };
+      renderClock(lastState);
+      send("clock.set_time", { hour: hourVal, minute: minuteVal, second: secondVal });
+      const title = t("clock_success_message");
+      const description = t("clock_success_description", { time: formatted });
+      if (typeof Swal !== "undefined") {
+        Swal.fire({ icon: 'success', title, text: description, timer: 2000, showConfirmButton: false });
+      } else {
+        alert(`${title}\n${description}`);
+      }
+    };
+  }
+
   digitalCrowns.forEach(crown => {
     crown.onclick = () => {
       const vol = +volumeRanges[0].value;
@@ -1475,6 +1585,7 @@ toggleButtons.forEach(btn => {
     renderWiFi(st);
     renderWiFi(st, true);
     renderVolume(st);
+    renderClock(st);
     renderPlayer(st);
     renderLightingInputs(st);
   });

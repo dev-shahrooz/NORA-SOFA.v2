@@ -533,6 +533,36 @@
   .lang-section { margin-bottom: 20px; }
   .lang-section h3 { margin: 0 0 10px; font-size: 16px; }
 
+    .clock-settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 10px;
+  }
+
+  .clock-settings label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 90px;
+  }
+
+  .clock-settings input {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.05);
+    color: #e6eef8;
+  }
+
+  .clock-settings input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(79,70,229,0.25);
+  }
+
+
   /* Custom Scrollbar Styles */
   .sidebar::-webkit-scrollbar,
   .fullscreen-wrapper::-webkit-scrollbar {
