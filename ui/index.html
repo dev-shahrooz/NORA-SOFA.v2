@@ -1199,6 +1199,14 @@ document.querySelectorAll("#player-pause").forEach(btn => {
     if (on && !wifiScanRequested && !wifi.networks) {
       wifiScanRequested = true;
       send("wifi.scan");
+      targetWifiList.style.display = 'none';
+  targetWifiConnected.style.display = 'none';
+  targetWifiScanBtn.style.display = 'none';
+    }
+    else {
+      targetWifiList.style.display = 'block';
+      targetWifiScanBtn.style.display = 'inline-block';
+      sidebar.classList.remove('hidden');
     }
     targetWifiScanBtn.disabled = !on;
     targetWifiList.innerHTML = "";
