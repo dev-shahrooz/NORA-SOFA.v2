@@ -486,12 +486,13 @@
     display: none; 
     padding: 40px; 
     overflow-y: auto; 
+    background: transparent;
   }
   .fullscreen-wrapper.open { display: block; }
   .fullscreen-wrapper .close-btn { 
     position: absolute; 
-    top: 20px; 
-    right: 60px; 
+    top: 47px; 
+    right: 80px; 
     background: none; 
     border: none; 
     color: #e6eef8; 
@@ -500,8 +501,8 @@
   }
   .fullscreen-wrapper .home-btn { 
     position: absolute; 
-    top: 20px; 
-    right: 20px; 
+    top: 47px; 
+    right: 40px; 
     background: none; 
     border: none; 
     color: #e6eef8; 
