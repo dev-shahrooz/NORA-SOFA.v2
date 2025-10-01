@@ -90,6 +90,41 @@
   color: #888;
   font-weight: normal;
 }
+    /* Existing styles unchanged */
+    
+    /* Color picker styles */
+    #color {
+      display: none; /* Hide original color input */
+    }
+    .color-picker-wrapper {
+      display: none; /* Hidden by default */
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .color-radio {
+      display: none; /* Hide actual radio input */
+    }
+    .color-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .color-radio:checked + .color-label {
+      border-color: #333;
+      transform: scale(1.1);
+    }
+    .color-label:hover {
+      transform: scale(1.1);
+      border-color: #666;
+    }
   </style>
 </head>
 <body>
@@ -271,9 +306,44 @@
           </select>
         </label>
         <label>
-          <span data-i18n="color_label">Color:</span>
-          <input type="color" id="color" value="#4f46e5">
-        </label>
+          <div class="color-picker-wrapper" id="colorPickerWrapper">
+              <span data-i18n="color_label">Color:</span>
+              <input type="color" id="color" value="#4f46e5">
+              <label class="color-label" style="background-color: #FF0000;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#FF0000">
+              </label>
+              <label class="color-label" style="background-color: #00FF00;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#00FF00">
+              </label>
+              <label class="color-label" style="background-color: #0000FF;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#0000FF">
+              </label>
+              <label class="color-label" style="background-color: #FFFFFF;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#FFFFFF">
+              </label>
+              <label class="color-label" style="background-color: #FFFF00;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#FFFF00">
+              </label>
+              <label class="color-label" style="background-color: #00FFFF;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#00FFFF">
+              </label>
+              <label class="color-label" style="background-color: #FF00FF;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#FF00FF">
+              </label>
+              <label class="color-label" style="background-color: #FFA500;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#FFA500">
+              </label>
+              <label class="color-label" style="background-color: #F5DEB3;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#F5DEB3">
+              </label>
+              <label class="color-label" style="background-color: #F0FFF0;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#F0FFF0">
+              </label>
+              <label class="color-label" style="background-color: #C71585;">
+                <input type="radio" name="colorPicker" class="color-radio" value="#C71585">
+              </label>
+            </div>
+          </label>
         <label>
           <span data-i18n="brightness_label">Brightness:</span>
           <select id="brightness">
@@ -1291,20 +1361,23 @@ document.querySelectorAll("#player-pause").forEach(btn => {
     setFeatureUI('sound', !!p.playing);
   }
 
-  function renderLightingInputs(st) {
-    if (zoneSelect && modeSelect && colorInput && brightnessInput) {
-      const zone = zoneSelect.value || "under_sofa";
-      const lighting = st?.lighting || {};
-      const zoneState = lighting[zone] || {};
-      const mode = sanitizeMode(zoneState.mode);
-      if (modeSelect.value !== mode) modeSelect.value = mode;
-      const color = sanitizeColor(zoneState.color);
-      if (colorInput.value.toLowerCase() !== color) colorInput.value = color;
-      const brightness = sanitizeBrightness(zoneState.brightness);
-      if (sanitizeBrightness(brightnessInput.value) !== brightness) brightnessInput.value = brightness;
-      colorInput.disabled = mode !== "static";
+    function renderLightingInputs(st) {
+      if (zoneSelect && modeSelect && colorInput && brightnessInput && colorPickerWrapper) {
+        const zone = zoneSelect.value || "under_sofa";
+        const lighting = st?.lighting || {};
+        const zoneState = lighting[zone] || {};
+        const mode = sanitizeMode(zoneState.mode);
+        if (modeSelect.value !== mode) modeSelect.value = mode;
+        const color = sanitizeColor(zoneState.color);
+        if (colorInput.value.toLowerCase() !== color) colorInput.value = color;
+        const brightness = sanitizeBrightness(zoneState.brightness);
+        if (sanitizeBrightness(brightnessInput.value) !== brightness) brightnessInput.value = brightness;
+        colorPickerWrapper.style.display = mode === "static" ? "flex" : "none";
+        document.querySelectorAll('.color-radio').forEach(radio => {
+          radio.checked = radio.value.toLowerCase() === color;
+        });
+      }
     }
-  }
 
   function renderSettings() {
     renderReadingLight(lastState);
@@ -1651,6 +1724,7 @@ toggleButtons.forEach(btn => {
       const color = sanitizeColor(colorInput?.value);
       const brightness = sanitizeBrightness(brightnessInput?.value);
       send("lighting.set", { zone, mode, color, brightness });
+      console.log('mode:',mode,'color:',color)
     };
   }
 
@@ -1983,6 +2057,20 @@ function showApp(app) {
       });
     });
   } 
+   document.querySelectorAll('.color-radio').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById('color').value = radio.value;
+        console.log(radio.value);
+      });
+    });
+    document.getElementById('mode').addEventListener('change', function() {
+    const colorPickerWrapper = document.getElementById('colorPickerWrapper');
+    if (this.value === 'static') {
+        colorPickerWrapper.style.display = 'flex';
+    } else {
+        colorPickerWrapper.style.display = 'none';
+    }
+});
   </script>
 </body>
 </html>
