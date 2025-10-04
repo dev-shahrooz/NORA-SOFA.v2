@@ -844,3 +844,103 @@
     body[dir="rtl"] .key-row {
       flex-direction: row-reverse;
     }
+      .streaming-apps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 20px;
+    }
+    .app-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 120px;
+      height: 120px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      color: #333;
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      cursor: pointer;
+    }
+    .app-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .app-btn.active {
+      background: #e0e7ff;
+    }
+    .app-btn i {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .app-btn.youtube { color: #FF0000; }
+    .app-btn.spotify { color: #1DB954; }
+    .app-btn.melodify { color: #262626; }
+    .app-btn.chatgpt { color: #10A37F; }
+    .app-content {
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .app-content iframe {
+      width: 100%;
+      height: 400px;
+      border: none;
+    }
+    .app-content.placeholder {
+      padding: 20px;
+      text-align: center;
+      background: #f8f8f8;
+      color: #333;
+      font-size: 16px;
+    }
+    .coming-soon {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.8em;
+  color: #888;
+  font-weight: normal;
+}
+    /* Existing styles unchanged */
+    
+    /* Color picker styles */
+    #color {
+      display: none; /* Hide original color input */
+    }
+    .color-picker-wrapper {
+      display: none; /* Hidden by default */
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .color-radio {
+      display: none; /* Hide actual radio input */
+    }
+    .color-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .color-radio:checked + .color-label {
+      border-color: #333;
+      transform: scale(1.1);
+    }
+    .color-label:hover {
+      transform: scale(1.1);
+      border-color: #666;
+    }
