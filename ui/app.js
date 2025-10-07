@@ -35,6 +35,8 @@ const translations = {
     bluetooth_turn_on: "روشن کردن بلوتوث",
     bluetooth_turn_off: "خاموش کردن بلوتوث",
     bluetooth_unpair: "Unpair Bluetooth",
+    bluetooth_connected_label: "دستگاه متصل:",
+    bluetooth_not_connected: "هیچ دستگاهی متصل نیست",
     wifi_title: "وای‌فای",
     wifi_turn_on: "روشن کردن وای‌فای",
     wifi_turn_off: "خاموش کردن وای‌فای",
@@ -84,6 +86,8 @@ const translations = {
     bluetooth_turn_on: "Turn on Bluetooth",
     bluetooth_turn_off: "Turn off Bluetooth",
     bluetooth_unpair: "Unpair Bluetooth",
+    bluetooth_connected_label: "Connected device:",
+    bluetooth_not_connected: "No device connected",
     wifi_title: "Wi-Fi",
     wifi_turn_on: "Turn on Wi-Fi",
     wifi_turn_off: "Turn off Wi-Fi",
@@ -133,6 +137,8 @@ const translations = {
     bluetooth_turn_on: "Bluetooth'u aç",
     bluetooth_turn_off: "Bluetooth'u kapat",
     bluetooth_unpair: "Bluetooth eşlemesini kaldır",
+    bluetooth_connected_label: "Bağlı cihaz:",
+    bluetooth_not_connected: "Bağlı cihaz yok",
     wifi_title: "Wi-Fi",
     wifi_turn_on: "Wi-Fi'yi aç",
     wifi_turn_off: "Wi-Fi'yi kapat",
@@ -182,6 +188,8 @@ const translations = {
     bluetooth_turn_on: "تشغيل البلوتوث",
     bluetooth_turn_off: "إيقاف البلوتوث",
     bluetooth_unpair: "إلغاء اقتران البلوتوث",
+    bluetooth_connected_label: "الجهاز المتصل:",
+    bluetooth_not_connected: "لا يوجد جهاز متصل",
     wifi_title: "واي فاي",
     wifi_turn_on: "تشغيل الواي فاي",
     wifi_turn_off: "إيقاف الواي فاي",
@@ -252,6 +260,8 @@ const colorInput = document.getElementById("color");
 const brightnessInput = document.getElementById("brightness");
 const btBtn = document.getElementById("bt-toggle");
 const btStatus = document.getElementById("bt-status");
+const btDeviceContainer = document.getElementById("bt-device");
+const btDeviceName = document.getElementById("bt-device-name");
 const wifiBtn = document.getElementById("wifi-toggle");
 const wifiStatus = document.getElementById("wifi-status");
 const wifiScanBtn = document.getElementById("wifi-scan");
@@ -300,7 +310,8 @@ function renderPartyMode(st) {
 }
 
 function renderBluetooth(st) {
-  const on = !!st?.bluetooth?.on;
+  const bluetooth = st?.bluetooth || {};
+  const on = !!bluetooth.on;
   if (on) {
     btBtn.textContent = t("bluetooth_turn_off");
     btBtn.classList.add("on");
@@ -311,6 +322,21 @@ function renderBluetooth(st) {
     btBtn.classList.remove("on");
     btStatus.textContent = t("status_off");
     btStatus.classList.remove("on");
+  }
+
+  if (btDeviceContainer && btDeviceName) {
+    const connected = !!bluetooth.connected;
+    const name = bluetooth.device_name || bluetooth.device_address || "";
+    btDeviceContainer.style.display = "flex";
+    if (connected && name) {
+      btDeviceName.textContent = name;
+      btDeviceName.classList.add("on");
+      btDeviceName.removeAttribute("data-i18n");
+    } else {
+      btDeviceName.textContent = t("bluetooth_not_connected");
+      btDeviceName.setAttribute("data-i18n", "bluetooth_not_connected");
+      btDeviceName.classList.remove("on");
+    }
   }
 }
 

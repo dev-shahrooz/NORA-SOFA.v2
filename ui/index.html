@@ -253,6 +253,10 @@
         <button id="bt-toggle" class="btn" data-i18n="bluetooth_turn_off">Turn off Bluetooth</button>
         <span id="bt-status" class="badge" data-i18n="status_on">On</span>
       </div>
+      <div id="bt-device" class="bluetooth-connected">
+        <span class="label" data-i18n="bluetooth_connected_label">Connected device:</span>
+        <span id="bt-device-name" data-i18n="bluetooth_not_connected">No device connected</span>
+      </div>      
       <div class="unpair">
         <button id="unpair" class="btn" data-i18n="bluetooth_unpair">Unpair Bluetooth</button>
       </div>
@@ -678,6 +682,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bluetooth_turn_on: "روشن کردن بلوتوث",
       bluetooth_turn_off: "خاموش کردن بلوتوث",
       bluetooth_unpair: "لغو جفت‌سازی بلوتوث",
+      bluetooth_connected_label: "دستگاه متصل:",
+      bluetooth_not_connected: "هیچ دستگاهی متصل نیست",
       wifi_title: "وای‌فای",
       wifi_turn_on: "روشن کردن وای‌فای",
       wifi_turn_off: "خاموش کردن وای‌فای",
@@ -756,6 +762,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bluetooth_turn_on: "Turn on Bluetooth",
       bluetooth_turn_off: "Turn off Bluetooth",
       bluetooth_unpair: "Unpair Bluetooth",
+      bluetooth_connected_label: "Connected device:",
+      bluetooth_not_connected: "No device connected",
       wifi_title: "Wi-Fi",
       wifi_turn_on: "Turn on Wi-Fi",
       wifi_turn_off: "Turn off Wi-Fi",
@@ -834,6 +842,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bluetooth_turn_on: "Bluetooth'u aç",
       bluetooth_turn_off: "Bluetooth'u kapat",
       bluetooth_unpair: "Bluetooth eşlemesini kaldır",
+      bluetooth_connected_label: "Bağlı cihaz:",
+      bluetooth_not_connected: "Bağlı cihaz yok",
       wifi_title: "Wi-Fi",
       wifi_turn_on: "Wi-Fi'yi aç",
       wifi_turn_off: "Wi-Fi'yi kapat",
@@ -912,6 +922,8 @@ document.addEventListener('DOMContentLoaded', () => {
       bluetooth_turn_on: "تشغيل البلوتوث",
       bluetooth_turn_off: "إيقاف البلوتوث",
       bluetooth_unpair: "إلغاء اقتران البلوتوث",
+      bluetooth_connected_label: "الجهاز المتصل:",
+      bluetooth_not_connected: "لا يوجد جهاز متصل",
       wifi_title: "واي فاي",
       wifi_turn_on: "تشغيل الواي فاي",
       wifi_turn_off: "إيقاف الواي فاي",
@@ -1063,6 +1075,8 @@ document.querySelectorAll("#player-pause").forEach(btn => {
   const applyLightBtn = document.getElementById("apply-light");
   const btBtn = document.getElementById("bt-toggle");
   const btStatus = document.getElementById("bt-status");
+  const btDeviceContainer = document.getElementById("bt-device");
+  const btDeviceName = document.getElementById("bt-device-name");
   const wifiBtn = document.getElementById("wifi-toggle");
   const wifiStatus = document.getElementById("wifi-status");
   const muteBtn = document.getElementById("mute-toggle");
@@ -1145,6 +1159,20 @@ document.querySelectorAll("#player-pause").forEach(btn => {
       btBtn.classList.toggle("on", on);
       btStatus.textContent = t(on ? "status_on" : "status_off");
       btStatus.classList.toggle("on", on);
+    }
+    if (btDeviceContainer && btDeviceName) {
+      const connected = !!bluetooth.connected;
+      const name = bluetooth.device_name || bluetooth.device_address || "";
+      btDeviceContainer.style.display = "flex";
+      if (connected && name) {
+        btDeviceName.textContent = name;
+        btDeviceName.classList.add("on");
+        btDeviceName.removeAttribute("data-i18n");
+      } else {
+        btDeviceName.textContent = t("bluetooth_not_connected");
+        btDeviceName.setAttribute("data-i18n", "bluetooth_not_connected");
+        btDeviceName.classList.remove("on");
+      }
     }
     updateMusicPanelVisibility();
   }

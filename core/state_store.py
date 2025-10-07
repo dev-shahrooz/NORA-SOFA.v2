@@ -33,7 +33,12 @@ DEFAULT_STATE = {
     },
     "mode": "normal",
     "wifi": {"on": True, "connected": False, "ssid": "", "saved_networks": []},
-    "bluetooth": {"on": True},
+    "bluetooth": {
+        "on": True,
+        "connected": False,
+        "device_name": "",
+        "device_address": "",
+    },
     "audio": {"volume": 50, "muted": False},
     "player": {"status": "Unknown", "title": "", "artist": ""},
     "lang": "en",
@@ -67,7 +72,14 @@ class StateStore:
             s["lighting"].setdefault("back_light", {"on": False})
             s.setdefault("schema", SCHEMA_VERSION)
             s.setdefault("mode", "normal")
-            s.setdefault("bluetooth", {"on": True})
+            s.setdefault(
+                "bluetooth",
+                {"on": True, "connected": False, "device_name": "", "device_address": ""},
+            )
+            s["bluetooth"].setdefault("on", True)
+            s["bluetooth"].setdefault("connected", False)
+            s["bluetooth"].setdefault("device_name", "")
+            s["bluetooth"].setdefault("device_address", "")
             s.setdefault("wifi", {})
             s["wifi"].setdefault("on", True)
             s["wifi"].setdefault("connected", False)
