@@ -43,18 +43,6 @@ class ModeUsecase:
             self.esp.send_command("NORA_sound_ON")
             time.sleep(0.05)
             saved = self._saved_state or DEFAULT_STATE
-            time.sleep(0.05)
-            under = saved.get("lighting", {}).get("under_sofa", {})
-            time.sleep(0.05)
-            patch = self._merge(
-                patch,
-                self.lighting.set_zone(
-                    "under_sofa",
-                    under.get("mode", "off"),
-                    under.get("color", "#ffffff"),
-                    under.get("brightness", "mid"),
-                ),
-            )
             # Reading/back lights intentionally remain untouched so they keep their
             # most recent state across mode switches.
             time.sleep(0.05)
@@ -68,12 +56,6 @@ class ModeUsecase:
             self.esp.send_command("NORA_sound_BOOST")
             time.sleep(0.05)
             self._saved_state = current
-            time.sleep(0.05)
-            patch = self._merge(
-                patch,
-                self.lighting.set_zone("under_sofa", "rainbow", "#ff00ff", "high"),
-            )
-            # Leave reading/back lights as-is during party mode activation as well.
             time.sleep(0.05)
             patch = self._merge(patch, {"mode": "party"})
 
