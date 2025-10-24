@@ -18,9 +18,9 @@ try:
         send_backlight,
         send_open_box,
         send_close_box,
-        send_equalizer1,
-        send_equalizer2,
-        send_equalizer3,
+        # send_equalizer1,
+        # send_equalizer2,
+        # send_equalizer3,
         send_equalizer_off,
         # send_custom_rgb,  # اگر در پروژه‌ات داری
     )
@@ -58,10 +58,10 @@ COMMANDS: Dict[str, Callable[[], None]] = {
     "normal mode": lambda: send_close_box(),
 
     # Equalizer modes
-    "equalizer one":              send_equalizer1,
-    "equalizer two":              send_equalizer2,
-    "equalizer three":            send_equalizer3,
-    "equalizer off":              send_equalizer_off,
+    # "equalizer one":              send_equalizer1,
+    # "equalizer two":              send_equalizer2,
+    # "equalizer three":            send_equalizer3,
+    # "equalizer off":              send_equalizer_off,
 }
 
 
