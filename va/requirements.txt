@@ -2,3 +2,5 @@ sounddevice
 python-socketio
 typing
 vosk
+python-socketio[client]
+websocket-client
