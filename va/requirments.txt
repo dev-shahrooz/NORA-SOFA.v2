@@ -1,0 +1,4 @@
+sounddevice
+python-socketio
+typing
+vosk
