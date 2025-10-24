@@ -26,6 +26,7 @@ from services.player_service import PlayerService
 from services.wifi_service import WiFiService
 from drivers.esp32_link import ESP32Link
 
+
 def find_esp32_port():
     ports = serial.tools.list_ports.comports()
     for port in ports:
@@ -34,11 +35,13 @@ def find_esp32_port():
         if port.vid is not None and port.pid is not None:
             if (port.vid == 0x10C4 and port.pid == 0xEA60) or \
                (port.vid == 0x1A86 and port.pid == 0x7523) or \
-               (port.vid == 0x0403 and port.pid == 0x6001): 
+               (port.vid == 0x0403 and port.pid == 0x6001):
                 return port.device
     return os.environ.get("ESP_PORT", "/dev/ttyACM0")
 
 # نخ برای خالی کردن بافر سریال
+
+
 def serial_reader(esp):
     while True:
         try:
@@ -50,6 +53,7 @@ def serial_reader(esp):
             print(f"Serial read error: {e}")
             time.sleep(1)
 
+
 # مقداردهی اولیه ESP32Link
 try:
     port = find_esp32_port()
@@ -57,18 +61,19 @@ try:
     esp = ESP32Link(port=port, baud=115200, timeout=0.5)
     print(f"Successfully connected to ESP32 on {port}")
     # شروع نخ خواندن
-    reader_thread = threading.Thread(target=serial_reader, args=(esp,), daemon=True)
+    reader_thread = threading.Thread(
+        target=serial_reader, args=(esp,), daemon=True)
     reader_thread.start()
 except Exception as e:
     print(f"Error connecting to ESP32: {e}")
     esp = None
 
 
-DB_PATH = os.environ.get("NORA_DB","/home/nora/apps/NORA-SOFA.v2/data/nora.db")
+DB_PATH = os.environ.get(
+    "NORA_DB", "/home/nora/apps/NORA-SOFA.v2/data/nora.db")
 
 app = Flask(__name__, static_folder="ui", static_url_path="/ui")
 sio = SocketIO(app, cors_allowed_origins="*")
-
 
 
 state = StateStore(DB_PATH)
@@ -90,7 +95,9 @@ mode_uc = ModeUsecase(
     esp,
 )
 clock_uc = ClockUsecase(esp)
-router = ActionRouter(state, lighting, reading_light_uc, back_light_uc, mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc, clock_uc)
+router = ActionRouter(state, lighting, reading_light_uc, back_light_uc,
+                      mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc, clock_uc)
+
 
 def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
     """Apply persisted state to physical hardware without mutating DB."""
@@ -141,13 +148,15 @@ def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
     except Exception:
         pass
 
+
 def sync_hardware_from_state() -> None:
     """Load last state from DB and broadcast it."""
     current = state.get_state()
     _apply_state_to_hardware(current)
     try:
         patch = player_uc.info()
-        current = state.apply_patch(patch, source="system", action="player.info", payload={})
+        current = state.apply_patch(
+            patch, source="system", action="player.info", payload={})
         sio.emit("sv.update", current)
     except Exception:
         pass
@@ -160,18 +169,32 @@ sync_hardware_from_state()
 def index():
     return send_from_directory("ui", "index.html")
 
+
 @sio.on("ui.query")
 def on_query(data):
     patch = player_uc.info()
-    st = state.apply_patch(patch, source="ui", action="player.info", payload={})
+    st = state.apply_patch(
+        patch, source="ui", action="player.info", payload={})
     emit("sv.update", st)
-    
+
+
 @sio.on("ui.intent")
 def on_intent(data):
-    action = data.get("type","?")
-    payload = data.get("payload",{})
-    new_state = router.handle(source="lcd", action=action, payload=payload, corr_id=data.get("corr_id",""))
+    action = data.get("type", "?")
+    payload = data.get("payload", {})
+    new_state = router.handle(
+        source="lcd", action=action, payload=payload, corr_id=data.get("corr_id", ""))
     emit("sv.update", new_state, broadcast=True)
+
+
+@sio.on("va.intent")
+def on_va_intent(data):
+    action = data.get("type", "?")
+    payload = data.get("payload", {})
+    new_state = router.handle(
+        source="va", action=action, payload=payload, corr_id=data.get("corr_id", ""))
+    emit("sv.update", new_state, broadcast=True)
+
 
 if __name__ == "__main__":
     sio.run(app, host="0.0.0.0", port=8080)
