@@ -1,4 +1,9 @@
-import os, sys, json, time, signal, traceback
+import os
+import sys
+import json
+import time
+import signal
+import traceback
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
 import socketio
@@ -24,6 +29,7 @@ except Exception as e:
     print("[FATAL] Cannot import command_parser:", e)
     sys.exit(1)
 
+
 def _as_bytes(chunk):
     """Ensure bytes for Vosk (fix cffi buffer issue)."""
     # اگر قبلاً bytes/bytearray هست، همونو بده؛ وگرنه تبدیل کن
@@ -34,6 +40,7 @@ def _as_bytes(chunk):
         return memoryview(chunk).tobytes()
     except Exception:
         return bytes(chunk)
+
 
 def build_wake_recognizer(model: Model) -> KaldiRecognizer:
     grammar = json.dumps([WAKE_WORD])
@@ -46,6 +53,7 @@ def build_wake_recognizer(model: Model) -> KaldiRecognizer:
     print("[ASR] Wake grammar active:", grammar)
     return rec
 
+
 def build_command_recognizer(model: Model) -> KaldiRecognizer:
     phrases = list(COMMANDS.keys())
     grammar = json.dumps(phrases)
@@ -57,6 +65,7 @@ def build_command_recognizer(model: Model) -> KaldiRecognizer:
         pass
     print("[ASR] Strict grammar active:", grammar)
     return rec
+
 
 def listen_command_exact(rec: KaldiRecognizer, stream_read, timeout_sec=COMMAND_TIMEOUT_SEC, silence_ms=FINAL_SILENCE_MS) -> str:
     start = time.time()
@@ -108,6 +117,7 @@ def listen_command_exact(rec: KaldiRecognizer, stream_read, timeout_sec=COMMAND_
     final = json.loads(rec.FinalResult()).get("text", "").strip()
     return final or best_text
 
+
 def main():
     if not os.path.isdir(MODEL_PATH):
         print(f"[FATAL] Model not found at: {MODEL_PATH}")
@@ -127,7 +137,8 @@ def main():
     def _sigint_handler(sig, frame):
         print("\n[EXIT] Interrupted.")
         try:
-            stream.stop(); stream.close()
+            stream.stop()
+            stream.close()
         except Exception:
             pass
         sys.exit(0)
@@ -149,30 +160,30 @@ def main():
 
                 if txt == WAKE_WORD:
                     print(f"🔔 Wake word detected: {WAKE_WORD}")
-                    va_light_var = 1
-                    _emit('magic_light_sock', { "magic_light_state": va_light_var })
+                    # va_light_var = 1
+                    # _emit('magic_light_sock', {
+                    #       "magic_light_state": va_light_var})
                     rec_cmd = build_command_recognizer(model)
                     cmd_text = listen_command_exact(
                         rec_cmd, stream.read,
                         timeout_sec=COMMAND_TIMEOUT_SEC,
                         silence_ms=FINAL_SILENCE_MS,
                     )
-                    print("📥 Full command (strict):", cmd_text if cmd_text else "<empty>")
+                    print("📥 Full command (strict):",
+                          cmd_text if cmd_text else "<empty>")
 
                     matched = handle_command(cmd_text)
                     if matched:
                         print("✅ exact command executed")
-                        va_light_var = 0
-                        _emit('magic_light_sock', { "magic_light_state": va_light_var })                        
+                        # va_light_var = 0
+                        # _emit('magic_light_sock', { "magic_light_state": va_light_var })
                     else:
                         print("❌ not an exact command (ignored)")
-                        
-                        
 
                     # بازگشت به حالت ویک‌ورد با یک ریکاگنایزر تازه
                     wake_rec = build_wake_recognizer(model)
-                    va_light_var = 0
-                    _emit('magic_light_sock', { "magic_light_state": va_light_var })
+                    # va_light_var = 0
+                    # _emit('magic_light_sock', { "magic_light_state": va_light_var })
 
         except KeyboardInterrupt:
             _sigint_handler(None, None)
@@ -180,6 +191,7 @@ def main():
             print("[ERROR] Main loop exception:", e)
             traceback.print_exc()
             time.sleep(0.2)
+
 
 if __name__ == "__main__":
     main()
