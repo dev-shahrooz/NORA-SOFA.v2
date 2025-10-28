@@ -197,7 +197,7 @@ def on_intent(data):
         return
 
     new_state = router.handle(
-source="lcd", action=action, payload=payload, corr_id=corr_id)
+        source="lcd", action=action, payload=payload, corr_id=corr_id)
 
     if action == "voice_assistant.set_wake_word":
         sio.emit("va.control", {
@@ -206,6 +206,7 @@ source="lcd", action=action, payload=payload, corr_id=corr_id)
             "source": "ui",
             "corr_id": corr_id,
         }, broadcast=True)
+        
     emit("sv.update", new_state, broadcast=True)
 
 

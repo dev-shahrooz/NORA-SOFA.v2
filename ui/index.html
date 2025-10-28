@@ -730,6 +730,9 @@ document.addEventListener('DOMContentLoaded', () => {
       settings_title: "تنظیمات",
       streaming_title: "استریمینگ",
       voice_assistant_title: "دستیار صوتی",
+      voice_assistant_enable_wake: "فعال کردن کلمه بیدارباش",
+      voice_assistant_disable_wake: "غیرفعال کردن کلمه بیدارباش",
+      voice_assistant_start_listening: "شروع شنیدن از طریق رابط کاربری",
       streaming_placeholder: "محتوای placeholder برای برنامه‌های استریمینگ. این بخش می‌تواند برای افزودن برنامه‌های استریمینگ مانند یوتیوب یا نتفلیکس گسترش یابد.",
       voice_assistant_placeholder: "محتوای placeholder برای دستیار صوتی. این بخش می‌تواند برای افزودن قابلیت‌های دستیار صوتی گسترش یابد.",
       language_title: "زبان",
@@ -808,6 +811,9 @@ document.addEventListener('DOMContentLoaded', () => {
       settings_title: "Settings",
       streaming_title: "Streaming",
       voice_assistant_title: "Voice Assistant",
+      voice_assistant_enable_wake: "Enable wake word",
+      voice_assistant_disable_wake: "Disable wake word",
+      voice_assistant_start_listening: "Start listening now",
       streaming_placeholder: "Placeholder content for streaming apps. This section can be expanded to include streaming apps like YouTube or Netflix.",
       voice_assistant_placeholder: "Placeholder content for voice assistant. This section can be expanded to include voice assistant features.",
       language_title: "Language",
@@ -886,6 +892,9 @@ document.addEventListener('DOMContentLoaded', () => {
       settings_title: "Ayarlar",
       streaming_title: "Yayın",
       voice_assistant_title: "Ses Asistanı",
+      voice_assistant_enable_wake: "Uyandırma kelimesini aç",
+      voice_assistant_disable_wake: "Uyandırma kelimesini kapat",
+      voice_assistant_start_listening: "Dinlemeyi başlat",
       streaming_placeholder: "Yayın uygulamaları için placeholder içerik. Bu bölüm, YouTube veya Netflix gibi yayın uygulamalarını içerecek şekilde genişletilebilir.",
       voice_assistant_placeholder: "Ses asistanı için placeholder içerik. Bu bölüm, ses asistanı özelliklerini içerecek şekilde genişletilebilir.",
       language_title: "Dil",
@@ -964,6 +973,9 @@ document.addEventListener('DOMContentLoaded', () => {
       settings_title: "الإعدادات",
       streaming_title: "البث",
       voice_assistant_title: "المساعد الصوتي",
+      voice_assistant_enable_wake: "تفعيل كلمة الإيقاظ",
+      voice_assistant_disable_wake: "تعطيل كلمة الإيقاظ",
+      voice_assistant_start_listening: "بدء الاستماع الآن",
       streaming_placeholder: "محتوى بديل لتطبيقات البث. يمكن توسيع هذا القسم ليشمل تطبيقات البث مثل يوتيوب أو نتفليكس.",
       voice_assistant_placeholder: "محتوى بديل للمساعد الصوتي. يمكن توسيع هذا القسم ليشمل ميزات المساعد الصوتي.",
       language_title: "اللغة",
@@ -1065,6 +1077,9 @@ document.querySelectorAll("#player-pause").forEach(btn => {
   const backBtn = document.getElementById("back-toggle");
   const backStatus = document.getElementById("back-status");
   const partyBtn = document.getElementById("party-toggle");
+  const vaWakeToggle = document.getElementById("va-wake-toggle");
+  const vaWakeStatus = document.getElementById("va-wake-status");
+  const vaListenBtn = document.getElementById("va-listen");
   const zoneSelect = document.getElementById("zone");
   const modeSelect = document.getElementById("mode");
   const colorInput = document.getElementById("color");
@@ -1143,6 +1158,41 @@ document.querySelectorAll("#player-pause").forEach(btn => {
       partyBtn.textContent = t(active ? "soundbar_turn_off" : "soundbar_turn_on");
       partyBtn.classList.toggle("on", active);
     }
+  }
+
+  function renderVoiceAssistant(st) {
+    const voice = st?.voice_assistant || {};
+    const wakeEnabled = voice.wake_word_enabled !== false;
+    setFeatureUI('voice', wakeEnabled);
+    if (vaWakeToggle) {
+      vaWakeToggle.textContent = t(wakeEnabled ? "voice_assistant_disable_wake" : "voice_assistant_enable_wake");
+    }
+    if (vaWakeStatus) {
+      vaWakeStatus.textContent = t(wakeEnabled ? "status_on" : "status_off");
+      vaWakeStatus.classList.toggle('on', wakeEnabled);
+    }
+    if (vaListenBtn) {
+      vaListenBtn.textContent = t("voice_assistant_start_listening");
+    }
+    lastState.voice_assistant = { ...voice, wake_word_enabled: wakeEnabled };
+  }
+
+  function isWakeWordEnabled(state = lastState) {
+    return (state?.voice_assistant?.wake_word_enabled ?? true) !== false;
+  }
+
+  function requestWakeWordState(enabled) {
+    const wakeEnabled = !!enabled;
+    if (isWakeWordEnabled() === wakeEnabled) {
+      renderVoiceAssistant(lastState);
+      return;
+    }
+    lastState.voice_assistant = {
+      ...(lastState.voice_assistant || {}),
+      wake_word_enabled: wakeEnabled,
+    };
+    renderVoiceAssistant(lastState);
+    send("voice_assistant.set_wake_word", { enabled: wakeEnabled });
   }
 
   function renderBluetooth(st) {
@@ -1285,6 +1335,7 @@ document.querySelectorAll("#player-pause").forEach(btn => {
     renderReadingLight(lastState);
     renderBackLight(lastState);
     renderPartyMode(lastState);
+    renderVoiceAssistant(lastState);
     renderBluetooth(lastState);
     renderWiFi(lastState, true);
     renderVolume(lastState);
@@ -1294,6 +1345,19 @@ document.querySelectorAll("#player-pause").forEach(btn => {
   }
 
   function setFeatureUI(feature, enabled) {
+    if (feature === 'voice') {
+      const wakeEnabled = !!enabled;
+      document.querySelectorAll('.feature-btn[data-feature="voice"]').forEach(el => {
+        el.classList.toggle('active', wakeEnabled);
+        el.title = t(wakeEnabled ? "voice_assistant_disable_wake" : "voice_assistant_enable_wake");
+      });
+      document.querySelectorAll('.list-item[data-feature="voice"] .status').forEach(statusEl => {
+        statusEl.textContent = t(wakeEnabled ? "status_on" : "status_off");
+        statusEl.classList.toggle('on', wakeEnabled);
+      });
+      return;
+    }
+
     // Update feature buttons in swiper
     document.querySelectorAll(`.feature-btn[data-feature="${feature}"]`).forEach(el => {
       el.classList.toggle('active', enabled);
@@ -1375,6 +1439,11 @@ document.querySelectorAll("#player-pause").forEach(btn => {
       e.stopPropagation();
       const feature = btn.dataset.feature;
       if (feature === 'soundbar' && soundbarLoading) return; // Prevent clicks during loading
+      if (feature === 'voice') {
+        const nextState = !isWakeWordEnabled();
+        requestWakeWordState(nextState);
+        return;
+      }
       const currentState = lastState[feature]?.on || lastState?.lighting?.[`${feature}_light`]?.on || lastState?.soundbar?.open || false;
       const nextState = !currentState;
       lastState[feature] = { on: nextState };
@@ -1392,7 +1461,7 @@ document.querySelectorAll("#player-pause").forEach(btn => {
           send("reading_light.set", { on: nextState });
         } else if (feature === 'backlight') {
           send("back_light.set", { on: nextState });
-        } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
+        } else if (['bluetooth', 'wifi'].includes(feature)) {
           send(`${feature}.set`, { on: nextState });
         }
       }
@@ -1406,6 +1475,11 @@ document.querySelectorAll("#player-pause").forEach(btn => {
       }
       const feature = item.dataset.feature;
       if (feature === 'soundbar' && soundbarLoading) return; // Prevent clicks during loading
+      if (feature === 'voice') {
+        const nextState = !isWakeWordEnabled();
+        requestWakeWordState(nextState);
+        return;
+      }
       const currentState = lastState[feature]?.on || lastState?.lighting?.[`${feature}_light`]?.on || lastState?.soundbar?.open || false;
       const nextState = !currentState;
       lastState[feature] = { on: nextState };
@@ -1423,7 +1497,7 @@ document.querySelectorAll("#player-pause").forEach(btn => {
           send("reading_light.set", { on: nextState });
         } else if (feature === 'backlight') {
           send("back_light.set", { on: nextState });
-        } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
+        } else if (['bluetooth', 'wifi'].includes(feature)) {
           send(`${feature}.set`, { on: nextState });
         }
       }
@@ -1441,11 +1515,31 @@ document.querySelectorAll("#player-pause").forEach(btn => {
         send("reading_light.set", { on: nextState });
       } else if (feature === 'backlight') {
         send("back_light.set", { on: nextState });
-      } else if (['bluetooth', 'wifi', 'voice'].includes(feature)) {
+      } else if (['bluetooth', 'wifi'].includes(feature)) {
         send(`${feature}.set`, { on: nextState });
       }
     });
   });
+
+  if (vaWakeToggle) {
+    vaWakeToggle.addEventListener('click', () => {
+      vaWakeToggle.disabled = true;
+      requestWakeWordState(!isWakeWordEnabled());
+      setTimeout(() => {
+        vaWakeToggle.disabled = false;
+      }, 800);
+    });
+  }
+
+  if (vaListenBtn) {
+    vaListenBtn.addEventListener('click', () => {
+      vaListenBtn.disabled = true;
+      send("voice_assistant.listen_once");
+      setTimeout(() => {
+        vaListenBtn.disabled = false;
+      }, 2000);
+    });
+  }
 
   if (readingBtn) {
     readingBtn.onclick = () => {
@@ -1712,6 +1806,7 @@ toggleButtons.forEach(btn => {
     renderReadingLight(st);
     renderBackLight(st);
     renderPartyMode(st);
+    renderVoiceAssistant(st);
     renderBluetooth(st);
     renderWiFi(st);
     renderWiFi(st, true);
