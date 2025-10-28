@@ -7,7 +7,7 @@ import threading
 import traceback
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
-# import socketio
+import socketio
 from websocket_client import (
     add_control_listener,
     add_state_listener,
