@@ -31,7 +31,7 @@ from drivers.esp32_link import ESP32Link
 def find_esp32_port():
     ports = serial.tools.list_ports.comports()
     for port in ports:
-        if any(keyword in port.description.lower() for keyword in ["ch340", "ch341", "cp2102", "ft232", "esp32", "silicon labs"]):
+        if any(keyword in port.description.lower() for keyword in ["ch340", "ch341", "cp2102", "ft232", "esp32", "silicon labs","Espressif"]):
             return port.device
         if port.vid is not None and port.pid is not None:
             if (port.vid == 0x10C4 and port.pid == 0xEA60) or \
