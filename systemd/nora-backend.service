@@ -1,19 +1,22 @@
 [Unit]
 Description=Nora Backend (Flask-SocketIO)
 Wants=network-online.target
-After=network-online.target
+After=NetworkManager.service network-online.target dbus.service
 
 [Service]
 User=nora
 WorkingDirectory=/home/nora/apps/NORA-SOFA.v2
-Environment=VIRTUAL_ENV=/home/nora/apps/NORA-SOFA.v2/.venv
-Environment=PATH=/home/nora/apps/NORA-SOFA.v2/.venv/bin:/usr/local/bin:/usr/bin
-Environment=PYTHONUNBUFFERED=1
-Environment=NORA_DB=/home/nora/apps/NORA-SOFA.v2/data/nora.db
+Environment="VIRTUAL_ENV=/home/nora/apps/NORA-SOFA.v2/.venv"
+Environment="PATH=/home/nora/apps/NORA-SOFA.v2/.venv/bin:/usr/local/bin:/usr/bin"
+Environment=LANG=C
+Environment="PYTHONUNBUFFERED=1"
+Environment="NORA_DB=/home/nora/apps/NORA-SOFA.v2/data/nora.db"
+Environment="DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+Environment="DISPLAY=:0"
 ExecStart=/home/nora/apps/NORA-SOFA.v2/.venv/bin/python /home/nora/apps/NORA-SOFA.v2/app.py
 Restart=always
-RestartSec=2
-TimeoutStopSec=15
+RestartSec=10
+TimeoutStopSec=10
 SyslogIdentifier=nora-backend
 
 [Install]

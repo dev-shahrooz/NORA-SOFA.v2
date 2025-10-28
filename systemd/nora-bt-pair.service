@@ -5,7 +5,7 @@ After=graphical.target bluetooth.service
 
 [Service]
 Type=oneshot
-User=nora
+User=root
 Environment=DISPLAY=:0
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin
 ExecStart=/bin/bash -lc '/usr/local/bin/nora-bt-pair.sh'

@@ -1,10 +1,12 @@
 [Unit]
 Description=Nora Kiosk UI (Chromium)
-After=graphical.target nora-backend.service
+After=nora-backend display-manager.service
 Wants=nora-backend.service
+Before=plymouth-quit.service
 
 [Service]
 User=nora
+Group=nora
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/nora/.Xauthority
 Environment=XDG_RUNTIME_DIR=/run/user/1000
@@ -21,8 +23,9 @@ ExecStart=/usr/bin/chromium-browser \
   --enable-features=OverlayScrollbar \
   http://localhost:8080/
 Restart=always
-RestartSec=2
+RestartSec=10
 Environment=CHROME_LOG_FILE=/home/nora/chromium.log
+TimeoutStartSec=30
 
 [Install]
-WantedBy=graphical.target
+WantedBy=multi-user.target
