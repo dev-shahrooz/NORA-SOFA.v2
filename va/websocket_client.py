@@ -71,7 +71,7 @@ def send_reading_light(state: bool):
 
 
 def send_backlight(state: bool):
-    '''روشن/خاموش کردن نور پس‌زمینه'''
+    '''روشن/خاموش کردن نور پشت'''
     _emit("va.intent", {
         "type": "back_light.set",
         "payload": {"on": bool(state)},
@@ -97,33 +97,34 @@ def send_close_box():
     })
 
 
-def send_equalizer1():
-    _emit("va.intent", {
-        "type": "audio.equalizer",
-        "payload": {"preset": 1},
-        "corr_id": str(int(time.time() * 1000))
-    })
+# def send_equalizer1():
+#     _emit("va.intent", {
+#         "type": "audio.equalizer",
+#         "payload": {"preset": 1},
+#         "corr_id": str(int(time.time() * 1000))
+#     })
 
 
-def send_equalizer2():
-    _emit("va.intent", {
-        "type": "audio.equalizer",
-        "payload": {"preset": 2},
-        "corr_id": str(int(time.time() * 1000))
-    })
+# def send_equalizer2():
+#     _emit("va.intent", {
+#         "type": "audio.equalizer",
+#         "payload": {"preset": 2},
+#         "corr_id": str(int(time.time() * 1000))
+#     })
 
 
-def send_equalizer3():
-    _emit("va.intent", {
-        "type": "audio.equalizer",
-        "payload": {"preset": 3},
-        "corr_id": str(int(time.time() * 1000))
-    })
+# def send_equalizer3():
+#     _emit("va.intent", {
+#         "type": "audio.equalizer",
+#         "payload": {"preset": 3},
+#         "corr_id": str(int(time.time() * 1000))
+#     })
 
 
-def send_equalizer_off():
-    _emit("va.intent", {
-        "type": "audio.equalizer",
-        "payload": {"preset": "off"},
-        "corr_id": str(int(time.time() * 1000))
-    })
+# def send_equalizer_off():
+#     _emit("va.intent", {
+#         "type": "audio.equalizer",
+#         "payload": {"preset": "off"},
+#         "corr_id": str(int(time.time() * 1000))
+#     })
+س
