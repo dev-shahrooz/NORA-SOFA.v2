@@ -3,11 +3,17 @@ import sys
 import json
 import time
 import signal
+import threading
 import traceback
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
 import socketio
-from websocket_client import _emit
+from websocket_client import (
+    _emit,
+    add_control_listener,
+    add_state_listener,
+    request_state,
+)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
@@ -21,6 +27,39 @@ CHANNELS = 1
 WAKE_WORD = "nora"
 COMMAND_TIMEOUT_SEC = 5
 FINAL_SILENCE_MS = 1200
+
+wake_word_enabled = True
+_wake_lock = threading.Lock()
+_manual_listen_event = threading.Event()
+
+
+def _set_wake_word_enabled(enabled: bool) -> bool:
+    global wake_word_enabled
+    enabled = bool(enabled)
+    with _wake_lock:
+        if wake_word_enabled != enabled:
+            wake_word_enabled = enabled
+            status = "ENABLED" if enabled else "DISABLED"
+            print(f"[VA] Wake word {status} via remote control")
+        return wake_word_enabled
+
+
+def _on_state_update(state: dict):
+    try:
+        va_cfg = (state or {}).get("voice_assistant", {})
+        _set_wake_word_enabled(va_cfg.get("wake_word_enabled", True))
+    except Exception as exc:
+        print("[VA] Failed to parse state update:", exc)
+
+
+def _on_control_event(message: dict):
+    msg_type = (message or {}).get("type")
+    if msg_type == "listen_once":
+        print("[VA] Manual listen requested from UI")
+        _manual_listen_event.set()
+    elif msg_type == "wake_word" and "enabled" in message:
+        _set_wake_word_enabled(message.get("enabled", True))
+
 
 # ایمپورت پارسر
 try:
@@ -145,45 +184,60 @@ def main():
     signal.signal(signal.SIGINT, _sigint_handler)
 
     print("🎤 Say something... (say 'nora' to wake)")
+    add_state_listener(_on_state_update)
+    add_control_listener(_on_control_event)
+    request_state()
+
     wake_rec = build_wake_recognizer(model)
+    listening_now = False
+
+    def run_command_session(trigger_label: str = ""):
+        nonlocal wake_rec, listening_now
+        listening_now = True
+        try:
+            if trigger_label:
+                print(trigger_label)
+            rec_cmd = build_command_recognizer(model)
+            cmd_text = listen_command_exact(
+                rec_cmd,
+                stream.read,
+                timeout_sec=COMMAND_TIMEOUT_SEC,
+                silence_ms=FINAL_SILENCE_MS,
+            )
+            print("📥 Full command (strict):",
+                  cmd_text if cmd_text else "<empty>")
+
+            matched = handle_command(cmd_text)
+            if matched:
+                print("✅ exact command executed")
+            else:
+                print("❌ not an exact command (ignored)")
+        finally:
+            listening_now = False
+            wake_rec = build_wake_recognizer(model)
 
     while True:
         try:
+            if _manual_listen_event.is_set() and not listening_now:
+                _manual_listen_event.clear()
+                run_command_session("🎧 Listening (UI request)")
+                continue
+
             data, _ = stream.read(BLOCKSIZE)
             if not data:
                 continue
 
             buf = _as_bytes(data)                  # 👈 تبدیل قطعی به bytes
+            if not wake_word_enabled:
+                continue
+
             if wake_rec.AcceptWaveform(buf):
                 res = json.loads(wake_rec.Result())
                 txt = (res.get("text") or "").strip()
 
                 if txt == WAKE_WORD:
                     print(f"🔔 Wake word detected: {WAKE_WORD}")
-                    # va_light_var = 1
-                    # _emit('magic_light_sock', {
-                    #       "magic_light_state": va_light_var})
-                    rec_cmd = build_command_recognizer(model)
-                    cmd_text = listen_command_exact(
-                        rec_cmd, stream.read,
-                        timeout_sec=COMMAND_TIMEOUT_SEC,
-                        silence_ms=FINAL_SILENCE_MS,
-                    )
-                    print("📥 Full command (strict):",
-                          cmd_text if cmd_text else "<empty>")
-
-                    matched = handle_command(cmd_text)
-                    if matched:
-                        print("✅ exact command executed")
-                        # va_light_var = 0
-                        # _emit('magic_light_sock', { "magic_light_state": va_light_var })
-                    else:
-                        print("❌ not an exact command (ignored)")
-
-                    # بازگشت به حالت ویک‌ورد با یک ریکاگنایزر تازه
-                    wake_rec = build_wake_recognizer(model)
-                    # va_light_var = 0
-                    # _emit('magic_light_sock', { "magic_light_state": va_light_var })
+                    run_command_session()
 
         except KeyboardInterrupt:
             _sigint_handler(None, None)

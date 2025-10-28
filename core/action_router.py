@@ -16,6 +16,7 @@ class ActionRouter:
         player_uc,
         wifi_uc,
         clock_uc,
+        voice_assistant_uc,
     ):        
         self.state_store = state_store
         self.lighting = lighting_uc
@@ -27,6 +28,7 @@ class ActionRouter:
         self.player = player_uc
         self.wifi = wifi_uc
         self.clock = clock_uc
+        self.voice_assistant = voice_assistant_uc
 
 
     def handle(self, source: str, action: str, payload: Dict, corr_id: str = "") -> Dict:
@@ -148,6 +150,11 @@ class ActionRouter:
                 )
             except ValueError:
                 patch = {}
+            
+        elif action == "voice_assistant.set_wake_word":
+            enabled = bool(payload.get("enabled", True))
+            patch = self.voice_assistant.set_wake_word_enabled(enabled)
+
         
         # --- Default ---
         else:

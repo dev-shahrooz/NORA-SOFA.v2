@@ -25,6 +25,10 @@ const translations = {
     mode_static: "رنگ ثابت",
     mode_equaalize: "اکولایزر",
     mode_wakeup: "شنیدار دستیار صوتی",
+    voice_assistant_title: "دستیار صوتی",
+    voice_assistant_enable_wake: "فعال کردن کلمه بیدارباش",
+    voice_assistant_disable_wake: "غیرفعال کردن کلمه بیدارباش",
+    voice_assistant_start_listening: "شروع شنیدن از طریق رابط کاربری",
     color_label: "رنگ:",
     brightness_label: "روشنایی:",
     brightness_low: "نور کم",
@@ -74,6 +78,10 @@ const translations = {
     mode_static: "Static color",
     mode_equaalize: "Equalizer",
     mode_wakeup: "Voice assistant listening",
+    voice_assistant_title: "Voice Assistant",
+    voice_assistant_enable_wake: "Enable wake word",
+    voice_assistant_disable_wake: "Disable wake word",
+    voice_assistant_start_listening: "Start listening now",
     color_label: "Color:",
     brightness_label: "Brightness:",
     brightness_low: "Low",
@@ -123,6 +131,10 @@ const translations = {
     mode_static: "Sabit renk",
     mode_equaalize: "Ekolayzır",
     mode_wakeup: "Sesli asistan dinleme",
+    voice_assistant_title: "Sesli Asistan",
+    voice_assistant_enable_wake: "Uyandırma kelimesini aç",
+    voice_assistant_disable_wake: "Uyandırma kelimesini kapat",
+    voice_assistant_start_listening: "Dinlemeyi başlat",
     color_label: "Renk:",
     brightness_label: "Parlaklık:",
     brightness_low: "Düşük",
@@ -172,6 +184,10 @@ const translations = {
     mode_static: "لون ثابت",
     mode_equaalize: "موازن",
     mode_wakeup: "وضع الاستماع للمساعد الصوتي",
+    voice_assistant_title: "المساعد الصوتي",
+    voice_assistant_enable_wake: "تفعيل كلمة الإيقاظ",
+    voice_assistant_disable_wake: "تعطيل كلمة الإيقاظ",
+    voice_assistant_start_listening: "بدء الاستماع الآن",
     color_label: "لون:",
     brightness_label: "السطوع:",
     brightness_low: "منخفض",
@@ -227,6 +243,7 @@ function applyTranslations() {
   renderBackLight(lastState);
   renderPartyMode(lastState);
   renderLightingInputs(lastState);
+  renderVoiceAssistant(lastState);
   renderBluetooth(lastState);
   renderWiFi(lastState);
   renderVolume(lastState);
@@ -273,6 +290,9 @@ const nextBtn = document.getElementById("player-next");
 const prevBtn = document.getElementById("player-prev");
 const trackTitle = document.getElementById("track-title");
 const trackArtist = document.getElementById("track-artist");
+const vaWakeBtn = document.getElementById("va-wake-toggle");
+const vaWakeStatus = document.getElementById("va-wake-status");
+const vaListenBtn = document.getElementById("va-listen");
 
 // ---- Rendering Functions ----
 function renderReadingLight(st) {
@@ -451,6 +471,24 @@ function renderPlayer(st) {
   trackArtist.textContent = p.artist || "";
 }
 
+function renderVoiceAssistant(st) {
+  if (!vaWakeBtn || !vaWakeStatus || !vaListenBtn) return;
+  const va = st?.voice_assistant || {};
+  const wakeEnabled = va.wake_word_enabled !== false;
+
+  if (wakeEnabled) {
+    vaWakeBtn.textContent = t("voice_assistant_disable_wake");
+    vaWakeStatus.textContent = t("status_on");
+    vaWakeStatus.classList.add("on");
+  } else {
+    vaWakeBtn.textContent = t("voice_assistant_enable_wake");
+    vaWakeStatus.textContent = t("status_off");
+    vaWakeStatus.classList.remove("on");
+  }
+
+  vaListenBtn.textContent = t("voice_assistant_start_listening");
+}
+
 function renderBackLight(st) {
   const on = !!st?.lighting?.back_light?.on;
   if (on) {
@@ -617,6 +655,20 @@ pauseBtn.onclick = () => send("player.pause");
 nextBtn.onclick = () => send("player.next");
 prevBtn.onclick = () => send("player.previous");
 
+if (vaWakeBtn) {
+  vaWakeBtn.onclick = () => {
+    const va = lastState?.voice_assistant || {};
+    const wakeEnabled = va.wake_word_enabled !== false;
+    send("voice_assistant.set_wake_word", { enabled: !wakeEnabled });
+  };
+}
+
+if (vaListenBtn) {
+  vaListenBtn.onclick = () => {
+    send("voice_assistant.listen_once");
+  };
+}
+
 backBtn.onclick = () => {
   const next = !backStatus.classList.contains("on");
   send("back_light.set", { on: next });
@@ -643,6 +695,7 @@ sio.on("sv.update", (st) => {
   renderBackLight(st);
   renderPartyMode(st);
   renderLightingInputs(st);
+  renderVoiceAssistant(st);
   renderBluetooth(st);
   renderWiFi(st);
   renderVolume(st);
@@ -661,7 +714,7 @@ document.getElementById("apply-light").onclick = () => {
   if (brightnessInput) {
     brightnessInput.value = String(brightness);
   }
-  console.log(brightness)
+  console.log(brightness);
   send("lighting.set", { zone, mode, color, brightness });
 };
 

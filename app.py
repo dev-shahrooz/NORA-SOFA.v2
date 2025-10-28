@@ -19,6 +19,7 @@ from core.usecases.bluetooth import BluetoothUsecase
 from core.usecases.audio import AudioUsecase
 from core.usecases.player import PlayerUsecase
 from core.usecases.clock import ClockUsecase
+from core.usecases.voice_assistant import VoiceAssistantUsecase
 from core.usecases.wifi import WiFiUsecase
 from services.bluetooth_service import BluetoothService
 from services.audio_service import AudioService
@@ -95,8 +96,10 @@ mode_uc = ModeUsecase(
     esp,
 )
 clock_uc = ClockUsecase(esp)
+voice_assistant_uc = VoiceAssistantUsecase()
 router = ActionRouter(state, lighting, reading_light_uc, back_light_uc,
-                      mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc, clock_uc)
+                      mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc, clock_uc,
+                      voice_assistant_uc)
 
 
 def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
@@ -182,8 +185,27 @@ def on_query(data):
 def on_intent(data):
     action = data.get("type", "?")
     payload = data.get("payload", {})
+    corr_id = data.get("corr_id", "")
+
+    if action == "voice_assistant.listen_once":
+        sio.emit("va.control", {
+            "type": "listen_once",
+            "source": "ui",
+            "corr_id": corr_id,
+        }, broadcast=True)
+        emit("sv.update", state.get_state(), broadcast=True)
+        return
+
     new_state = router.handle(
-        source="lcd", action=action, payload=payload, corr_id=data.get("corr_id", ""))
+source="lcd", action=action, payload=payload, corr_id=corr_id)
+
+    if action == "voice_assistant.set_wake_word":
+        sio.emit("va.control", {
+            "type": "wake_word",
+            "enabled": bool(payload.get("enabled", True)),
+            "source": "ui",
+            "corr_id": corr_id,
+        }, broadcast=True)
     emit("sv.update", new_state, broadcast=True)
 
 
