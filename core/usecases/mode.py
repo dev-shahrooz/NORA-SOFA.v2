@@ -8,16 +8,14 @@ from core.state_store import DEFAULT_STATE
 class ModeUsecase:
     """Toggle between normal and party modes using ESP32 for hardware control."""
 
-
     def __init__(self, state_store, lighting_uc, esp_link):
-
         self.state_store = state_store
         self.lighting = lighting_uc
         self.esp = esp_link
         self._saved_state: Dict[str, Any] | None = None
         self._motor_busy_until: float = 0.0
         self._motor_block_duration: float = 8.5
-        
+
     def _merge(self, base: Dict, update: Dict) -> Dict:
         for k, v in update.items():
             if isinstance(v, dict) and isinstance(base.get(k), dict):
@@ -26,7 +24,7 @@ class ModeUsecase:
                 base[k] = v
         return base
 
-    def toggle(self) -> Dict:
+    def _transition(self, to_party: bool) -> Dict:
         now = time.monotonic()
         if now < self._motor_busy_until:
             return {}
@@ -36,7 +34,7 @@ class ModeUsecase:
         current = self.state_store.get_state()
         patch: Dict[str, Any] = {}
 
-        if current.get("mode") == "party":
+        if not to_party:
             # Return to normal mode
             self.esp.send_command("NORA_box_CLOSE")
             time.sleep(0.05)
@@ -60,3 +58,19 @@ class ModeUsecase:
             patch = self._merge(patch, {"mode": "party"})
 
         return patch
+
+    def toggle(self) -> Dict:
+        current_mode = self.state_store.get_state().get("mode")
+        to_party = current_mode != "party"
+        return self._transition(to_party)
+
+    def set(self, mode: Any) -> Dict:
+        desired = str(mode or "").strip().lower()
+        if desired not in {"party", "normal"}:
+            return {}
+
+        current_mode = self.state_store.get_state().get("mode")
+        if current_mode == desired:
+            return {}
+
+        return self._transition(to_party=(desired == "party"))
