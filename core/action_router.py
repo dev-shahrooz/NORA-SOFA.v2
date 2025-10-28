@@ -129,6 +129,9 @@ class ActionRouter:
         # --- Mode Toggle ---
         elif action == "mode.toggle":
             patch = self.mode.toggle()
+        # Mode Set
+        elif action == "mode.set":
+            patch = self.mode.set(payload.get("mode"))
 
         elif action == "ui.set_lang":
             lang = payload.get("lang", "en")

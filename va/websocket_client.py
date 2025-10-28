@@ -127,4 +127,3 @@ def send_close_box():
 #         "payload": {"preset": "off"},
 #         "corr_id": str(int(time.time() * 1000))
 #     })
-س
