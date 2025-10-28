@@ -188,16 +188,23 @@ def on_intent(data):
     corr_id = data.get("corr_id", "")
 
     if action == "voice_assistant.listen_once":
+        print(f"[API][ui.intent] voice_assistant.listen_once corr_id={corr_id}")
         sio.emit("va.control", {
             "type": "listen_once",
             "source": "ui",
             "corr_id": corr_id,
         }, broadcast=True)
+        print("[API][ui.intent] -> forwarded listen_once to voice assistant")
         emit("sv.update", state.get_state(), broadcast=True)
         return
+    
+    if action == "voice_assistant.set_wake_word":
+        print(
+            f"[API][ui.intent] voice_assistant.set_wake_word payload={payload} corr_id={corr_id}"
+        )
 
     new_state = router.handle(
-        source="lcd", action=action, payload=payload, corr_id=corr_id)
+        source="ui", action=action, payload=payload, corr_id=corr_id)
 
     if action == "voice_assistant.set_wake_word":
         sio.emit("va.control", {
@@ -206,6 +213,11 @@ def on_intent(data):
             "source": "ui",
             "corr_id": corr_id,
         }, broadcast=True)
+
+        print(
+            "[API][ui.intent] -> forwarded wake_word toggle to voice assistant",
+            payload,
+        )
         
     emit("sv.update", new_state, broadcast=True)
 

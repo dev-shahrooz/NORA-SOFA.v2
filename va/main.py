@@ -7,9 +7,8 @@ import threading
 import traceback
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
-import socketio
+# import socketio
 from websocket_client import (
-    _emit,
     add_control_listener,
     add_state_listener,
     request_state,
@@ -41,6 +40,9 @@ def _set_wake_word_enabled(enabled: bool) -> bool:
             wake_word_enabled = enabled
             status = "ENABLED" if enabled else "DISABLED"
             print(f"[VA] Wake word {status} via remote control")
+        else:
+            status = "ENABLED" if enabled else "DISABLED"
+            print(f"[VA] Wake word already {status}; no change")
         return wake_word_enabled
 
 
@@ -48,6 +50,12 @@ def _on_state_update(state: dict):
     try:
         va_cfg = (state or {}).get("voice_assistant", {})
         _set_wake_word_enabled(va_cfg.get("wake_word_enabled", True))
+        desired = va_cfg.get("wake_word_enabled", True)
+        print(
+            "[VA] State update -> voice_assistant.wake_word_enabled=",
+            desired,
+        )
+        _set_wake_word_enabled(desired)
     except Exception as exc:
         print("[VA] Failed to parse state update:", exc)
 
@@ -58,8 +66,9 @@ def _on_control_event(message: dict):
         print("[VA] Manual listen requested from UI")
         _manual_listen_event.set()
     elif msg_type == "wake_word" and "enabled" in message:
-        _set_wake_word_enabled(message.get("enabled", True))
-
+        desired = message.get("enabled", True)
+        print("[VA] Control -> wake_word", desired)
+        _set_wake_word_enabled(desired)
 
 # ایمپورت پارسر
 try:
@@ -215,11 +224,14 @@ def main():
         finally:
             listening_now = False
             wake_rec = build_wake_recognizer(model)
+            print("[VA] Command session finished")
+
 
     while True:
         try:
             if _manual_listen_event.is_set() and not listening_now:
                 _manual_listen_event.clear()
+                print("[VA] Starting manual listening session")
                 run_command_session("🎧 Listening (UI request)")
                 continue
 
@@ -229,6 +241,7 @@ def main():
 
             buf = _as_bytes(data)                  # 👈 تبدیل قطعی به bytes
             if not wake_word_enabled:
+                # Skip wake word recognition while disabled but keep stream alive
                 continue
 
             if wake_rec.AcceptWaveform(buf):

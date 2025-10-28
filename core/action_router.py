@@ -153,7 +153,11 @@ class ActionRouter:
             
         elif action == "voice_assistant.set_wake_word":
             enabled = bool(payload.get("enabled", True))
+            print(
+                f"[Router] voice_assistant.set_wake_word requested -> enabled={enabled}"
+            )
             patch = self.voice_assistant.set_wake_word_enabled(enabled)
+            print("[Router] patch", patch)
 
         
         # --- Default ---

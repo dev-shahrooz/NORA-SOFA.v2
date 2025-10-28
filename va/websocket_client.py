@@ -58,6 +58,7 @@ def _get_client() -> socketio.Client:
 
             @_sio.on("va.control")
             def _on_control(data):
+                print("[SOCKET] <- va.control", data)
                 for cb in list(_control_listeners):
                     try:
                         cb(data or {})
@@ -78,6 +79,8 @@ def _emit(event: str, data: dict):
     sio = _get_client()
     if sio and sio.connected:
         try:
+            if event in {"va.intent", "ui.intent"}:
+                print("[SOCKET] ->", event, data)
             sio.emit(event, data)
         except Exception as e:
             print(f"[SOCKET] emit('{event}') failed:", e)
