@@ -16,13 +16,8 @@ try:
     from websocket_client import (
         send_reading_light,
         send_backlight,
-        send_open_box,
-        send_close_box,
-        # send_equalizer1,
-        # send_equalizer2,
-        # send_equalizer3,
-        send_equalizer_off,
-        # send_custom_rgb,  # اگر در پروژه‌ات داری
+        send_party_mode,
+        send_normal_mode,
     )
 except Exception as e:
     # فالبک امن برای توسعه: برنامه نترکه اما روی سوکت واقعی هم چیزی نمی‌رود
@@ -31,11 +26,7 @@ except Exception as e:
     def send_reading_light(state: bool): _log("send_reading_light", state)
     def send_backlight(state: bool): _log("send_backlight", state)
     def send_box(state: bool): _log("send_box", state)
-    # def send_equalizer1(): _log("send_equalizer1")
-    # def send_equalizer2(): _log("send_equalizer2")
-    # def send_equalizer3(): _log("send_equalizer3")
     def send_equalizer_off(): _log("send_equalizer_off")
-    # def send_custom_rgb(r, g, b): _log("send_custom_rgb", r, g, b)
 
 
 def _norm(t: str) -> str:
@@ -54,8 +45,8 @@ COMMANDS: Dict[str, Callable[[], None]] = {
     "turn off the back light": lambda: send_backlight(False),
 
     # Box relays
-    "party mode": lambda: send_open_box(),
-    "normal mode": lambda: send_close_box(),
+    "party mode": lambda: send_party_mode(),
+    "normal mode": lambda: send_normal_mode(),
 
     # Equalizer modes
     # "equalizer one":              send_equalizer1,

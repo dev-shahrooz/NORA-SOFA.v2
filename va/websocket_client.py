@@ -79,7 +79,7 @@ def send_backlight(state: bool):
     })
 
 
-def send_open_box():
+def send_party_mode():
     '''حالت Party Mode'''
     _emit("va.intent", {
         "type": "mode.set",
@@ -88,7 +88,7 @@ def send_open_box():
     })
 
 
-def send_close_box():
+def send_normal_mode():
     '''بازگشت به حالت Normal Mode'''
     _emit("va.intent", {
         "type": "mode.set",
