@@ -38,7 +38,6 @@ DEFAULT_STATE = {
     "player": {"status": "Unknown", "title": "", "artist": ""},
     "lang": "en",
     "clock": {"time": "00:00:00"},
-    "voice_assistant": {"wake_word_enabled": True},
 }
 
 
@@ -52,17 +51,14 @@ class StateStore:
                 self._write_snapshot(con, DEFAULT_STATE)
 
     def _latest_snapshot(self, con) -> Optional[Dict[str, Any]]:
-        cur = con.execute(
-            "SELECT state_json FROM state_snapshots ORDER BY id DESC LIMIT 1"
-        )
+        cur = con.execute("SELECT state_json FROM state_snapshots ORDER BY id DESC LIMIT 1")
         row = cur.fetchone()
         return json.loads(row[0]) if row else None
 
     def _write_snapshot(self, con, state: Dict[str, Any]):
-        con.execute(
-            "INSERT INTO state_snapshots(version, state_json) VALUES (?,?)",
-            (state.get("schema", SCHEMA_VERSION), json.dumps(state)),
-        )
+        con.execute("INSERT INTO state_snapshots(version, state_json) VALUES (?,?)", (
+            state.get("schema", SCHEMA_VERSION), json.dumps(state)
+        ))
 
     def get_state(self) -> Dict[str, Any]:
         with self._lock, sqlite3.connect(self.db_path) as con:
@@ -94,14 +90,7 @@ class StateStore:
 
             return s
 
-    def apply_patch(
-        self,
-        patch: Dict[str, Any],
-        source: str,
-        action: str,
-        payload: Dict[str, Any],
-        corr_id: str = "",
-    ) -> Dict[str, Any]:
+    def apply_patch(self, patch: Dict[str, Any], source: str, action: str, payload: Dict[str, Any], corr_id: str = "") -> Dict[str, Any]:
         with self._lock, sqlite3.connect(self.db_path) as con:
             state = self._latest_snapshot(con) or DEFAULT_STATE.copy()
             # Merge shallow for this scaffold (می‌توان عمقی پیاده کرد)
@@ -111,8 +100,6 @@ class StateStore:
                 else:
                     state[k] = v
             self._write_snapshot(con, state)
-            con.execute(
-                "INSERT INTO event_log(source,action,payload,result,corr_id) VALUES (?,?,?,?,?)",
-                (source, action, json.dumps(payload), json.dumps(patch), corr_id),
-            )
+            con.execute("INSERT INTO event_log(source,action,payload,result,corr_id) VALUES (?,?,?,?,?)",
+                        (source, action, json.dumps(payload), json.dumps(patch), corr_id))
             return state
