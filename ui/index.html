@@ -473,10 +473,10 @@
           Melodify
           <span class="coming-soon">Coming Soon</span>
         </button>
-        <button class="app-btn chatgpt" data-app="chatgpt" disabled="disabled">
+        <button class="app-btn chatgpt" data-app="chatgpt">
           <i class="fa-solid fa-comment"></i>
           ChatGPT
-          <span class="coming-soon">Coming Soon</span>
+          <span class="coming-soon">Open New Tab</span>
         </button>
       </div>
       <div class="app-content" id="appContent"></div>
@@ -1959,23 +1959,23 @@ function showApp(app) {
       iframe = document.getElementById('melodifyIframe');
     } else if (app === 'chatgpt') {
       // Existing ChatGPT code remains unchanged
-      appContent.innerHTML = `
-        <div class="chat-container">
-          <div class="chat-messages" id="chatMessages"></div>
-          <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Type your message..." />
-            <button onclick="sendChatMessage()">Send</button>
-          </div>
-        </div>
-      `;
-      // Add event listener for ChatGPT input
-      const chatInput = document.getElementById('chatInput');
-      if (chatInput) {
-        chatInput.addEventListener('focus', () => {
-          currentInput = chatInput;
-          showKeyboard();
-        });
-      }
+      // appContent.innerHTML = `
+      //   <iframe
+      //     class="chatgpt-frame"
+      //     src="https://chat.openai.com/chat"
+      //     allow="clipboard-write; encrypted-media"
+      //     sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups allow-top-navigation-by-user-activation">
+      //   </iframe>
+      // `;
+      // // Add event listener for ChatGPT input
+      // const chatInput = document.getElementById('chatInput');
+      // if (chatInput) {
+      //   chatInput.addEventListener('focus', () => {
+      //     currentInput = chatInput;
+      //     showKeyboard();
+      //   });
+      // }
+      window.open("https://chatgpt.com/", "_blank");
     }
 
     if (iframe) {
