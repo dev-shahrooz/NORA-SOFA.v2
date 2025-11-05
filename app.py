@@ -7,6 +7,7 @@ from flask_socketio import SocketIO, emit
 import serial
 import time
 import threading
+from glob import glob
 
 from core.state_store import StateStore
 from core.event_bus import EventBus
@@ -27,17 +28,33 @@ from services.wifi_service import WiFiService
 from drivers.esp32_link import ESP32Link
 
 
+# def find_esp32_port():
+#     ports = serial.tools.list_ports.comports()
+#     for port in ports:
+#         if any(keyword in port.description.lower() for keyword in ["ch340", "ch341", "cp2102", "ft232", "esp32", "silicon labs","Espressif"]):
+#             return port.device
+#         if port.vid is not None and port.pid is not None:
+#             if (port.vid == 0x10C4 and port.pid == 0xEA60) or \
+#                (port.vid == 0x1A86 and port.pid == 0x7523) or \
+#                (port.vid == 0x0403 and port.pid == 0x6001):
+#                 return port.device
+#     return os.environ.get("ESP_PORT", "/dev/ttyACM0")
+
 def find_esp32_port():
-    ports = serial.tools.list_ports.comports()
-    for port in ports:
-        if any(keyword in port.description.lower() for keyword in ["ch340", "ch341", "cp2102", "ft232", "esp32", "silicon labs","Espressif"]):
-            return port.device
-        if port.vid is not None and port.pid is not None:
-            if (port.vid == 0x10C4 and port.pid == 0xEA60) or \
-               (port.vid == 0x1A86 and port.pid == 0x7523) or \
-               (port.vid == 0x0403 and port.pid == 0x6001):
-                return port.device
-    return os.environ.get("ESP_PORT", "/dev/ttyACM0")
+    # 1) مسیر پایدار by-id (ESP32 Espressif)
+    candidates = sorted(glob("/dev/serial/by-id/usb-Espressif_*_serial_debug_unit_*"))
+    if candidates:
+        return candidates[0]  # همان symlink پایدار
+
+    # 2) اگر خواستی udev symlink ثابت خودت مثل /dev/esp32
+    if os.path.exists("/dev/esp32"):
+        return "/dev/esp32"
+
+    # 3) در نهایت fallbackهایی مثل ttyACM0/ttyUSB0
+    for p in ("/dev/ttyACM0", "/dev/ttyUSB0"):
+        if os.path.exists(p):
+            return p
+    raise RuntimeError("ESP32 serial port not found")
 
 # نخ برای خالی کردن بافر سریال
 
