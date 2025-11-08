@@ -194,7 +194,7 @@
             <option value="off" data-i18n="mode_off">Off</option>
             <option value="rainbow" data-i18n="mode_rainbow">Rainbow</option>
             <option value="static" data-i18n="mode_static">Static color</option>
-            <option value="equaalize" data-i18n="mode_equaalize">Equalizer</option>
+            <option value="equalize" data-i18n="mode_equalize">Equalizer</option>
             <option value="wakeup" data-i18n="mode_wakeup">Voice assistant listening</option>
           </select>
         </label>
@@ -666,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mode_off: "خاموش",
       mode_rainbow: "رینبو",
       mode_static: "رنگ ثابت",
-      mode_equaalize: "اکولایزر",
+      mode_equalize: "اکولایزر",
       mode_wakeup: "شنیدار دستیار صوتی",
       color_label: "رنگ:",
       brightness_label: "روشنایی:",
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mode_off: "Off",
       mode_rainbow: "Rainbow",
       mode_static: "Static color",
-      mode_equaalize: "Equalizer",
+      mode_equalize: "Equalizer",
       mode_wakeup: "Voice assistant listening",
       color_label: "Color:",
       brightness_label: "Brightness:",
@@ -822,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mode_off: "Kapalı",
       mode_rainbow: "Gökkuşağı",
       mode_static: "Sabit renk",
-      mode_equaalize: "Ekolayzır",
+      mode_equalize: "Ekolayzır",
       mode_wakeup: "Sesli asistan dinleme",
       color_label: "Renk:",
       brightness_label: "Parlaklık:",
@@ -900,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mode_off: "إيقاف",
       mode_rainbow: "قوس قزح",
       mode_static: "لون ثابت",
-      mode_equaalize: "موازن",
+      mode_equalize: "موازن",
       mode_wakeup: "وضع الاستماع للمساعد الصوتي",
       color_label: "لون:",
       brightness_label: "السطوع:",
@@ -1077,7 +1077,7 @@ document.querySelectorAll("#player-pause").forEach(btn => {
     if (typeof mode !== "string") return "off";
     const value = mode.trim().toLowerCase();
     if (["off", "rainbow", "static"].includes(value)) return value;
-    if (["eq", "equalize", "equalizer", "equaalize"].includes(value)) return "equaalize";
+    if (["eq", "equalize", "equalizer", "equalize"].includes(value)) return "equalize";
     if (["wakeup", "wake", "voice", "voiceassistant", "voice_assistant"].includes(value)) return "wakeup";
     return "off";
   }
