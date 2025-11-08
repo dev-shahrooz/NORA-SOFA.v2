@@ -8,6 +8,8 @@ import serial
 import time
 import threading
 from glob import glob
+from drivers.esp32_link import ESP32Link
+
 
 from core.state_store import StateStore
 from core.event_bus import EventBus
@@ -25,7 +27,6 @@ from services.bluetooth_service import BluetoothService
 from services.audio_service import AudioService
 from services.player_service import PlayerService
 from services.wifi_service import WiFiService
-from drivers.esp32_link import ESP32Link
 
 
 # def find_esp32_port():
@@ -40,21 +41,36 @@ from drivers.esp32_link import ESP32Link
 #                 return port.device
 #     return os.environ.get("ESP_PORT", "/dev/ttyACM0")
 
-def find_esp32_port():
-    # 1) مسیر پایدار by-id (ESP32 Espressif)
-    candidates = sorted(glob("/dev/serial/by-id/usb-Espressif_*_serial_debug_unit_*"))
-    if candidates:
-        return candidates[0]  # همان symlink پایدار
 
-    # 2) اگر خواستی udev symlink ثابت خودت مثل /dev/esp32
+def find_esp32_port() -> str:
+    """
+    اول مسیرهای پایدار by-id برای Espressif را برمی‌گرداند؛
+    اگر نبود، /dev/esp32 و بعد tty* را تست می‌کند.
+    """
+    # 1) by-id (پایدار)
+    byid = sorted(glob("/dev/serial/by-id/usb-Espressif_*"))
+    if byid:
+        return byid[0]
+
+    # 2) udev symlink اختیاری
     if os.path.exists("/dev/esp32"):
         return "/dev/esp32"
 
-    # 3) در نهایت fallbackهایی مثل ttyACM0/ttyUSB0
+    # 3) fallback
     for p in ("/dev/ttyACM0", "/dev/ttyUSB0"):
         if os.path.exists(p):
             return p
+
     raise RuntimeError("ESP32 serial port not found")
+
+def resync_after_reconnect():
+    # اگر تابع sync_hardware_from_state داری، همین را صدا بزن:
+    try:
+        sync_hardware_from_state()   # ← اگر وجود دارد
+    except NameError:
+        print("[APP] TODO: sync_hardware_from_state() را پیاده‌سازی کن.")
+
+
 
 # نخ برای خالی کردن بافر سریال
 
@@ -72,19 +88,36 @@ def serial_reader(esp):
 
 
 # مقداردهی اولیه ESP32Link
+# try:
+#     port = find_esp32_port()
+#     print(f"Connecting to ESP32 on {port}")
+#     esp = ESP32Link(port=port, baud=115200, timeout=0.5)
+#     print(f"Successfully connected to ESP32 on {port}")
+#     # شروع نخ خواندن
+#     reader_thread = threading.Thread(
+#         target=serial_reader, args=(esp,), daemon=True)
+#     reader_thread.start()
+# except Exception as e:
+#     print(f"Error connecting to ESP32: {e}")
+#     esp = None
+
+# === ESP32 INIT START ===
 try:
     port = find_esp32_port()
-    print(f"Connecting to ESP32 on {port}")
-    esp = ESP32Link(port=port, baud=115200, timeout=0.5)
-    print(f"Successfully connected to ESP32 on {port}")
-    # شروع نخ خواندن
-    reader_thread = threading.Thread(
-        target=serial_reader, args=(esp,), daemon=True)
-    reader_thread.start()
+    print(f"[APP] Connecting to ESP32 on {port}")
+    esp = ESP32Link(
+        port=port,
+        baud=115200,
+        timeout=0.5,
+        port_finder=find_esp32_port,     # اگر شماره‌ی پورت عوض شد، دوباره by-id را پیدا کند
+        on_reconnect=resync_after_reconnect,  # بعد از وصل مجدد، وضعیت قبلی را اعمال کن
+        start_reader=True,               # Reader داخلی فعال باشد
+    )
+    print(f"[APP] Successfully connected to ESP32 on {port}")
 except Exception as e:
-    print(f"Error connecting to ESP32: {e}")
+    print(f"[APP] Error connecting to ESP32: {e}")
     esp = None
-
+# === ESP32 INIT END ===
 
 DB_PATH = os.environ.get(
     "NORA_DB", "/home/nora/apps/NORA-SOFA.v2/data/nora.db")
