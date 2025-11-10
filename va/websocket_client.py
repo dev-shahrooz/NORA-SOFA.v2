@@ -96,6 +96,20 @@ def send_normal_mode():
         "corr_id": str(int(time.time() * 1000))
     })
 
+# نور موقت برای حالت گوش دادن دستیار صوتی
+def send_magic_listening_light(active: bool,
+                               mode: str = "wakeup",
+                               color: str = "#FFFFFF",
+                               brightness: str = "high"):
+    """فعال/غیرفعال‌سازی نور موقت در zoneهای magicl و magicbl."""
+    _emit("va.magic_light_temp", {
+        "active": bool(active),
+        "mode": mode,
+        "color": color,
+        "brightness": brightness,
+        "corr_id": str(int(time.time() * 1000))
+    })
+
 
 # def send_equalizer1():
 #     _emit("va.intent", {

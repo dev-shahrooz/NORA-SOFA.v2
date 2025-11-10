@@ -115,6 +115,25 @@ clock_uc = ClockUsecase(esp)
 router = ActionRouter(state, lighting, reading_light_uc, back_light_uc,
                       mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc, clock_uc)
 
+_magic_light_lock = threading.Lock()
+_magic_light_snapshot = {"active": False, "zones": None}
+
+
+def _snapshot_zone(state_dict: Dict[str, Any], zone: str) -> Dict[str, Any]:
+    lighting_state = state_dict.get("lighting", {})
+    zone_state = lighting_state.get(zone, {}) or {}
+    return {
+        "mode": zone_state.get("mode", "off"),
+        "color": zone_state.get("color", "#FFFFFF"),
+        "brightness": zone_state.get("brightness", "mid"),
+    }
+
+
+def _apply_zone_state(zone: str, mode: str, color: str, brightness: str) -> None:
+    try:
+        lighting.set_zone(zone, mode, color, brightness)
+    except Exception as exc:
+        print(f"[va.magic_light_temp] Failed to set zone '{zone}': {exc}")
 
 def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
     """Apply persisted state to physical hardware without mutating DB."""
@@ -185,6 +204,39 @@ sync_hardware_from_state()
 @app.route("/")
 def index():
     return send_from_directory("ui", "index.html")
+
+@sio.on("va.magic_light_temp")
+def on_va_magic_light_temp(data):
+    active = bool(data.get("active"))
+    mode = str(data.get("mode", "wakeup") or "wakeup").strip() or "wakeup"
+    color = str(data.get("color", "#FFFFFF") or "#FFFFFF").strip() or "#FFFFFF"
+    brightness = str(data.get("brightness", "high") or "high").strip() or "high"
+
+    global _magic_light_snapshot
+    with _magic_light_lock:
+        if active:
+            if not _magic_light_snapshot["active"]:
+                current_state = state.get_state()
+                _magic_light_snapshot["zones"] = {
+                    "under_sofa": _snapshot_zone(current_state, "under_sofa"),
+                    "box": _snapshot_zone(current_state, "box"),
+                }
+            _magic_light_snapshot["active"] = True
+
+            for zone in ("under_sofa", "box"):
+                _apply_zone_state(zone, mode, color, brightness)
+        else:
+            zones = _magic_light_snapshot.get("zones") or {}
+            for zone, info in zones.items():
+                _apply_zone_state(
+                    zone,
+                    str(info.get("mode", "off") or "off"),
+                    str(info.get("color", "#FFFFFF") or "#FFFFFF"),
+                    str(info.get("brightness", "mid") or "mid"),
+                )
+
+            _magic_light_snapshot = {"active": False, "zones": None}
+
 
 
 @sio.on("ui.query")

@@ -6,8 +6,8 @@ import signal
 import traceback
 from vosk import Model, KaldiRecognizer
 import sounddevice as sd
-import socketio
-from websocket_client import _emit
+from websocket_client import send_magic_listening_light
+
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -166,22 +166,24 @@ def main():
                     # va_light_var = 1
                     # _emit('magic_light_sock', {
                     #       "magic_light_state": va_light_var})
+                    send_magic_listening_light(True)
                     rec_cmd = build_command_recognizer(model)
-                    cmd_text = listen_command_exact(
-                        rec_cmd, stream.read,
-                        timeout_sec=COMMAND_TIMEOUT_SEC,
-                        silence_ms=FINAL_SILENCE_MS,
-                    )
-                    print("📥 Full command (strict):",
-                          cmd_text if cmd_text else "<empty>")
+                    try:
+                        cmd_text = listen_command_exact(
+                            rec_cmd, stream.read,
+                            timeout_sec=COMMAND_TIMEOUT_SEC,
+                            silence_ms=FINAL_SILENCE_MS,
+                        )
+                        print("📥 Full command (strict):",
+                              cmd_text if cmd_text else "<empty>")
 
-                    matched = handle_command(cmd_text)
-                    if matched:
-                        print("✅ exact command executed")
-                        # va_light_var = 0
-                        # _emit('magic_light_sock', { "magic_light_state": va_light_var })
-                    else:
-                        print("❌ not an exact command (ignored)")
+                        matched = handle_command(cmd_text)
+                        if matched:
+                            print("✅ exact command executed")
+                        else:
+                            print("❌ not an exact command (ignored)")
+                    finally:
+                        send_magic_listening_light(False)
 
                     # بازگشت به حالت ویک‌ورد با یک ریکاگنایزر تازه
                     wake_rec = build_wake_recognizer(model)
