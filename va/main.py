@@ -165,7 +165,6 @@ def main():
                     # va_light_var = 1
                     # _emit('magic_light_sock', {
                     #       "magic_light_state": va_light_var})
-                    send_magic_listening_light(True)
                     rec_cmd = build_command_recognizer(model)
                     cmd_text = listen_command_exact(
                         rec_cmd, stream.read,
