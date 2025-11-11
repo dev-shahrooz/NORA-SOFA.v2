@@ -176,13 +176,13 @@ def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
         audio_uc.set_mute(muted)
     except Exception:
         pass
-    try:
-        clock_state = s.get("clock", {})
-        time_str = clock_state.get("time")
-        if time_str:
-            clock_uc.apply_time_string(time_str)
-    except Exception:
-        pass
+    # try:
+    #     clock_state = s.get("clock", {})
+    #     time_str = clock_state.get("time")
+    #     if time_str:
+    #         clock_uc.apply_time_string(time_str)
+    # except Exception:
+    #     pass
 
 
 def sync_hardware_from_state() -> None:
