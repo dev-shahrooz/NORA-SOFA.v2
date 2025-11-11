@@ -35,7 +35,6 @@ def _get_client() -> socketio.Client:
             def connect():
                 print(f"[SOCKET] ✅ Connected to {SERVER_URL}")
 
-
             @_sio.event
             def disconnect():
                 print("[SOCKET] ❌ Disconnected")
@@ -60,6 +59,7 @@ def _emit(event: str, data: dict):
         print("[WS-Fallback] Not connected ->", event, data)
 
 # ---------- API برای voice assistant ----------
+
 
 def send_reading_light(state: bool):
     '''روشن/خاموش کردن چراغ مطالعه'''
@@ -93,20 +93,6 @@ def send_normal_mode():
     _emit("va.intent", {
         "type": "mode.set",
         "payload": {"mode": "normal"},
-        "corr_id": str(int(time.time() * 1000))
-    })
-
-# نور موقت برای حالت گوش دادن دستیار صوتی
-def send_magic_listening_light(active: bool,
-                               mode: str = "wakeup",
-                               color: str = "#FFFFFF",
-                               brightness: str = "high"):
-    """فعال/غیرفعال‌سازی نور موقت در zoneهای magicl و magicbl."""
-    _emit("va.magic_light_temp", {
-        "active": bool(active),
-        "mode": mode,
-        "color": color,
-        "brightness": brightness,
         "corr_id": str(int(time.time() * 1000))
     })
 
