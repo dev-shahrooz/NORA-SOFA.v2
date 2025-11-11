@@ -9,7 +9,6 @@ import sounddevice as sd
 from websocket_client import send_magic_listening_light
 
 
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.append(HERE)
@@ -183,6 +182,7 @@ def main():
                         else:
                             print("❌ not an exact command (ignored)")
                     finally:
+                        print("ooooooooooook")
                         send_magic_listening_light(False)
 
                     # بازگشت به حالت ویک‌ورد با یک ریکاگنایزر تازه
@@ -190,7 +190,6 @@ def main():
                     # va_light_var = 0
                     # _emit('magic_light_sock', { "magic_light_state": va_light_var })
 
-                    
         except KeyboardInterrupt:
             _sigint_handler(None, None)
         except Exception as e:
@@ -202,4 +201,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-##hello
+# hello
