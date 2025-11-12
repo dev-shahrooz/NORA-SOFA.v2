@@ -58,6 +58,9 @@
                   <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/AI\ Front\ Edit\ Size.png')">
                     <button class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
                     <button class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
+                    <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
+                    <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
+                    <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
                     <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
                   </div>
                 </div>
@@ -148,7 +151,7 @@
     <div class="hint" data-i18n="panel_hint">Click on icons on the sofa or the list to toggle features.</div>
   </div>
   <div class="fullscreen-wrapper" id="settingsWrapper">
-    <button class="close-btn" id="closeSettings"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="close-btn" style="display: none;" id="closeSettings"><i class="fa-solid fa-arrow-left"></i></button>
     <button class="home-btn" id="homeSettings"><i class="fa-solid fa-home"></i></button>
     <div class="fullscreen-content controls">
       <div style="display: block;">
@@ -245,7 +248,7 @@
             <option value="high" data-i18n="brightness_high">High</option>
           </select>
         </label>
-        <button id="apply-light" class="btn" data-i18n="apply_light">Apply</button>
+        <button id="apply-light" class="btn" style="display: none;" data-i18n="apply_light">Apply</button>
       </div>
       <hr />
       <h2 data-i18n="bluetooth_title">System Bluetooth</h2>
@@ -444,7 +447,7 @@
     </div>
   </div>
   <div class="fullscreen-wrapper" id="streamingWrapper">
-    <button class="close-btn" id="closeStreaming"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="close-btn" style="display: none;"  id="closeStreaming"><i class="fa-solid fa-arrow-left"></i></button>
     <button class="home-btn" id="homeStreaming"><i class="fa-solid fa-home"></i></button>
     <div class="fullscreen-content">
       <h2 data-i18n="streaming_title">Streaming</h2>
@@ -474,7 +477,7 @@
     </div>
   </div>
   <div class="fullscreen-wrapper" id="voiceAssistantWrapper">
-    <button class="close-btn" id="closeVoiceAssistant"><i class="fa-solid fa-arrow-left"></i></button>
+    <button class="close-btn" style="display: none;"  id="closeVoiceAssistant"><i class="fa-solid fa-arrow-left"></i></button>
     <button class="home-btn" id="homeVoiceAssistant"><i class="fa-solid fa-home"></i></button>
     <div class="fullscreen-content">
       <h2 data-i18n="voice_assistant_title">Voice Assistant</h2>
@@ -1662,13 +1665,36 @@ toggleButtons.forEach(btn => {
       gsap.fromTo(wrapper, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.in' });
     };
   });
-
+   document.querySelectorAll('.color-radio').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById('color').value = radio.value;
+        console.log(radio.value);
+              const zone = document.getElementById('zone').value;
+              const mode = document.getElementById('mode').value;
+              const color = document.getElementById('color').value;
+              const brightness = document.getElementById('brightness').value;
+              console.log('zone:',zone,'mode:',mode,'color:',color)
+              send("lighting.set", { zone, mode, color, brightness });
+      });
+    });
   [closeSettings, closeStreaming, closeVoiceAssistant, homeSettings, homeStreaming, homeVoiceAssistant].forEach(btn => {
     btn.onclick = () => {
       const wrapper = btn.parentElement;
       gsap.to(wrapper, { opacity: 0, duration: 0.3, ease: 'power2.out', onComplete: () => wrapper.classList.remove('open') });
     };
   });
+streamingWrapper.onclick = (event) => {
+  // Only remove 'open' if the click is directly on the wrapper (not on a child item)
+  if (event.target === streamingWrapper) {
+    streamingWrapper.classList.remove('open');
+  }
+};
+settingsWrapper.onclick = (event) => {
+  // Only remove 'open' if the click is directly on the wrapper (not on a child item)
+  if (event.target === settingsWrapper) {
+    settingsWrapper.classList.remove('open');
+  }
+};
 
   closeSidebar.onclick = () => {
     gsap.to(sidebar, { x: '100%', duration: 0.3, ease: 'power2.out', onComplete: () => sidebar.classList.remove('open') });
@@ -1873,7 +1899,8 @@ function showApp(app) {
       //     showKeyboard();
       //   });
       // }
-      window.open("https://chatgpt.com/", "_blank");
+      //window.open("https://chatgpt.com/", "_blank");
+      window.location.href = "https://chatgpt.com/";
     }
 
     if (iframe) {
@@ -1937,7 +1964,7 @@ function showApp(app) {
     const musicPanel = document.getElementById('musicPanel');
     const isToggled = musicPanel.classList.contains('toggled');
     musicPanel.classList.toggle('toggled');
-    musicPanel.style.left = isToggled ? '-170px' : '32px';
+    musicPanel.style.left = isToggled ? '-192px' : '32px';
   });
   function iframeMelodify(){
     // Access iframe content (same-origin only)
@@ -1952,12 +1979,6 @@ function showApp(app) {
       });
     });
   } 
-   document.querySelectorAll('.color-radio').forEach(radio => {
-      radio.addEventListener('change', () => {
-        document.getElementById('color').value = radio.value;
-        console.log(radio.value);
-      });
-    });
     document.getElementById('mode').addEventListener('change', function() {
     const colorPickerWrapper = document.getElementById('colorPickerWrapper');
     if (this.value === 'static') {

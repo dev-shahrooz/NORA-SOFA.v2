@@ -53,9 +53,9 @@
   .swiper {
     width: 100%;
     height: 100%;
-    max-width: 800px;
-    max-height: 480px;
-    aspect-ratio: 800 / 480;
+    max-width: 100%;
+    max-height: 100%;
+    /* aspect-ratio: 800 / 480; */
   }
   .swiper-slide {
     display: flex;
@@ -68,9 +68,9 @@
     overflow: hidden;
   }
   .sofa-wrap {
-    width: 800px;
-    height: 480px;
-    aspect-ratio: 800 / 480;
+    width: 100%;
+    height: 100%;
+    /* aspect-ratio: 800 / 480; */
     position: relative;
     display: flex;
     align-items: center;
@@ -78,8 +78,8 @@
     margin: auto;
   }
   .sofa-img {
-    width: 800px;
-    height: 480px;
+    width: 100%;
+    height: 100%;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -115,9 +115,9 @@
   .app { 
     width: 100%;
     height: 100%;
-    max-width: 800px;
-    max-height: 480px;
-    aspect-ratio: 800 / 480;
+    max-width: 100%;
+    max-height: 100%;
+    /* aspect-ratio: 800 / 480; */
     background: transparent;
     border-radius: 14px;
     padding: 10px 10px 10px 24px;
@@ -224,7 +224,7 @@
   .music-panel { 
     position: absolute; 
     /* left: 18px;  */
-    left: -170px;
+    left: -192px;
     bottom: 18px; 
     background: rgba(8,12,20,0); 
     backdrop-filter: blur(12px); 
@@ -256,7 +256,7 @@
   } */
   .toggle-btn-player{
         position: absolute;
-    right: -50px;
+    right: -72px;
     top: 60px;
     background: rgba(8, 12, 20, 0);
     border: 1px solid #8d8d8d;
@@ -513,7 +513,7 @@
     cursor: pointer; 
   }
   .fullscreen-content { 
-    max-width: 800px; 
+    max-width: 100%; 
     margin: 0 auto; 
     padding: 20px; 
     background: rgba(11,18,32,0.5); 
@@ -658,14 +658,14 @@
       height: 100vh; 
       max-width: none; 
       max-height: none; 
-      aspect-ratio: 800 / 480; 
+      /* aspect-ratio: 800 / 480;  */
     }
     .sofa-wrap { 
       width: 100%; 
       height: auto; 
       max-width: none; 
       max-height: none; 
-      aspect-ratio: 800 / 480; 
+      /* aspect-ratio: 800 / 480;  */
     }
     .music-panel {
       min-width: 180px;
@@ -887,7 +887,7 @@
     .app-btn.chatgpt { color: #10A37F; }
     .app-content {
       width: 100%;
-      max-width: 800px;
+      max-width: 100%;
       margin: 20px auto;
       border-radius: 12px;
       overflow: hidden;
