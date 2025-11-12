@@ -611,6 +611,7 @@
   }
   input:checked + .slider:before {
     transform: translateX(20px);
+    background: linear-gradient(90deg, var(--accent), #06b6d4);
   }
   .switch {
     position: relative;
@@ -941,9 +942,104 @@
     }
     .color-radio:checked + .color-label {
       border-color: #333;
-      transform: scale(1.1);
     }
     .color-label:hover {
       transform: scale(1.1);
       border-color: #666;
     }
+    /* ---------- media-player toggle button (same look as music panel) ---------- */
+.media-player-toggle {
+  position: absolute;
+  top: 12px; left: 12px;
+  width: 44px; height: 44px;
+  background: rgba(30,30,40,0.9);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  z-index: 110;
+}
+.stream-toggle:hover { background: rgba(50,50,70,0.9); }
+    /* ---------- media-player toggle button (same look as music panel) ---------- */
+.stream-toggle {
+  position: absolute;
+  top: 100px; 
+  left: 30px;
+  width: 44px; height: 44px;
+  background: rgba(30,30,40,0.9);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  z-index: 110;
+}
+.media-player-toggle:hover { background: rgba(50,50,70,0.9); }
+
+/* ---------- streaming panel (slides in from left) ---------- */
+.streaming-panel {
+  position: absolute;
+  top: 70px;                     /* below the toggle button */
+  left: -220px;                  /* hidden */
+  width: 200px;
+  background: rgba(30,30,40,0.95);
+  backdrop-filter: blur(8px);
+  padding: 12px;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  z-index: 105;
+}
+    /* ---------- media-player toggle button (same look as music panel) ---------- */
+.stream-toggle {
+  position: absolute;
+  top: 12px; left: 12px;
+  width: 44px; height: 44px;
+  background: rgba(30,30,40,0.9);
+  backdrop-filter: blur(8px);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  z-index: 110;
+}
+.stream-toggle:hover { background: rgba(50,50,70,0.9); }
+
+/* ---------- streaming panel (slides in from left) ---------- */
+.streaming-panel {
+  position: absolute;
+  top: 70px;                     /* below the toggle button */
+  left: -220px;                  /* hidden */
+  width: 200px;
+  background: rgba(30,30,40,0.95);
+  backdrop-filter: blur(8px);
+  padding: 12px;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+  z-index: 105;
+}
+.streaming-panel.toggled { left: 12px; }   /* same offset as button */
+
+.streaming-panel-header { 
+  color:#fff; font-weight:600; margin-bottom:8px; 
+}
+.streaming-apps-list { 
+  display:flex; flex-direction:column; gap:6px; 
+}
+.stream-btn {
+  background:#444; color:#fff; border:none; border-radius:6px;
+  padding:8px 12px; text-align:left; font-size:0.9rem;
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer;
+}
+.stream-btn:hover { background:#666; }
+.stream-btn i { width:18px; }

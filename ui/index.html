@@ -22,6 +22,25 @@
 </head>
 <body>
   <div class="swiper-container">
+    <!-- NEW: media-player toggle button (same look as the music panel) -->
+  <button class="stream-toggle" id="streamPlayerBtn" title="Media Player">
+    <i class="fa-solid fa-rocket"></i>
+  </button>
+    <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
+    <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
+    <!-- ==== NEW SLIDING PANEL (copy of musicPanel but for streaming) ==== -->
+<div class="streaming-panel" id="streamingPanel">
+  <div class="streaming-panel-header">
+    <strong data-i18n="streaming_title">Streaming</strong>
+  </div>
+
+  <div class="streaming-apps-list">
+    <button class="stream-btn youtube"   data-app="youtube"><i class="fa-brands fa-youtube"></i> YouTube</button>
+    <button class="stream-btn spotify"   data-app="spotify"><i class="fa-brands fa-spotify"></i> Spotify</button>
+    <button class="stream-btn melodify"  data-app="melodify"><i class="fa-solid fa-play"></i> Melodify</button>
+    <button class="stream-btn chatgpt"   data-app="chatgpt"><i class="fa-solid fa-comment"></i> ChatGPT</button>
+  </div>
+</div>
     <div class="music-panel" id="musicPanel">
       <div class="music-panel-header">
         <strong data-i18n="media_player_title">Media Player</strong>
@@ -58,9 +77,9 @@
                   <div class="sofa-img" id="sofa-front" style="background-image: url('/ui/src/img/AI\ Front\ Edit\ Size.png')">
                     <button class="feature-btn f-reading" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
                     <button class="feature-btn f-backlight" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
-                    <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
-                    <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
-                    <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
+                    <!-- <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
+                    <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div> -->
+                    <!-- <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div> -->
                     <div class="feature-btn f-soundbar" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
                   </div>
                 </div>
@@ -77,9 +96,9 @@
                     <button class="feature-btn f-readingL" data-feature="reading" title="Reading light"><i class="fa-solid fa-lightbulb"></i></button>
                     <div class="backlight-glow" id="backlightGlow" style="left: 10%; top: 10%; width: 80%; height: 80%; background: radial-gradient(circle at 50% 25%, rgba(79,70,229,0.35) 0%, rgba(79,70,229,0.12) 20%, rgba(79,70,229,0.02) 60%);;"></div>
                     <button class="feature-btn f-backlightL" data-feature="backlight" title="Backlight"><i class="fa-solid fa-lightbulb"></i></button>
-                    <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
-                    <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div>
-                    <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div>
+                    <!-- <div class="feature-btn f-bluetooth" data-feature="bluetooth" title="Bluetooth"><i class="fa-brands fa-bluetooth"></i></div>
+                    <div class="feature-btn f-wifi" data-feature="wifi" title="WiFi"><i class="fa-solid fa-wifi"></i></div> -->
+                    <!-- <div class="feature-btn f-voice" data-feature="voice" title="Voice Assistant"><i class="fa-solid fa-microphone"></i></div> -->
                     <div class="feature-btn f-soundbarL" data-feature="soundbar" title="Party Mode"><i class="fa-solid fa-volume-up"></i><div class="loading-overlay"></div></div>
                   </div>
                 </div>
@@ -106,7 +125,7 @@
       <div class="list-item" data-feature="reading">
         <i class="fa-solid fa-lightbulb"></i>
         <div class="label" data-i18n="reading_light_title">Reading Light</div>
-        <label class="switch">
+        <label class="switch" style="pointer-events: none;">
           <input type="checkbox" class="feature-toggle" data-feature="reading">
           <span class="slider"></span>
         </label>
@@ -114,7 +133,7 @@
       <div class="list-item" data-feature="backlight">
         <i class="fa-solid fa-lightbulb"></i>
         <div class="label" data-i18n="back_light_title">Backlight</div>
-        <label class="switch">
+        <label class="switch" style="pointer-events: none;">
           <input type="checkbox" class="feature-toggle" data-feature="backlight">
           <span class="slider"></span>
         </label>
@@ -455,17 +474,17 @@
         <button class="app-btn youtube" data-app="youtube">
           <i class="fa-brands fa-youtube"></i>
           YouTube
-          <span class="coming-soon">Preview</span>
+          <span class="coming-soon">Open New Tab</span>
         </button>
         <button class="app-btn spotify" data-app="spotify">
           <i class="fa-brands fa-spotify"></i>
           Spotify
-          <span class="coming-soon">Preview</span>
+          <span class="coming-soon">Open New Tab</span>
         </button>
-        <button class="app-btn melodify" data-app="melodify" disabled="disabled">
+        <button class="app-btn melodify" data-app="melodify">
           <i class="fa-solid fa-play"></i>
           Melodify
-          <span class="coming-soon">Coming Soon</span>
+          <span class="coming-soon">Open New Tab</span>
         </button>
         <button class="app-btn chatgpt" data-app="chatgpt">
           <i class="fa-solid fa-comment"></i>
@@ -1854,33 +1873,36 @@ function showApp(app) {
   setTimeout(() => {
     let iframe;
     if (app === 'youtube') {
-      appContent.innerHTML = `
-        <iframe id="youtubeIframe" width="100%" height="450" 
-                src="https://www.youtube.com/embed/N6DW31S_oyI" 
-                title="Mega Hits 2025" frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-        </iframe>
-      `;
-      iframe = document.getElementById('youtubeIframe');
+      // appContent.innerHTML = `
+      //   <iframe id="youtubeIframe" width="100%" height="450" 
+      //           src="https://www.youtube.com/embed/N6DW31S_oyI" 
+      //           title="Mega Hits 2025" frameborder="0" 
+      //           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      //           referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+      //   </iframe>
+      // `;
+      // iframe = document.getElementById('youtubeIframe');
+      window.location.href = "https://www.youtube.com/";
     } else if (app === 'spotify') {
-      appContent.innerHTML = `
-        <iframe id="spotifyIframe" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M" 
-                width="100%" height="450" 
-                frameborder="0" allowtransparency="true" 
-                allow="encrypted-media">
-        </iframe>
-      `;
-      iframe = document.getElementById('spotifyIframe');
+      // appContent.innerHTML = `
+      //   <iframe id="spotifyIframe" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M" 
+      //           width="100%" height="450" 
+      //           frameborder="0" allowtransparency="true" 
+      //           allow="encrypted-media">
+      //   </iframe>
+      // `;
+      window.location.href = "https://open.spotify.com/";
+      //iframe = document.getElementById('spotifyIframe');
     } else if (app === 'melodify') {
-      appContent.innerHTML = `
-        <iframe id="melodifyIframe" src="https://desktop.melodify.app/home" 
-                width="100%" height="450" 
-                frameborder="0" allowtransparency="true" 
-                allow="encrypted-media">
-        </iframe>
-      `;
-      iframe = document.getElementById('melodifyIframe');
+      // appContent.innerHTML = `
+      //   <iframe id="melodifyIframe" src="https://desktop.melodify.app/home" 
+      //           width="100%" height="450" 
+      //           frameborder="0" allowtransparency="true" 
+      //           allow="encrypted-media">
+      //   </iframe>
+      // `;
+      window.location.href = "https://desktop.melodify.app/";
+      //iframe = document.getElementById('melodifyIframe');
     } else if (app === 'chatgpt') {
       // Existing ChatGPT code remains unchanged
       // appContent.innerHTML = `
@@ -1986,6 +2008,33 @@ function showApp(app) {
     } else {
         colorPickerWrapper.style.display = 'none';
     }
+});
+
+/* ---------- NEW: media-player toggle (slides streaming panel) ---------- */
+document.getElementById('streamPlayerBtn').addEventListener('click', function () {
+  const panel = document.getElementById('streamingPanel');
+  const isOpen = panel.classList.contains('toggled');
+  panel.classList.toggle('toggled');
+
+  gsap.to(panel, {
+    x: isOpen ? -232 : 0,          // 220px panel + 12px offset
+    duration: 0.3,
+    ease: 'power2.out'
+  });
+});
+
+/* ---------- open streaming apps (same as before) ---------- */
+document.querySelectorAll('.stream-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const app = btn.dataset.app;
+    const urls = {
+      youtube:  'https://www.youtube.com/',
+      spotify:  'https://open.spotify.com/',
+      melodify: 'https://desktop.melodify.app/',
+      chatgpt:  'https://chatgpt.com/'
+    };
+    if (urls[app]) window.location.href = urls[app];   // or window.open(urls[app], '_blank');
+  });
 });
   </script>
 </body>
