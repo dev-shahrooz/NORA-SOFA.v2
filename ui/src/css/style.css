@@ -989,7 +989,7 @@
   top: 70px;                     /* below the toggle button */
   left: -220px;                  /* hidden */
   width: 200px;
-  background: rgba(30,30,40,0.95);
+  background: transparent;
   backdrop-filter: blur(8px);
   padding: 12px;
   border-radius: 0 12px 12px 0;
