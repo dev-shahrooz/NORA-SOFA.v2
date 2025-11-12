@@ -8,8 +8,6 @@ import serial
 import time
 import threading
 from glob import glob
-from drivers.esp32_link import ESP32Link
-
 
 from core.state_store import StateStore
 from core.event_bus import EventBus
@@ -27,6 +25,7 @@ from services.bluetooth_service import BluetoothService
 from services.audio_service import AudioService
 from services.player_service import PlayerService
 from services.wifi_service import WiFiService
+from drivers.esp32_link import ESP32Link
 
 
 # def find_esp32_port():
@@ -41,36 +40,22 @@ from services.wifi_service import WiFiService
 #                 return port.device
 #     return os.environ.get("ESP_PORT", "/dev/ttyACM0")
 
+def find_esp32_port():
+    # 1) مسیر پایدار by-id (ESP32 Espressif)
+    candidates = sorted(
+        glob("/dev/serial/by-id/usb-Espressif_*_serial_debug_unit_*"))
+    if candidates:
+        return candidates[0]  # همان symlink پایدار
 
-def find_esp32_port() -> str:
-    """
-    اول مسیرهای پایدار by-id برای Espressif را برمی‌گرداند؛
-    اگر نبود، /dev/esp32 و بعد tty* را تست می‌کند.
-    """
-    # 1) by-id (پایدار)
-    byid = sorted(glob("/dev/serial/by-id/usb-Espressif_*"))
-    if byid:
-        return byid[0]
-
-    # 2) udev symlink اختیاری
+    # 2) اگر خواستی udev symlink ثابت خودت مثل /dev/esp32
     if os.path.exists("/dev/esp32"):
         return "/dev/esp32"
 
-    # 3) fallback
+    # 3) در نهایت fallbackهایی مثل ttyACM0/ttyUSB0
     for p in ("/dev/ttyACM0", "/dev/ttyUSB0"):
         if os.path.exists(p):
             return p
-
     raise RuntimeError("ESP32 serial port not found")
-
-def resync_after_reconnect():
-    # اگر تابع sync_hardware_from_state داری، همین را صدا بزن:
-    try:
-        sync_hardware_from_state()   # ← اگر وجود دارد
-    except NameError:
-        print("[APP] TODO: sync_hardware_from_state() را پیاده‌سازی کن.")
-
-
 
 # نخ برای خالی کردن بافر سریال
 
@@ -88,36 +73,19 @@ def serial_reader(esp):
 
 
 # مقداردهی اولیه ESP32Link
-# try:
-#     port = find_esp32_port()
-#     print(f"Connecting to ESP32 on {port}")
-#     esp = ESP32Link(port=port, baud=115200, timeout=0.5)
-#     print(f"Successfully connected to ESP32 on {port}")
-#     # شروع نخ خواندن
-#     reader_thread = threading.Thread(
-#         target=serial_reader, args=(esp,), daemon=True)
-#     reader_thread.start()
-# except Exception as e:
-#     print(f"Error connecting to ESP32: {e}")
-#     esp = None
-
-# === ESP32 INIT START ===
 try:
     port = find_esp32_port()
-    print(f"[APP] Connecting to ESP32 on {port}")
-    esp = ESP32Link(
-        port=port,
-        baud=115200,
-        timeout=0.5,
-        port_finder=find_esp32_port,     # اگر شماره‌ی پورت عوض شد، دوباره by-id را پیدا کند
-        on_reconnect=resync_after_reconnect,  # بعد از وصل مجدد، وضعیت قبلی را اعمال کن
-        start_reader=True,               # Reader داخلی فعال باشد
-    )
-    print(f"[APP] Successfully connected to ESP32 on {port}")
+    print(f"Connecting to ESP32 on {port}")
+    esp = ESP32Link(port=port, baud=115200, timeout=0.5)
+    print(f"Successfully connected to ESP32 on {port}")
+    # شروع نخ خواندن
+    reader_thread = threading.Thread(
+        target=serial_reader, args=(esp,), daemon=True)
+    reader_thread.start()
 except Exception as e:
-    print(f"[APP] Error connecting to ESP32: {e}")
+    print(f"Error connecting to ESP32: {e}")
     esp = None
-# === ESP32 INIT END ===
+
 
 DB_PATH = os.environ.get(
     "NORA_DB", "/home/nora/apps/NORA-SOFA.v2/data/nora.db")
@@ -147,6 +115,25 @@ mode_uc = ModeUsecase(
 clock_uc = ClockUsecase(esp)
 router = ActionRouter(state, lighting, reading_light_uc, back_light_uc,
                       mode_uc, bluetooth_uc, audio_uc, player_uc, wifi_uc, clock_uc)
+
+_magic_light_snapshot = {"active": False, "zones": None}
+
+
+def _snapshot_zone(state_dict: Dict[str, Any], zone: str) -> Dict[str, Any]:
+    lighting_state = state_dict.get("lighting", {})
+    zone_state = lighting_state.get(zone, {}) or {}
+    return {
+        "mode": zone_state.get("mode", "off"),
+        "color": zone_state.get("color", "#FFFFFF"),
+        "brightness": zone_state.get("brightness", "mid"),
+    }
+
+
+def _apply_zone_state(zone: str, mode: str, color: str, brightness: str) -> None:
+    try:
+        lighting.set_zone(zone, mode, color, brightness)
+    except Exception as exc:
+        print(f"[va.magic_light_temp] Failed to set zone '{zone}': {exc}")
 
 
 def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
@@ -190,13 +177,13 @@ def _apply_state_to_hardware(s: Dict[str, Any]) -> None:
         audio_uc.set_mute(muted)
     except Exception:
         pass
-    try:
-        clock_state = s.get("clock", {})
-        time_str = clock_state.get("time")
-        if time_str:
-            clock_uc.apply_time_string(time_str)
-    except Exception:
-        pass
+    # try:
+    #     clock_state = s.get("clock", {})
+    #     time_str = clock_state.get("time")
+    #     if time_str:
+    #         clock_uc.apply_time_string(time_str)
+    # except Exception:
+    #     pass
 
 
 def sync_hardware_from_state() -> None:
@@ -220,6 +207,44 @@ def index():
     return send_from_directory("ui", "index.html")
 
 
+@sio.on("va.magic_light_temp")
+def on_va_magic_light_temp(data):
+    active = bool(data.get("active"))
+    mode = str(data.get("mode", "wakeup") or "wakeup").strip() or "wakeup"
+    color = str(data.get("color", "#FFFFFF") or "#FFFFFF").strip() or "#FFFFFF"
+    brightness = str(data.get("brightness", "high")
+                     or "high").strip() or "high"
+
+    global _magic_light_snapshot
+
+    if active:
+        # اگر فعال شود، وضعیت فعلی را ذخیره می‌کنیم (فقط یکبار)
+        if not _magic_light_snapshot["active"]:
+            current_state = state.get_state()
+            _magic_light_snapshot["zones"] = {
+                "under_sofa": _snapshot_zone(current_state, "under_sofa"),
+                "box": _snapshot_zone(current_state, "box"),
+            }
+        _magic_light_snapshot["active"] = True
+
+        # حالت جدید را برای زون‌ها اعمال کن
+        for zone in ("under_sofa", "box"):
+            _apply_zone_state(zone, mode, color, brightness)
+
+    else:
+        # اگر غیرفعال شود، وضعیت قبلی را برگردان
+        zones = _magic_light_snapshot.get("zones") or {}
+        for zone, info in zones.items():
+            _apply_zone_state(
+                zone,
+                str(info.get("mode", "off") or "off"),
+                str(info.get("color", "#FFFFFF") or "#FFFFFF"),
+                str(info.get("brightness", "mid") or "mid"),
+            )
+
+        _magic_light_snapshot = {"active": False, "zones": None}
+
+
 @sio.on("ui.query")
 def on_query(data):
     patch = player_uc.info()
@@ -234,7 +259,7 @@ def on_intent(data):
     payload = data.get("payload", {})
     new_state = router.handle(
         source="lcd", action=action, payload=payload, corr_id=data.get("corr_id", ""))
-        
+
     emit("sv.update", new_state, broadcast=True)
 
 

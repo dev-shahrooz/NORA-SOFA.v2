@@ -78,7 +78,8 @@ class ClockUsecase:
         if time_value is None:
             raise ValueError("Invalid time components")
         self._send_command(time_value)
-        return {"clock": {"time": time_value.as_string()}}
+        # خالی برگرمیگردانیم تا چیزی ذخیره نشهههه
+        return {}
 
     def apply_time_string(self, time_str: str) -> None:
         time_value = self._parse_time(time_str=time_str)
