@@ -18,7 +18,7 @@ MODEL_PATH = os.path.join(HERE, "model")
 RATE = 16000
 BLOCKSIZE = 4000
 CHANNELS = 1
-WAKE_WORD = "hey novira"
+WAKE_WORD = "novira"
 COMMAND_TIMEOUT_SEC = 5
 FINAL_SILENCE_MS = 1200
 
