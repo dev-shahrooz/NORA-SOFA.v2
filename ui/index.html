@@ -216,7 +216,7 @@
             <option value="off" data-i18n="mode_off">Off</option>
             <option value="rainbow" data-i18n="mode_rainbow">Rainbow</option>
             <option value="static" data-i18n="mode_static">Static color</option>
-            <option value="equalize" data-i18n="mode_equalize">Equalizer</option>
+            <option value="equalize" id="equalizerOption" data-i18n="mode_equalize">Equalizer</option>
           </select>
         </label>
         <label>
@@ -2034,6 +2034,34 @@ document.querySelectorAll('.stream-btn').forEach(btn => {
     };
     if (urls[app]) window.location.href = urls[app];   // or window.open(urls[app], '_blank');
   });
+});
+document.getElementById('zone').addEventListener('change', function () {
+    const equalizerOption = document.getElementById('equalizerOption');
+    if (this.value === 'box') {
+        equalizerOption.style.display = 'none';
+        // If the current selected mode is "equalize" when switching to box → switch to "off"
+        if (document.getElementById('mode').value === 'equalize') {
+            document.getElementById('mode').value = 'off';
+            // Optionally send the new mode to the server
+            applyLightSettings();
+        }
+    } else {
+        equalizerOption.style.display = '';
+    }
+});
+
+/* Helper to re-apply lighting settings (call it when needed) */
+function applyLightSettings() {
+    const zone = document.getElementById('zone').value;
+    const mode = document.getElementById('mode').value;
+    const color = document.getElementById('color').value;
+    const brightness = document.getElementById('brightness').value;
+    send("lighting.set", { zone, mode, color, brightness });
+}
+
+/* Also run it once on page load in case the default zone is "box" */
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('zone').dispatchEvent(new Event('change'));
 });
   </script>
 </body>
